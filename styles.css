@@ -910,6 +910,7 @@ body {
   letter-spacing: .03em;
   vertical-align: baseline;
   line-height: 1;
+  margin: 0 4px;
 }
 
 /* ===================== Reveal animations ===================== */
