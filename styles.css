@@ -150,7 +150,7 @@ body {
   position: absolute;
   bottom: 0; right: 0;
   width: 60%; height: 60%;
-  background: radial-gradient(ellipse at bottom right, rgba(197,241,53,0.08), transparent 65%);
+  background: radial-gradient(ellipse at bottom right, rgba(242,98,7,0.08), transparent 65%);
   pointer-events: none;
 }
 
@@ -191,7 +191,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 30% 30%, rgba(197,241,53,0.15), transparent 55%);
+  background: radial-gradient(circle at 30% 30%, rgba(242,98,7,0.15), transparent 55%);
 }
 .caption-bar {
   font-size: .65rem;
@@ -293,7 +293,7 @@ body {
   transition: border-color .2s ease, transform .2s ease;
 }
 .step-block:hover {
-  border-color: rgba(197,241,53,0.2);
+  border-color: rgba(242,98,7,0.2);
   transform: translateY(-2px);
 }
 .step-block-num {
@@ -301,7 +301,7 @@ body {
   font-weight: 800;
   font-size: 2.5rem;
   line-height: 1;
-  color: rgba(197,241,53,0.10);
+  color: rgba(242,98,7,0.10);
   position: absolute;
   top: 1rem; right: 1.25rem;
 }
@@ -334,7 +334,7 @@ body {
   overflow: hidden;
   transition: border-color .2s;
 }
-.feat-spotlight:hover { border-color: rgba(197,241,53,0.2); }
+.feat-spotlight:hover { border-color: rgba(242,98,7,0.2); }
 
 .feat-spotlight-body {
   flex: 0 0 45%;
@@ -419,7 +419,7 @@ body {
   transition: border-color .2s ease, transform .2s ease;
 }
 .tool-card:hover {
-  border-color: rgba(197,241,53,0.22);
+  border-color: rgba(242,98,7,0.22);
   transform: translateY(-2px);
 }
 .tool-cat-label {
@@ -439,9 +439,9 @@ body {
   text-transform: uppercase;
   padding: .2rem .6rem;
   border-radius: 9999px;
-  background: rgba(197,241,53,0.10);
+  background: rgba(242,98,7,0.10);
   color: var(--accent2);
-  border: 1px solid rgba(197,241,53,0.2);
+  border: 1px solid rgba(242,98,7,0.2);
   margin-bottom: .75rem;
 }
 .tool-new-badge {
@@ -573,8 +573,8 @@ body {
 }
 .compare-before { background: #1C2B3A; }
 .compare-after {
-  background: linear-gradient(160deg, rgba(143,191,0,0.10), rgba(242,98,7,0.06));
-  border-color: rgba(197,241,53,0.2);
+  background: linear-gradient(160deg, rgba(194,77,0,0.10), rgba(242,98,7,0.06));
+  border-color: rgba(242,98,7,0.2);
 }
 .compare-title {
   font-family: 'Bricolage Grotesque', sans-serif;
@@ -635,7 +635,7 @@ body {
 .price-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); }
 .price-card-featured {
   border-color: rgba(242,98,7,0.3);
-  background: linear-gradient(160deg, rgba(143,191,0,0.10), rgba(197,241,53,0.05));
+  background: linear-gradient(160deg, rgba(194,77,0,0.10), rgba(242,98,7,0.05));
 }
 @media (min-width: 1024px) {
   .price-card-featured { transform: scale(1.02); }
@@ -707,7 +707,7 @@ body {
   position: absolute;
   bottom: 0; right: 0;
   width: 50%; height: 100%;
-  background: radial-gradient(ellipse at bottom right, rgba(197,241,53,0.08), transparent 65%);
+  background: radial-gradient(ellipse at bottom right, rgba(242,98,7,0.08), transparent 65%);
   pointer-events: none;
 }
 .cta-headline {
