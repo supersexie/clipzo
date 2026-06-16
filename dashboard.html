@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CLIPZO — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--surface:#0f0a1e;--card:#130d24;
+  --ink:#f0eeff;--muted:#8b82a8;
+  --a1:#a855f7;--a2:#c084fc;--a3:#e879f9;
+  --border:rgba(168,85,247,0.2);
+  --radius:12px;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;min-height:100vh;display:flex}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-logo svg{flex-shrink:0}
+.brand{font-family:'Press Start 2P',monospace;font-size:.6rem;color:var(--ink);letter-spacing:.05em}
+.sidebar-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav-section{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:12px 12px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:rgba(168,85,247,0.08);color:var(--ink)}
+.nav-item.active{background:rgba(168,85,247,0.15);color:var(--a2)}
+.nav-item svg{flex-shrink:0;opacity:.7}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:var(--card)}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--a2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#231716;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-email{font-size:.7rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-plan{font-size:.6rem;color:var(--a1);text-transform:uppercase;letter-spacing:.05em}
+.logout-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;display:flex;align-items:center}
+.logout-btn:hover{color:var(--a2)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:'Geist',sans-serif;font-size:1.1rem;font-weight:600}
+.credits-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.75rem;color:var(--a3)}
+
+.content{flex:1;padding:28px;overflow-y:auto}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block}
+
+/* TOOL CARD */
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.tool-card h3{font-family:'Geist',sans-serif;font-size:1rem;font-weight:600;margin-bottom:6px}
+.tool-card p{font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5}
+
+/* FORM ELEMENTS */
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:6px}
+input[type=text],input[type=email],input[type=password],textarea,select{
+  width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;
+  color:var(--ink);font-family:'Geist',sans-serif;font-size:.85rem;padding:10px 14px;outline:none;
+  transition:border-color .15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--a2)}
+textarea{resize:vertical;min-height:100px}
+select option{background:var(--card)}
+
+.field{margin-bottom:16px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Geist',sans-serif}
+.btn-primary{background:var(--a2);color:#f0eeff}
+.btn-primary:hover{background:#ff6b87}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--a2);color:var(--a2)}
+.btn-sm{padding:6px 14px;font-size:.78rem}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:border-color .15s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--a2);background:rgba(168,85,247,0.05)}
+.upload-zone .uz-icon{font-size:2rem;margin-bottom:10px}
+.upload-zone p{font-size:.82rem;color:var(--muted)}
+.upload-zone strong{color:var(--a2)}
+#file-input{display:none}
+
+/* RESULT */
+.result-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px}
+.result-box audio{width:100%;margin-top:8px}
+.result-box img{width:100%;border-radius:6px;margin-top:8px}
+.result-box textarea{margin-top:8px;font-size:.78rem;font-family:monospace;min-height:140px}
+.result-label{font-size:.72rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+
+/* VOICES GRID */
+.voices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px;max-height:260px;overflow-y:auto}
+.voice-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.voice-card:hover,.voice-card.selected{border-color:var(--a2);background:rgba(168,85,247,0.08)}
+.voice-card.selected{border-width:2px}
+.voice-name{font-size:.78rem;font-weight:500;margin-bottom:2px}
+.voice-cat{font-size:.68rem;color:var(--muted)}
+
+/* IMAGES GRID */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px}
+.img-wrap{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:9/16}
+.img-wrap img{width:100%;height:100%;object-fit:cover}
+.img-dl{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);border:none;border-radius:6px;color:#fff;padding:5px 8px;font-size:.7rem;cursor:pointer}
+
+/* PROGRESS */
+.progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:12px}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));border-radius:2px;transition:width .3s}
+
+/* STATUS */
+.status{font-size:.78rem;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:6px}
+.status.ok{color:#6fcf97}
+.status.err{color:#eb5757}
+.spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--a2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HOME GRID */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-num{font-family:'Geist',sans-serif;font-size:1.8rem;font-weight:700;color:var(--a2)}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:4px}
+.tool-shortcuts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.shortcut{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .15s;text-align:center}
+.shortcut:hover{border-color:var(--a2);background:rgba(255,145,172,0.06)}
+.shortcut-icon{font-size:1.6rem;margin-bottom:10px}
+.shortcut-name{font-size:.82rem;font-weight:500}
+.shortcut-desc{font-size:.72rem;color:var(--muted);margin-top:4px}
+
+/* AUTH MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:380px}
+.modal h2{font-family:'Geist',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.modal p{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+.modal-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--card);border-radius:8px;padding:3px}
+.tab-btn{flex:1;padding:7px;border-radius:6px;border:none;background:none;color:var(--muted);font-size:.82rem;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--a2);color:#f0eeff;font-weight:600}
+.modal-error{font-size:.78rem;color:#eb5757;margin-top:8px;display:none}
+
+/* RANGE */
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--border);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--a2);cursor:pointer}
+.range-row{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:4px}
+
+/* CLIPPER TIMELINE */
+.clip-track{position:relative;height:48px;background:var(--bg);border-radius:6px;overflow:visible;cursor:crosshair;border:1px solid var(--border);user-select:none}
+.clip-selection{position:absolute;top:0;bottom:0;background:rgba(168,85,247,0.22);border-top:2px solid var(--a2);border-bottom:2px solid var(--a2);pointer-events:none}
+.clip-handle{position:absolute;top:0;bottom:0;width:10px;background:var(--a2);border-radius:3px;cursor:ew-resize;z-index:2;transform:translateX(-50%)}
+.clip-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:60%;background:rgba(35,23,22,.5);border-radius:1px}
+.clip-playhead{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--a3);pointer-events:none;z-index:3;transform:translateX(-1px)}
+</style>
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div class="modal-bg" id="auth-modal">
+  <div class="modal">
+    <h2>Welcome to <span style="font-family:'Press Start 2P',monospace;font-size:.75rem;color:var(--a2)">CLIPZO</span></h2>
+    <p>Sign in to access your AI content tools.</p>
+    <div class="modal-tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div id="tab-login">
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+      <div class="modal-error" id="login-err"></div>
+    </div>
+    <div id="tab-signup" style="display:none">
+      <div class="field"><label>Name</label><input type="text" id="su-name" placeholder="Your name"/></div>
+      <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="su-pass" placeholder="min 6 characters"/></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doSignup()">Create Account</button>
+      <div class="modal-error" id="signup-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="28" height="28" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="8" fill="#a855f7"/><circle cx="17" cy="17" r="10" stroke="#111" stroke-width="2.1" fill="none"/><line x1="6" y1="13" x2="28" y2="13" stroke="#111" stroke-width="1.9" stroke-linecap="round"/><line x1="6" y1="21" x2="28" y2="21" stroke="#111" stroke-width="1.9" stroke-linecap="round"/><path d="M14 13 L14 21 L22 17 Z" fill="#111"/></svg>
+    <span class="brand">CLIPZO</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Home</div>
+    <button class="nav-item active" data-panel="home" onclick="switchPanel('home',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Overview
+    </button>
+    <div class="nav-section">AI Tools</div>
+    <button class="nav-item" data-panel="captions" onclick="switchPanel('captions',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M17 2l5 5-5 5"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>
+      AI Captions
+    </button>
+    <button class="nav-item" data-panel="voiceover" onclick="switchPanel('voiceover',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      AI Voiceover
+    </button>
+    <button class="nav-item" data-panel="imagegen" onclick="switchPanel('imagegen',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      AI Image Gen
+    </button>
+    <button class="nav-item" data-panel="clipper" onclick="switchPanel('clipper',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+      Video Clipper
+    </button>
+    <button class="nav-item" data-panel="files" onclick="switchPanel('files',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      My Files
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="user-email" id="user-email">...</div>
+        <div class="user-plan" id="user-plan">free</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Sign out">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Overview</span>
+    <span class="credits-pill" id="credits-pill">⚡ 10 credits</span>
+  </div>
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="panel active" id="panel-home">
+      <div class="home-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-transcriptions">—</div><div class="stat-label">Transcriptions</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-voiceovers">—</div><div class="stat-label">Voiceovers</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-images">—</div><div class="stat-label">Images generated</div></div>
+      </div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:14px;font-weight:500;text-transform:uppercase;letter-spacing:.08em">Quick Actions</div>
+      <div class="tool-shortcuts">
+        <div class="shortcut" onclick="switchPanel('captions',null)">
+          <div class="shortcut-icon">🎬</div>
+          <div class="shortcut-name">AI Captions</div>
+          <div class="shortcut-desc">Auto-transcribe any video</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('voiceover',null)">
+          <div class="shortcut-icon">🎙️</div>
+          <div class="shortcut-name">AI Voiceover</div>
+          <div class="shortcut-desc">35+ ElevenLabs voices</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('imagegen',null)">
+          <div class="shortcut-icon">🖼️</div>
+          <div class="shortcut-name">AI Image Gen</div>
+          <div class="shortcut-desc">Generate thumbnails & stills</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('clipper',null)">
+          <div class="shortcut-icon">✂️</div>
+          <div class="shortcut-name">Video Clipper</div>
+          <div class="shortcut-desc">Trim clips in-browser</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('files',null)">
+          <div class="shortcut-icon">📁</div>
+          <div class="shortcut-name">My Files</div>
+          <div class="shortcut-desc">Your uploaded media</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAPTIONS -->
+    <div class="panel" id="panel-captions">
+      <div class="tool-card">
+        <h3>AI Captions</h3>
+        <p>Upload a video or paste a URL to auto-transcribe. Get a full SRT caption file back.</p>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('cap-file-input').click()">
+          <div class="uz-icon">🎥</div>
+          <p><strong>Click to upload</strong> or drag &amp; drop</p>
+          <p style="margin-top:4px;font-size:.72rem">MP4, MOV, WebM — max 500MB</p>
+        </div>
+        <input type="file" id="cap-file-input" accept="video/*,audio/*" style="display:none"/>
+        <div style="margin-top:12px;text-align:center;font-size:.75rem;color:var(--muted)">— or paste a public URL —</div>
+        <div class="field" style="margin-top:10px">
+          <input type="text" id="cap-url" placeholder="https://example.com/video.mp4"/>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" id="cap-btn" onclick="startTranscription()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Transcribe
+          </button>
+          <div class="status" id="cap-status" style="display:none"></div>
+        </div>
+        <div id="cap-result" style="display:none">
+          <div class="result-box">
+            <div class="result-label">Transcript</div>
+            <textarea id="cap-text" readonly></textarea>
+          </div>
+          <div class="result-box" style="margin-top:10px">
+            <div class="result-label">SRT Captions</div>
+            <textarea id="cap-srt" readonly style="font-family:monospace;font-size:.72rem"></textarea>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="downloadSRT()">⬇ Download SRT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOICEOVER -->
+    <div class="panel" id="panel-voiceover">
+      <div class="tool-card">
+        <h3>AI Voiceover</h3>
+        <p>Choose a voice and type your script. Get a studio-quality MP3 back instantly.</p>
+        <div class="field">
+          <label>Select Voice</label>
+          <div class="voices-grid" id="voices-grid"><div style="color:var(--muted);font-size:.8rem;padding:8px">Loading voices...</div></div>
+        </div>
+        <div id="voice-preview-row" style="display:none;margin-bottom:16px;padding:10px;background:var(--card);border-radius:8px">
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">Preview selected voice</div>
+          <audio id="voice-preview-audio" controls style="width:100%;height:32px"></audio>
+        </div>
+        <div class="field">
+          <label>Script <span style="color:var(--muted);font-size:.72rem" id="char-count">(0/5000)</span></label>
+          <textarea id="tts-text" placeholder="Type your voiceover script here..." oninput="updateCharCount()"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="field" style="margin:0">
+            <label>Stability <span id="stab-val">0.5</span></label>
+            <input type="range" min="0" max="1" step="0.05" value="0.5" id="stab-range" oninput="document.getElementById('stab-val').textContent=this.value"/>
+            <div class="range-row"><span>Varied</span><span>Stable</span></div>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Speed <span id="speed-val">1.0</span></label>
+            <input type="range" min="0.7" max="1.3" step="0.05" value="1.0" id="speed-range" oninput="document.getElementById('speed-val').textContent=parseFloat(this.value).toFixed(2)"/>
+            <div class="range-row"><span>Slower</span><span>Faster</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" id="tts-btn" onclick="generateVoiceover()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate
+          </button>
+          <div class="status" id="tts-status" style="display:none"></div>
+        </div>
+        <div id="tts-result" style="display:none" class="result-box">
+          <div class="result-label">Generated Voiceover</div>
+          <audio id="tts-audio" controls style="width:100%;margin-top:8px"></audio>
+          <a id="tts-dl" class="btn btn-ghost btn-sm" style="margin-top:10px;display:inline-flex" download="voiceover.mp3">⬇ Download MP3</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE GEN -->
+    <div class="panel" id="panel-imagegen">
+      <div class="tool-card">
+        <h3>AI Image Generator</h3>
+        <p>Generate thumbnails, portraits, or cinematic stills for your content.</p>
+        <div class="field">
+          <label>Prompt</label>
+          <textarea id="img-prompt" placeholder="e.g. Ronaldo scoring a goal, cinematic lighting, 4k, photorealistic" style="min-height:80px"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="field" style="margin:0">
+            <label>Aspect Ratio</label>
+            <select id="img-ratio">
+              <option value="9:16">9:16 — Portrait (Reels/TikTok)</option>
+              <option value="16:9">16:9 — Landscape (YouTube)</option>
+              <option value="1:1">1:1 — Square</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Number of images</label>
+            <select id="img-count">
+              <option value="1">1 image</option>
+              <option value="2">2 images</option>
+              <option value="4">4 images</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" id="img-btn" onclick="generateImage()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Generate
+          </button>
+          <div class="status" id="img-status" style="display:none"></div>
+        </div>
+        <div class="img-grid" id="img-grid"></div>
+      </div>
+    </div>
+
+    <!-- CLIPPER -->
+    <div class="panel" id="panel-clipper">
+      <div class="tool-card">
+        <h3>Video Clipper</h3>
+        <p>Upload a video, set in and out points on the timeline, then export your clip — all in-browser, no upload needed.</p>
+        <div class="upload-zone" id="clip-drop-zone" onclick="document.getElementById('clip-file-input').click()">
+          <div class="uz-icon">✂️</div>
+          <p><strong>Click to load video</strong> or drag &amp; drop</p>
+          <p style="margin-top:4px;font-size:.72rem">MP4, MOV, WebM</p>
+        </div>
+        <input type="file" id="clip-file-input" accept="video/*" style="display:none"/>
+
+        <div id="clip-editor" style="display:none;margin-top:20px">
+          <!-- Preview -->
+          <video id="clip-preview" controls style="width:100%;border-radius:8px;background:#000;max-height:340px"></video>
+
+          <!-- Timeline -->
+          <div style="margin-top:16px;background:var(--card);border-radius:10px;padding:16px">
+            <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:8px">
+              <span>Timeline</span>
+              <span id="clip-dur-label">0:00</span>
+            </div>
+            <!-- waveform/range track -->
+            <div class="clip-track" id="clip-track">
+              <div class="clip-selection" id="clip-selection"></div>
+              <div class="clip-handle clip-handle-in" id="handle-in" title="Drag to set start"></div>
+              <div class="clip-handle clip-handle-out" id="handle-out" title="Drag to set end"></div>
+              <div class="clip-playhead" id="clip-playhead"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;gap:12px">
+              <div style="flex:1">
+                <label>In point</label>
+                <input type="text" id="clip-in-input" value="0.00" style="text-align:center"/>
+              </div>
+              <div style="flex:1">
+                <label>Out point</label>
+                <input type="text" id="clip-out-input" value="0.00" style="text-align:center"/>
+              </div>
+              <div style="flex:1">
+                <label>Duration</label>
+                <input type="text" id="clip-len-label" value="0.00s" readonly style="text-align:center;color:var(--a2)"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div style="display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="clipPreviewRange()">▶ Preview clip</button>
+            <button class="btn btn-primary" id="clip-export-btn" onclick="exportClip()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export clip
+            </button>
+            <div class="status" id="clip-status" style="display:none"></div>
+          </div>
+
+          <!-- ffmpeg loading notice -->
+          <div id="ffmpeg-loading" style="display:none;margin-top:12px;padding:12px;background:var(--card);border-radius:8px;font-size:.78rem;color:var(--muted)">
+            <div class="spinner" style="display:inline-block;vertical-align:middle;margin-right:8px"></div>
+            Loading video processor (one-time, ~30MB)...
+          </div>
+
+          <div id="clip-output" style="display:none;margin-top:16px" class="result-box">
+            <div class="result-label">Exported clip</div>
+            <video id="clip-output-video" controls style="width:100%;border-radius:6px;margin-top:8px"></video>
+            <a id="clip-dl" class="btn btn-ghost btn-sm" style="margin-top:10px;display:inline-flex" download="clip.mp4">⬇ Download clip</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILES -->
+    <div class="panel" id="panel-files">
+      <div class="tool-card">
+        <h3>My Files</h3>
+        <p>All files you've uploaded or generated.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <div class="upload-zone" style="flex:1;padding:20px" onclick="document.getElementById('files-input').click()">
+            <p><strong>Upload a file</strong> — video, image or audio</p>
+          </div>
+          <input type="file" id="files-input" accept="video/*,audio/*,image/*" style="display:none" onchange="uploadFile(this)"/>
+        </div>
+        <div id="files-list"><div style="color:var(--muted);font-size:.82rem">Loading files...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<script type="module">
+import { api, setSession, clearSession, getToken } from './api.js'
+
+window._api = api
+window._setSession = setSession
+window._clearSession = clearSession
+window._getToken = getToken
+
+let currentUser = null
+let voices = []
+let selectedVoiceId = null
+let selectedVoicePreview = null
+let captionJobId = null
+let captionPollTimer = null
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+async function checkAuth() {
+  if (!getToken()) { showModal(); return }
+  try {
+    currentUser = await api.user.me()
+    hideModal()
+    populateUser()
+    loadUsage()
+    loadVoices()
+    loadFiles()
+  } catch {
+    clearSession()
+    showModal()
+  }
+}
+
+function showModal() { document.getElementById('auth-modal').classList.remove('hidden') }
+function hideModal() { document.getElementById('auth-modal').classList.add('hidden') }
+
+window.switchTab = (tab) => {
+  document.getElementById('tab-login').style.display  = tab === 'login'  ? '' : 'none'
+  document.getElementById('tab-signup').style.display = tab === 'signup' ? '' : 'none'
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0) === (tab==='login')))
+}
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim()
+  const pass  = document.getElementById('login-pass').value
+  const err   = document.getElementById('login-err')
+  err.style.display = 'none'
+  try {
+    const data = await api.auth.login(email, pass)
+    setSession(data.session)
+    currentUser = await api.user.me()
+    hideModal()
+    populateUser()
+    loadUsage()
+    loadVoices()
+    loadFiles()
+  } catch(e) { err.textContent = e.message; err.style.display = 'block' }
+}
+
+window.doSignup = async () => {
+  const name  = document.getElementById('su-name').value.trim()
+  const email = document.getElementById('su-email').value.trim()
+  const pass  = document.getElementById('su-pass').value
+  const err   = document.getElementById('signup-err')
+  err.style.display = 'none'
+  try {
+    const data = await api.auth.signup(email, pass, name)
+    setSession(data.session)
+    currentUser = await api.user.me()
+    hideModal()
+    populateUser()
+    loadUsage()
+    loadVoices()
+    loadFiles()
+  } catch(e) { err.textContent = e.message; err.style.display = 'block' }
+}
+
+window.doLogout = async () => {
+  await api.auth.logout().catch(()=>{})
+  clearSession()
+  currentUser = null
+  showModal()
+}
+
+function populateUser() {
+  document.getElementById('user-email').textContent = currentUser.email
+  document.getElementById('user-plan').textContent  = currentUser.plan
+  document.getElementById('user-avatar').textContent = (currentUser.name || currentUser.email)[0].toUpperCase()
+  document.getElementById('credits-pill').textContent = `⚡ ${currentUser.credits} credits`
+}
+
+// ── PANELS ───────────────────────────────────────────────────────────────────
+const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', files:'My Files' }
+window.switchPanel = (id, btn) => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.getElementById('panel-'+id).classList.add('active')
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'))
+  if (btn) btn.classList.add('active')
+  else document.querySelector(`[data-panel="${id}"]`)?.classList.add('active')
+  document.getElementById('topbar-title').textContent = titles[id]
+}
+
+// ── USAGE ────────────────────────────────────────────────────────────────────
+async function loadUsage() {
+  try {
+    const u = await api.user.usage()
+    document.getElementById('stat-transcriptions').textContent = u.transcriptions
+    document.getElementById('stat-voiceovers').textContent     = u.voiceovers
+    document.getElementById('stat-images').textContent         = u.images
+  } catch {}
+}
+
+// ── VOICES ───────────────────────────────────────────────────────────────────
+async function loadVoices() {
+  try {
+    voices = await api.tts.voices()
+    const grid = document.getElementById('voices-grid')
+    grid.innerHTML = voices.map(v => `
+      <div class="voice-card" data-id="${v.id}" data-preview="${v.preview_url||''}" onclick="selectVoice('${v.id}','${v.preview_url||''}','${v.name}')">
+        <div class="voice-name">${v.name.split(' - ')[0]}</div>
+        <div class="voice-cat">${v.name.includes(' - ') ? v.name.split(' - ')[1].split(',')[0] : v.category}</div>
+      </div>`).join('')
+  } catch(e) {
+    document.getElementById('voices-grid').innerHTML = '<div style="color:var(--muted);font-size:.8rem">Failed to load voices</div>'
+  }
+}
+
+window.selectVoice = (id, preview, name) => {
+  selectedVoiceId = id
+  selectedVoicePreview = preview
+  document.querySelectorAll('.voice-card').forEach(c => c.classList.toggle('selected', c.dataset.id === id))
+  if (preview) {
+    document.getElementById('voice-preview-audio').src = preview
+    document.getElementById('voice-preview-row').style.display = ''
+  }
+}
+
+window.updateCharCount = () => {
+  const l = document.getElementById('tts-text').value.length
+  document.getElementById('char-count').textContent = `(${l}/5000)`
+}
+
+window.generateVoiceover = async () => {
+  const text = document.getElementById('tts-text').value.trim()
+  if (!text) return setStatus('tts-status','Please enter your script','err')
+  if (!selectedVoiceId) return setStatus('tts-status','Please select a voice','err')
+  const btn = document.getElementById('tts-btn')
+  btn.disabled = true
+  setStatus('tts-status','Generating voiceover...','loading')
+  try {
+    const data = await api.tts.generate({
+      text,
+      voice_id: selectedVoiceId,
+      stability: parseFloat(document.getElementById('stab-range').value),
+      speed:     parseFloat(document.getElementById('speed-range').value),
+    })
+    const res = document.getElementById('tts-result')
+    document.getElementById('tts-audio').src = data.url
+    document.getElementById('tts-dl').href   = data.url
+    res.style.display = ''
+    setStatus('tts-status','Done!','ok')
+    loadUsage()
+  } catch(e) { setStatus('tts-status', e.message, 'err') }
+  finally { btn.disabled = false }
+}
+
+// ── CAPTIONS ─────────────────────────────────────────────────────────────────
+const zone = document.getElementById('upload-zone')
+zone?.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag') })
+zone?.addEventListener('dragleave', () => zone.classList.remove('drag'))
+zone?.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag')
+  const f = e.dataTransfer.files[0]
+  if (f) handleCapFile(f)
+})
+document.getElementById('cap-file-input')?.addEventListener('change', e => {
+  if (e.target.files[0]) handleCapFile(e.target.files[0])
+})
+
+async function handleCapFile(file) {
+  setStatus('cap-status', `Uploading ${file.name}...`, 'loading')
+  try {
+    const fd = new FormData(); fd.append('file', file)
+    const up = await api.upload.file(fd)
+    document.getElementById('cap-url').value = up.url
+    setStatus('cap-status', 'Uploaded — click Transcribe', 'ok')
+    loadFiles()
+  } catch(e) { setStatus('cap-status', e.message, 'err') }
+}
+
+window.startTranscription = async () => {
+  const url = document.getElementById('cap-url').value.trim()
+  if (!url) return setStatus('cap-status','Enter a URL or upload a file','err')
+  const btn = document.getElementById('cap-btn')
+  btn.disabled = true
+  document.getElementById('cap-result').style.display = 'none'
+  setStatus('cap-status','Starting transcription...','loading')
+  try {
+    const data = await api.transcribe.start(url)
+    captionJobId = data.job_id
+    setStatus('cap-status','Processing...','loading')
+    pollTranscription()
+  } catch(e) { setStatus('cap-status', e.message, 'err'); btn.disabled = false }
+}
+
+function pollTranscription() {
+  clearTimeout(captionPollTimer)
+  captionPollTimer = setTimeout(async () => {
+    try {
+      const data = await api.transcribe.poll(captionJobId)
+      if (data.status === 'completed') {
+        document.getElementById('cap-text').value = data.text
+        document.getElementById('cap-srt').value  = data.srt
+        document.getElementById('cap-result').style.display = ''
+        setStatus('cap-status','Transcription complete!','ok')
+        document.getElementById('cap-btn').disabled = false
+        loadUsage()
+      } else if (data.status === 'error') {
+        setStatus('cap-status','Transcription failed','err')
+        document.getElementById('cap-btn').disabled = false
+      } else {
+        setStatus('cap-status','Processing...','loading')
+        pollTranscription()
+      }
+    } catch(e) { setStatus('cap-status', e.message, 'err'); document.getElementById('cap-btn').disabled = false }
+  }, 3000)
+}
+
+window.downloadSRT = () => {
+  const srt  = document.getElementById('cap-srt').value
+  const blob = new Blob([srt], { type:'text/plain' })
+  const a    = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download:'captions.srt' })
+  a.click(); URL.revokeObjectURL(a.href)
+}
+
+// ── IMAGE GEN ─────────────────────────────────────────────────────────────────
+window.generateImage = async () => {
+  const prompt = document.getElementById('img-prompt').value.trim()
+  if (!prompt) return setStatus('img-status','Enter a prompt','err')
+  const ratioMap = {'9:16':'9:16','16:9':'16:9','1:1':'1:1'}
+  const btn = document.getElementById('img-btn')
+  btn.disabled = true
+  setStatus('img-status','Generating...','loading')
+  document.getElementById('img-grid').innerHTML = ''
+  try {
+    const data = await api.generate.image({
+      prompt,
+      aspect_ratio: document.getElementById('img-ratio').value,
+      num_images:   parseInt(document.getElementById('img-count').value),
+    })
+    const grid = document.getElementById('img-grid')
+    grid.innerHTML = data.urls.map(url => `
+      <div class="img-wrap">
+        <img src="${url}" loading="lazy"/>
+        <a href="${url}" download class="img-dl">⬇</a>
+      </div>`).join('')
+    setStatus('img-status','Done!','ok')
+    loadUsage()
+  } catch(e) { setStatus('img-status', e.message, 'err') }
+  finally { btn.disabled = false }
+}
+
+// ── FILES ─────────────────────────────────────────────────────────────────────
+async function loadFiles() {
+  try {
+    const files = await api.upload.list()
+    const list  = document.getElementById('files-list')
+    if (!files.length) { list.innerHTML = '<div style="color:var(--muted);font-size:.82rem">No files yet.</div>'; return }
+    list.innerHTML = files.map(f => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;background:var(--card);margin-bottom:8px">
+        <div style="font-size:1.2rem">${f.mime_type?.startsWith('video') ? '🎥' : f.mime_type?.startsWith('audio') ? '🔊' : '🖼️'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.original_name}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${(f.size/1024/1024).toFixed(1)} MB · ${new Date(f.created_at).toLocaleDateString()}</div>
+        </div>
+        <a href="${f.url}" target="_blank" class="btn btn-ghost btn-sm">Open</a>
+        <button class="btn btn-ghost btn-sm" onclick="delFile('${f.id}',this)">✕</button>
+      </div>`).join('')
+  } catch(e) { document.getElementById('files-list').innerHTML = `<div style="color:var(--muted);">${e.message}</div>` }
+}
+
+window.uploadFile = async (input) => {
+  const file = input.files[0]; if (!file) return
+  const fd = new FormData(); fd.append('file', file)
+  try {
+    await api.upload.file(fd)
+    loadFiles()
+  } catch(e) { alert(e.message) }
+  input.value = ''
+}
+
+window.delFile = async (id, btn) => {
+  btn.disabled = true
+  try { await api.upload.del(id); loadFiles() }
+  catch(e) { alert(e.message); btn.disabled = false }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id)
+  el.style.display = 'flex'
+  el.className = `status ${type === 'ok' ? 'ok' : type === 'err' ? 'err' : ''}`
+  if (type === 'loading') {
+    el.innerHTML = `<div class="spinner"></div> ${msg}`
+  } else {
+    el.textContent = msg
+  }
+}
+
+checkAuth()
+
+// ── VIDEO CLIPPER ─────────────────────────────────────────────────────────────
+let clipDuration = 0
+let clipInPoint  = 0
+let clipOutPoint = 0
+let clipFile     = null
+let ffmpegLoaded = false
+let ffmpegInst   = null
+let dragging     = null
+let dragStartX   = 0
+let dragStartPct = 0
+
+const titles2 = { clipper: 'Video Clipper' }
+Object.assign(titles, titles2)
+
+// Drop zone
+const clipDrop = document.getElementById('clip-drop-zone')
+clipDrop?.addEventListener('dragover',  e => { e.preventDefault(); clipDrop.classList.add('drag') })
+clipDrop?.addEventListener('dragleave', () => clipDrop.classList.remove('drag'))
+clipDrop?.addEventListener('drop', e => { e.preventDefault(); clipDrop.classList.remove('drag'); loadClipFile(e.dataTransfer.files[0]) })
+document.getElementById('clip-file-input')?.addEventListener('change', e => { if (e.target.files[0]) loadClipFile(e.target.files[0]) })
+
+function loadClipFile(file) {
+  if (!file?.type.startsWith('video/')) return
+  clipFile = file
+  const url = URL.createObjectURL(file)
+  const vid  = document.getElementById('clip-preview')
+  vid.src = url
+  vid.onloadedmetadata = () => {
+    clipDuration = vid.duration
+    clipInPoint  = 0
+    clipOutPoint = clipDuration
+    document.getElementById('clip-editor').style.display = ''
+    document.getElementById('clip-drop-zone').style.display = 'none'
+    document.getElementById('clip-output').style.display = 'none'
+    document.getElementById('clip-dur-label').textContent = fmtTime(clipDuration)
+    updateHandles()
+    updateInputs()
+  }
+  vid.addEventListener('timeupdate', () => {
+    const pct = vid.currentTime / clipDuration
+    document.getElementById('clip-playhead').style.left = (pct * 100) + '%'
+  })
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60)
+  return `${m}:${String(Math.floor(s % 60)).padStart(2,'0')}`
+}
+
+function updateHandles() {
+  const inPct  = (clipInPoint  / clipDuration) * 100
+  const outPct = (clipOutPoint / clipDuration) * 100
+  const sel    = document.getElementById('clip-selection')
+  document.getElementById('handle-in').style.left  = inPct  + '%'
+  document.getElementById('handle-out').style.left = outPct + '%'
+  sel.style.left  = inPct  + '%'
+  sel.style.width = (outPct - inPct) + '%'
+}
+
+function updateInputs() {
+  document.getElementById('clip-in-input').value  = clipInPoint.toFixed(2)
+  document.getElementById('clip-out-input').value = clipOutPoint.toFixed(2)
+  document.getElementById('clip-len-label').value = (clipOutPoint - clipInPoint).toFixed(2) + 's'
+}
+
+// Handle dragging
+;['handle-in','handle-out'].forEach(id => {
+  document.getElementById(id)?.addEventListener('mousedown', e => {
+    e.preventDefault()
+    dragging = id
+    dragStartX = e.clientX
+    dragStartPct = id === 'handle-in'
+      ? clipInPoint / clipDuration
+      : clipOutPoint / clipDuration
+  })
+})
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) return
+  const track = document.getElementById('clip-track')
+  const rect  = track.getBoundingClientRect()
+  const pct   = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  if (dragging === 'handle-in') {
+    clipInPoint = Math.min(pct * clipDuration, clipOutPoint - 0.1)
+  } else {
+    clipOutPoint = Math.max(pct * clipDuration, clipInPoint + 0.1)
+  }
+  updateHandles()
+  updateInputs()
+})
+
+document.addEventListener('mouseup', () => { dragging = null })
+
+// Click on track to seek
+document.getElementById('clip-track')?.addEventListener('click', e => {
+  if (dragging) return
+  const rect = document.getElementById('clip-track').getBoundingClientRect()
+  const pct  = (e.clientX - rect.left) / rect.width
+  const vid  = document.getElementById('clip-preview')
+  vid.currentTime = pct * clipDuration
+})
+
+// Manual input
+document.getElementById('clip-in-input')?.addEventListener('change', e => {
+  clipInPoint = Math.max(0, Math.min(parseFloat(e.target.value)||0, clipOutPoint - 0.1))
+  updateHandles(); updateInputs()
+})
+document.getElementById('clip-out-input')?.addEventListener('change', e => {
+  clipOutPoint = Math.min(clipDuration, Math.max(parseFloat(e.target.value)||0, clipInPoint + 0.1))
+  updateHandles(); updateInputs()
+})
+
+window.clipPreviewRange = () => {
+  const vid = document.getElementById('clip-preview')
+  vid.currentTime = clipInPoint
+  vid.play()
+  const stop = () => { if (vid.currentTime >= clipOutPoint) { vid.pause(); vid.removeEventListener('timeupdate', stop) } }
+  vid.addEventListener('timeupdate', stop)
+}
+
+window.exportClip = async () => {
+  if (!clipFile) return
+  const btn = document.getElementById('clip-export-btn')
+  btn.disabled = true
+  document.getElementById('clip-output').style.display = 'none'
+  setStatus('clip-status','','loading')
+
+  try {
+    // Lazy-load ffmpeg.wasm
+    if (!ffmpegLoaded) {
+      document.getElementById('ffmpeg-loading').style.display = ''
+      setStatus('clip-status','Loading processor...','loading')
+      const { createFFmpeg, fetchFile } = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js')
+      ffmpegInst = createFFmpeg({ log: false })
+      await ffmpegInst.load()
+      ffmpegLoaded = true
+      document.getElementById('ffmpeg-loading').style.display = 'none'
+    }
+
+    setStatus('clip-status','Exporting clip...','loading')
+    const { fetchFile } = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js')
+    const ffmpeg = ffmpegInst
+
+    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(clipFile))
+    await ffmpeg.run(
+      '-i', 'input.mp4',
+      '-ss', clipInPoint.toFixed(3),
+      '-to', clipOutPoint.toFixed(3),
+      '-c', 'copy',
+      'output.mp4'
+    )
+    const data = ffmpeg.FS('readFile', 'output.mp4')
+    ffmpeg.FS('unlink', 'input.mp4')
+    ffmpeg.FS('unlink', 'output.mp4')
+
+    const blob = new Blob([data.buffer], { type: 'video/mp4' })
+    const url  = URL.createObjectURL(blob)
+    document.getElementById('clip-output-video').src = url
+    document.getElementById('clip-dl').href = url
+    document.getElementById('clip-dl').download = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}.mp4`
+    document.getElementById('clip-output').style.display = ''
+    setStatus('clip-status','Done!','ok')
+  } catch(e) {
+    console.error(e)
+    setStatus('clip-status', 'Export failed: ' + e.message, 'err')
+  }
+  btn.disabled = false
+}
+</script>
+</body>
+</html>
