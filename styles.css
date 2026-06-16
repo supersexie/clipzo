@@ -872,7 +872,7 @@ body {
 }
 .showcase-video-strip {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 10px;
 }
 .showcase-video-item {
