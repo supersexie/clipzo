@@ -900,6 +900,15 @@ body {
   .showcase-video-strip { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ===================== Brand name font ===================== */
+.brand {
+  font-family: 'Press Start 2P', monospace;
+  font-size: .65em;
+  letter-spacing: .03em;
+  vertical-align: baseline;
+  line-height: 1;
+}
+
 /* ===================== Reveal animations ===================== */
 .reveal {
   opacity: 0;
