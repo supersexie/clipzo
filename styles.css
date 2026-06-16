@@ -1,15 +1,15 @@
 /* ===================== Base ===================== */
 :root {
-  --accent1: #8FBF00;
-  --accent2: #C5F135;
-  --accent3: #E4FF7A;
+  --accent1: #C44D00;
+  --accent2: #F26207;
+  --accent3: #FF8C42;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
   background-color: #111111;
-  background-image: radial-gradient(ellipse 60% 35% at 50% 0%, rgba(197,241,53,0.06), transparent 55%);
+  background-image: radial-gradient(ellipse 60% 35% at 50% 0%, rgba(242,98,7,0.06), transparent 55%);
 }
 
 /* ===================== Promo strip ===================== */
@@ -223,7 +223,7 @@ body {
 .tl-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #8FBF00, #C5F135);
+  background: linear-gradient(90deg, #C44D00, #F26207);
 }
 
 /* ----- Hero floating badges ----- */
@@ -237,7 +237,7 @@ body {
   padding: .4rem .85rem;
   border-radius: 9999px;
   background: rgba(30,30,30,0.95);
-  border: 1px solid rgba(197,241,53,0.25);
+  border: 1px solid rgba(242,98,7,0.25);
   color: #fff;
   z-index: 2;
   backdrop-filter: blur(8px);
@@ -509,7 +509,7 @@ body {
   padding: 1rem;
   transition: transform .2s ease, border-color .2s ease;
 }
-.format-card:hover { transform: translateY(-4px); border-color: rgba(197,241,53,0.25); }
+.format-card:hover { transform: translateY(-4px); border-color: rgba(242,98,7,0.25); }
 .format-card.portrait { width: 170px; height: 300px; }
 .format-card.landscape { width: 300px; height: 188px; align-self: center; }
 .format-card-img {
@@ -539,9 +539,9 @@ body {
   backdrop-filter: blur(6px);
 }
 
-.gradient-1 { background: linear-gradient(135deg, #1A2200, #2D3F00); }
-.gradient-2 { background: linear-gradient(135deg, #0F1A00, #223300); }
-.gradient-3 { background: linear-gradient(135deg, #1F2A00, #3A4D00); }
+.gradient-1 { background: linear-gradient(135deg, #2A1200, #4A2200); }
+.gradient-2 { background: linear-gradient(135deg, #1A0A00, #381800); }
+.gradient-3 { background: linear-gradient(135deg, #2D1500, #4F2500); }
 
 /* ===================== Testimonials ===================== */
 .testimonial-card {
@@ -573,7 +573,7 @@ body {
 }
 .compare-before { background: #1C1C1C; }
 .compare-after {
-  background: linear-gradient(160deg, rgba(143,191,0,0.10), rgba(197,241,53,0.06));
+  background: linear-gradient(160deg, rgba(143,191,0,0.10), rgba(242,98,7,0.06));
   border-color: rgba(197,241,53,0.2);
 }
 .compare-title {
@@ -593,7 +593,7 @@ body {
   font-size: .75rem; font-weight: 800;
 }
 .icon-x { background: rgba(239,68,68,0.12); color: #f87171; }
-.icon-check { background: rgba(197,241,53,0.12); color: var(--accent2); }
+.icon-check { background: rgba(242,98,7,0.12); color: var(--accent2); }
 
 /* ===================== Pricing ===================== */
 .pricing-toggle {
@@ -634,7 +634,7 @@ body {
 }
 .price-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); }
 .price-card-featured {
-  border-color: rgba(197,241,53,0.3);
+  border-color: rgba(242,98,7,0.3);
   background: linear-gradient(160deg, rgba(143,191,0,0.10), rgba(197,241,53,0.05));
 }
 @media (min-width: 1024px) {
@@ -768,7 +768,7 @@ body {
   color: #fff;
   transition: all .2s ease;
 }
-.discord-link:hover { border-color: rgba(197,241,53,0.3); background: rgba(197,241,53,0.06); }
+.discord-link:hover { border-color: rgba(242,98,7,0.3); background: rgba(242,98,7,0.06); }
 
 /* ===================== Hero video ===================== */
 .hero-video-wrap {
@@ -831,8 +831,8 @@ body {
   font-size: .78rem;
   font-weight: 800;
   color: var(--accent2);
-  background: rgba(197,241,53,0.12);
-  border: 1px solid rgba(197,241,53,0.3);
+  background: rgba(242,98,7,0.12);
+  border: 1px solid rgba(242,98,7,0.3);
   border-radius: 20px;
   padding: 4px 12px;
   letter-spacing: .03em;
@@ -863,7 +863,7 @@ body {
   aspect-ratio: 3/4;
   transition: transform .2s ease, border-color .2s ease;
 }
-.showcase-portrait:hover { transform: translateY(-4px); border-color: rgba(197,241,53,0.3); }
+.showcase-portrait:hover { transform: translateY(-4px); border-color: rgba(242,98,7,0.3); }
 .showcase-portrait img {
   width: 100%;
   height: 100%;
@@ -883,7 +883,7 @@ body {
   aspect-ratio: 9/16;
   transition: transform .2s ease, border-color .2s ease;
 }
-.showcase-video-item:hover { transform: translateY(-4px); border-color: rgba(197,241,53,0.3); }
+.showcase-video-item:hover { transform: translateY(-4px); border-color: rgba(242,98,7,0.3); }
 .showcase-video-item video {
   width: 100%;
   height: 100%;
