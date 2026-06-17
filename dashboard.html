@@ -700,6 +700,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                   <span>Blurred</span>
                 </button>
               </div>
+              <div id="crop-section" style="display:none">
+              <h4 style="margin-top:16px">Clip Crop</h4>
+              <p style="font-size:.72rem;color:var(--muted);margin:-4px 0 12px">How the center video is cropped inside the 9:16 frame.</p>
+              <div class="frame-grid">
+                <button class="frame-btn active" data-crop="fit" onclick="edSetCrop('fit')">
+                  <div class="frame-ico"><div class="mid" style="border-radius:3px;width:80%;height:45%"></div></div>
+                  <span>Fit</span>
+                </button>
+                <button class="frame-btn" data-crop="16:9" onclick="edSetCrop('16:9')">
+                  <div class="frame-ico"><div class="mid" style="border-radius:3px;width:80%;height:45%"></div></div>
+                  <span>16:9</span>
+                </button>
+                <button class="frame-btn" data-crop="4:3" onclick="edSetCrop('4:3')">
+                  <div class="frame-ico"><div class="mid" style="border-radius:3px;width:70%;height:52%"></div></div>
+                  <span>4:3</span>
+                </button>
+                <button class="frame-btn" data-crop="1:1" onclick="edSetCrop('1:1')">
+                  <div class="frame-ico"><div class="mid" style="border-radius:3px;width:55%;height:55%"></div></div>
+                  <span>1:1</span>
+                </button>
+                <button class="frame-btn" data-crop="3:4" onclick="edSetCrop('3:4')">
+                  <div class="frame-ico"><div class="mid" style="border-radius:3px;width:48%;height:64%"></div></div>
+                  <span>3:4</span>
+                </button>
+              </div>
+              </div>
               <p style="font-size:.72rem;color:var(--muted);margin-top:8px">Tip: after choosing a frame, click <b>Text</b> to add your caption in the top area.</p>
             </div>
           </div>
@@ -1374,7 +1400,7 @@ let edSel = null     // {type:'clip'|'text'|'audio'|'frame', id}
 let edPlaying = false
 let edRaf = null
 let edAudioEl = null
-let edFrame = { mode: 'none' }   // 'none'|'white'|'black'|'blur'
+let edFrame = { mode: 'none', crop: 'fit' }   // mode: 'none'|'white'|'black'|'blur'  crop: 'fit'|'16:9'|'4:3'|'1:1'|'3:4'
 
 window.edAddMedia = () => document.getElementById('ed-media-in').click()
 window.edAddMusic = () => document.getElementById('ed-music-in').click()
@@ -1462,12 +1488,27 @@ function edDrawCanvas() {
       ctx.fillStyle = edFrame.mode === 'white' ? '#ffffff' : '#000000'
       ctx.fillRect(0, 0, w, h)
     }
-    // foreground video, scaled to width, vertically centered
+    // foreground video — crop to selected ratio, then fit inside the 9:16 canvas
     if (vw && vh) {
-      const dw = w, dh = w * vh / vw
-      const dy = (h - dh) / 2
+      let sx = 0, sy = 0, sw = vw, sh = vh
+      const crop = edFrame.crop
+      if (crop !== 'fit') {
+        const [cw, ch] = crop.split(':').map(Number)
+        const targetAR = cw / ch
+        const srcAR = vw / vh
+        if (srcAR > targetAR) {
+          sw = Math.round(vh * targetAR); sx = Math.round((vw - sw) / 2)
+        } else {
+          sh = Math.round(vw / targetAR); sy = Math.round((vh - sh) / 2)
+        }
+      }
+      const cropAR = sw / sh
+      let dw, dh
+      if (cropAR > w / h) { dw = w; dh = w / cropAR }
+      else { dh = h; dw = h * cropAR }
+      const dx = (w - dw) / 2, dy = (h - dh) / 2
       ctx.filter = `brightness(${1 + edFilters.br}) contrast(${1 + edFilters.ct}) saturate(${edFilters.sat})`
-      ctx.drawImage(vid, 0, dy, dw, dh)
+      ctx.drawImage(vid, sx, sy, sw, sh, dx, dy, dw, dh)
       ctx.filter = 'none'
     }
   } else {
@@ -1668,17 +1709,26 @@ function edShowProps(type) {
 window.edOpenFrame = () => {
   edSel = null
   edShowProps('frame')
-  document.querySelectorAll('.frame-btn').forEach(b => b.classList.toggle('active', b.dataset.fr === edFrame.mode))
+  document.querySelectorAll('.frame-btn[data-fr]').forEach(b => b.classList.toggle('active', b.dataset.fr === edFrame.mode))
+  document.querySelectorAll('.frame-btn[data-crop]').forEach(b => b.classList.toggle('active', b.dataset.crop === edFrame.crop))
+  document.getElementById('crop-section').style.display = edFrame.mode !== 'none' ? '' : 'none'
   edRenderTL()
 }
 
 window.edSetFrame = (mode) => {
   edFrame.mode = mode
-  document.querySelectorAll('.frame-btn').forEach(b => b.classList.toggle('active', b.dataset.fr === mode))
+  document.querySelectorAll('.frame-btn[data-fr]').forEach(b => b.classList.toggle('active', b.dataset.fr === mode))
+  document.getElementById('crop-section').style.display = mode !== 'none' ? '' : 'none'
   const stage = document.getElementById('ed-stage')
   stage.classList.toggle('framed', mode !== 'none')
   edResizeFrameCanvas()
   edSeekTo(edCurTime)
+  edDrawCanvas()
+}
+
+window.edSetCrop = (crop) => {
+  edFrame.crop = crop
+  document.querySelectorAll('.frame-btn[data-crop]').forEach(b => b.classList.toggle('active', b.dataset.crop === crop))
   edDrawCanvas()
 }
 
@@ -1852,12 +1902,17 @@ window.edExport = async () => {
     if (framed) {
       setStatus('ed-export-status', 'Applying frame...', 'loading')
       const SF = 1080 / 640
+      const cropFilter = edFrame.crop !== 'fit'
+        ? (() => { const [cw,ch] = edFrame.crop.split(':').map(Number); const ar = cw/ch; return `crop=if(gt(a\\,${ar})\\,ih*${ar}\\,iw):if(gt(a\\,${ar})\\,ih\\,iw/${ar})` })()
+        : null
       let fc
       if (edFrame.mode === 'blur') {
-        fc = `[0:v]split=2[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=18:2[bg];[b]scale=1080:1920:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2[v]`
+        const src = cropFilter ? `[0:v]${cropFilter}[cr];[cr]` : '[0:v]'
+        fc = `${src}split=2[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=18:2[bg];[b]scale=1080:1920:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2[v]`
       } else {
         const col = edFrame.mode === 'white' ? 'white' : 'black'
-        fc = `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=${col}[v]`
+        const pre = cropFilter ? `${cropFilter},` : ''
+        fc = `[0:v]${pre}scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=${col}[v]`
       }
       const portraitDt = edTexts.map(t => {
         const esc = t.text.replace(/[\\':]/g, c => '\\' + c)
