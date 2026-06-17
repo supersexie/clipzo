@@ -567,6 +567,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               </button>
             </div>
           </div>
+
+          <!-- Viral Moments (URL mode only) -->
+          <div id="clip-viral-section" style="display:none;margin-top:20px;padding:20px;background:var(--card);border-radius:12px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <h4 style="margin:0;font-size:.95rem">Find Viral Moments</h4>
+              <button class="btn btn-primary btn-sm" id="clip-viral-btn" onclick="clipFindViral()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Find Viral Moments
+              </button>
+            </div>
+            <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">AI analyzes the video's speech and finds the most engaging/viral-worthy segments. Choose how many clips you want.</p>
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+              <label style="font-size:.78rem;white-space:nowrap">Number of clips</label>
+              <input type="range" id="clip-viral-count" min="1" max="10" value="5" style="flex:1" oninput="document.getElementById('clip-viral-count-val').textContent=this.value"/>
+              <span id="clip-viral-count-val" style="font-weight:600;font-size:.9rem;min-width:20px;text-align:center">5</span>
+            </div>
+            <div class="status" id="clip-viral-status" style="display:none;margin-bottom:10px"></div>
+            <div id="clip-viral-results" style="display:none">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Viral Moments — ranked by AI</div>
+                <button class="btn btn-primary btn-sm" id="clip-viral-dl-all" onclick="clipViralDownloadAll()">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download All
+                </button>
+              </div>
+              <div id="clip-viral-list"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1211,6 +1239,9 @@ window.loadClipFromUrl = async () => {
     document.getElementById('clip-editor').style.display = ''
     document.getElementById('clip-loader').style.display = 'none'
     document.getElementById('clip-output').style.display = 'none'
+    document.getElementById('clip-viral-section').style.display = ''
+    document.getElementById('clip-viral-results').style.display = 'none'
+    document.getElementById('clip-viral-status').style.display = 'none'
     document.getElementById('clip-dur-label').textContent = fmtTime(clipDuration)
     document.getElementById('clip-url-status').style.display = 'none'
     updateHandles()
@@ -1230,6 +1261,7 @@ function loadClipFile(file) {
   document.getElementById('clip-thumb').style.display = 'none'
   document.getElementById('clip-url-note').style.display = 'none'
   document.getElementById('clip-preview-btn').style.display = ''
+  document.getElementById('clip-viral-section').style.display = 'none'
   const vid  = document.getElementById('clip-preview')
   vid.style.display = ''
   const url = URL.createObjectURL(file)
@@ -2289,6 +2321,143 @@ window.openClipInEditor = async (frameMode) => {
   } catch (e) {
     console.error('openClipInEditor:', e)
   }
+}
+
+// ── VIRAL MOMENTS (Video Clipper) ────────────────────────────────────────────
+let cvJobId = null
+let cvPollTimer = null
+let cvClips = []
+
+window.clipFindViral = async () => {
+  if (!clipSourceUrl) return
+  const btn = document.getElementById('clip-viral-btn')
+  btn.disabled = true
+  cvClips = []
+  document.getElementById('clip-viral-results').style.display = 'none'
+  setStatus('clip-viral-status', 'Downloading & analyzing video — this may take a minute...', 'loading')
+  try {
+    const { jobId } = await api.download.analyze(clipSourceUrl)
+    cvJobId = jobId
+    cvPollViral()
+  } catch (e) {
+    setStatus('clip-viral-status', e.message, 'err')
+    btn.disabled = false
+  }
+}
+
+function cvPollViral() {
+  clearTimeout(cvPollTimer)
+  const count = parseInt(document.getElementById('clip-viral-count').value) || 5
+  cvPollTimer = setTimeout(async () => {
+    try {
+      const result = await api.autoclip.poll(cvJobId, count)
+      if (result.status === 'completed') {
+        document.getElementById('clip-viral-btn').disabled = false
+        cvRenderResults(result)
+        document.getElementById('clip-viral-status').style.display = 'none'
+      } else if (result.status === 'error') {
+        document.getElementById('clip-viral-btn').disabled = false
+        setStatus('clip-viral-status', result.error || 'Analysis failed', 'err')
+      } else {
+        setStatus('clip-viral-status', `Analyzing for viral moments... (${result.status})`, 'loading')
+        cvPollViral()
+      }
+    } catch (e) {
+      document.getElementById('clip-viral-btn').disabled = false
+      setStatus('clip-viral-status', e.message, 'err')
+    }
+  }, 3000)
+}
+
+function cvRenderResults(result) {
+  cvClips = result.clips || []
+  document.getElementById('clip-viral-results').style.display = ''
+  document.getElementById('clip-viral-dl-all').style.display = cvClips.length > 1 ? '' : 'none'
+  const list = document.getElementById('clip-viral-list')
+  if (!cvClips.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No viral moments detected. Try a longer video with more speech.</div>'
+    return
+  }
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  list.innerHTML = cvClips.map((clip, i) => {
+    const dur = clip.duration || (clip.end - clip.start)
+    return `<div onclick="cvJumpTo(${clip.start},${clip.end})" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--a2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:26px;height:26px;background:var(--a1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#f0eeff;flex-shrink:0">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;font-weight:500;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${clip.text}"</div>
+        <div style="font-size:.72rem;color:var(--muted)">${fmt(clip.start)} – ${fmt(clip.end)} <span style="margin-left:4px;color:var(--a2)">(${dur.toFixed(1)}s)</span></div>
+      </div>
+      <div style="background:rgba(168,85,247,.15);border:1px solid var(--a1);border-radius:20px;padding:3px 10px;font-size:.7rem;color:var(--a2);flex-shrink:0">${clip.rank}%</div>
+      <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();cvDownloadOne(${i})" title="Download this clip">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();cvEditClip(${clip.start},${clip.end})">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>
+        Edit
+      </button>
+    </div>`
+  }).join('')
+}
+
+window.cvJumpTo = (start, end) => {
+  clipInPoint = start
+  clipOutPoint = end
+  updateHandles()
+  updateInputs()
+}
+
+window.cvDownloadOne = async (idx) => {
+  const clip = cvClips[idx]
+  if (!clip || !clipSourceUrl) return
+  setStatus('clip-viral-status', `Downloading clip ${idx + 1}...`, 'loading')
+  try {
+    const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+    const res = await fetch(clipUrl)
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Download failed') }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = `viral_clip_${idx + 1}.mp4`
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    setStatus('clip-viral-status', `Clip ${idx + 1} downloaded!`, 'ok')
+    setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 3000)
+  } catch (e) {
+    setStatus('clip-viral-status', e.message, 'err')
+  }
+}
+
+window.clipViralDownloadAll = async () => {
+  if (!cvClips.length || !clipSourceUrl) return
+  const btn = document.getElementById('clip-viral-dl-all')
+  btn.disabled = true
+  for (let i = 0; i < cvClips.length; i++) {
+    const clip = cvClips[i]
+    setStatus('clip-viral-status', `Downloading clip ${i + 1} of ${cvClips.length}...`, 'loading')
+    try {
+      const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+      const res = await fetch(clipUrl)
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed') }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `viral_clip_${i + 1}.mp4`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setStatus('clip-viral-status', `Clip ${i + 1} failed: ${e.message}`, 'err')
+      await new Promise(r => setTimeout(r, 1500))
+    }
+  }
+  setStatus('clip-viral-status', `All ${cvClips.length} clips downloaded!`, 'ok')
+  setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 5000)
+  btn.disabled = false
+}
+
+window.cvEditClip = (start, end) => {
+  clipInPoint = start
+  clipOutPoint = end
+  updateHandles()
+  updateInputs()
+  document.getElementById('clip-viral-results').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 </script>
 </body>

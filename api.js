@@ -53,6 +53,7 @@ export const api = {
   },
   download: {
     info:      (url) => req('POST', '/api/download/info', { url }),
+    analyze:   (url) => req('POST', '/api/download/analyze', { url }),
     streamUrl: (url) => `${BASE}/api/download/stream?url=${encodeURIComponent(url)}&token=${encodeURIComponent(getToken())}`,
     clipUrl:   (url, start, end) => `${BASE}/api/download/clip?url=${encodeURIComponent(url)}&start=${start}&end=${end}&token=${encodeURIComponent(getToken())}`,
   },
