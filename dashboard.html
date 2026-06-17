@@ -6,7 +6,7 @@
 <title>CLIPZO — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;min-he
 .brand{font-family:'Press Start 2P',monospace;font-size:.6rem;color:var(--ink);letter-spacing:.05em}
 .sidebar-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px}
 .nav-section{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:12px 12px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left}
 .nav-item:hover{background:rgba(168,85,247,0.08);color:var(--ink)}
 .nav-item.active{background:rgba(168,85,247,0.15);color:var(--a2)}
 .nav-item svg{flex-shrink:0;opacity:.7}
@@ -152,6 +152,57 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-handle{position:absolute;top:0;bottom:0;width:10px;background:var(--a2);border-radius:3px;cursor:ew-resize;z-index:2;transform:translateX(-50%)}
 .clip-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:60%;background:rgba(35,23,22,.5);border-radius:1px}
 .clip-playhead{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--a3);pointer-events:none;z-index:3;transform:translateX(-1px)}
+
+/* ── VIDEO EDITOR ────────────────── */
+.editor-wrap{display:flex;flex-direction:column;height:calc(100vh - 60px);overflow:hidden}
+.editor-bar{padding:8px 0;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:0}
+.editor-body{display:flex;flex:1;min-height:0;overflow:hidden}
+.ed-preview-area{flex:1;display:flex;flex-direction:column;background:#0a0a14;align-items:center;justify-content:center;min-width:0;position:relative;overflow:hidden}
+.preview-stage{position:relative;display:inline-flex;max-width:100%}
+.preview-stage video{display:block;max-width:100%;max-height:320px;width:auto;height:auto}
+.preview-stage canvas{position:absolute;top:0;left:0;pointer-events:none;width:100%;height:100%}
+.ed-time-bar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:rgba(0,0,0,.6);width:100%;flex-shrink:0}
+.ed-props{width:216px;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:14px}
+.ed-props h4{font-size:.78rem;font-weight:600;margin-bottom:10px;color:var(--ink)}
+.ed-props>div>label{font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px;margin-top:10px}
+.ed-props>div>input[type=text],.ed-props>div>input[type=number],.ed-props>div>select{width:100%;font-size:.78rem;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--ink);font-family:'Geist',sans-serif;outline:none}
+.ed-props>div>input[type=range]{width:100%;margin-top:2px}
+.ed-props>div>input[type=color]{width:36px;height:28px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;padding:2px;vertical-align:middle}
+/* TIMELINE */
+.ed-timeline{height:184px;flex-shrink:0;background:var(--bg);border-top:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.ed-ruler{height:22px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);position:relative;overflow:hidden;cursor:pointer;user-select:none}
+.ed-tracks{flex:1;overflow:auto;position:relative;display:flex;flex-direction:column}
+.ed-track{display:flex;height:44px;flex-shrink:0;border-bottom:1px solid rgba(168,85,247,.1)}
+.track-lbl{width:66px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;align-items:center;padding:0 8px;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.track-body{flex:1;position:relative;min-width:0;overflow:visible}
+.tl-clip{position:absolute;top:4px;bottom:4px;border-radius:4px;cursor:pointer;display:flex;align-items:center;padding:0 6px;font-size:.62rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none;transition:outline .1s}
+.tl-clip.video{background:linear-gradient(135deg,var(--a1),var(--a2));color:#f0eeff}
+.tl-clip.text-cl{background:rgba(232,121,249,.22);border:1px solid var(--a3);color:var(--a3)}
+.tl-clip.audio-cl{background:rgba(96,165,250,.22);border:1px solid #60a5fa;color:#93c5fd}
+.tl-clip.selected{outline:2px solid #fff;outline-offset:1px}
+.ed-ph{position:absolute;top:0;bottom:0;width:2px;background:var(--a3);pointer-events:none;z-index:20;transform:translateX(-1px)}
+.ed-ph::before{content:'';position:absolute;top:-2px;left:-4px;width:10px;height:10px;background:var(--a3);clip-path:polygon(50% 100%,0 0,100% 0)}
+/* EMPTY */
+.ed-empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+/* TEXT STYLE PICKER */
+.txt-style-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.txt-style-btn{border:2px solid transparent;border-radius:8px;padding:0;cursor:pointer;background:var(--card);overflow:hidden;transition:border-color .15s;display:block}
+.txt-style-btn:hover{border-color:rgba(168,85,247,.5)}
+.txt-style-btn.active{border-color:var(--a2)}
+/* FRAME PICKER */
+.frame-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.frame-btn{border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card);padding:8px 4px 6px;text-align:center;transition:border-color .15s}
+.frame-btn:hover{border-color:rgba(168,85,247,.5)}
+.frame-btn.active{border-color:var(--a2)}
+.frame-ico{width:30px;height:48px;margin:0 auto 5px;border-radius:3px;display:flex;flex-direction:column;overflow:hidden;background:#0d0920}
+.frame-ico .bar{height:11px;width:100%}
+.frame-ico .mid{flex:1;background:linear-gradient(135deg,var(--a1),var(--a2))}
+.frame-btn span{font-size:.66rem;color:var(--muted)}
+.frame-btn.active span{color:var(--a2)}
+/* framed preview: video is the source, canvas is the surface */
+.preview-stage.framed{display:block;text-align:center}
+.preview-stage.framed video{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none;left:-9999px}
+.preview-stage.framed canvas{position:relative;display:inline-block;border-radius:4px;max-height:340px}
 </style>
 </head>
 <body>
@@ -210,6 +261,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
       Video Clipper
     </button>
+    <button class="nav-item" data-panel="editor" onclick="switchPanel('editor',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l4 2-4 2V8z"/></svg>
+      Video Editor
+    </button>
+    <button class="nav-item" data-panel="autoclip" onclick="switchPanel('autoclip',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      AI Auto Clipper
+    </button>
+    <button class="nav-item" data-panel="downloader" onclick="switchPanel('downloader',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Video Downloader
+    </button>
     <button class="nav-item" data-panel="files" onclick="switchPanel('files',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
       My Files
@@ -265,6 +328,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div class="shortcut-icon">✂️</div>
           <div class="shortcut-name">Video Clipper</div>
           <div class="shortcut-desc">Trim clips in-browser</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('editor',null)">
+          <div class="shortcut-icon">🎞️</div>
+          <div class="shortcut-name">Video Editor</div>
+          <div class="shortcut-desc">Multi-track timeline editor</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('autoclip',null)">
+          <div class="shortcut-icon">⚡</div>
+          <div class="shortcut-name">AI Auto Clipper</div>
+          <div class="shortcut-desc">Find best moments with AI</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('downloader',null)">
+          <div class="shortcut-icon">⬇️</div>
+          <div class="shortcut-name">Video Downloader</div>
+          <div class="shortcut-desc">Download from any platform</div>
         </div>
         <div class="shortcut" onclick="switchPanel('files',null)">
           <div class="shortcut-icon">📁</div>
@@ -397,16 +475,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div class="tool-card">
         <h3>Video Clipper</h3>
         <p>Upload a video, set in and out points on the timeline, then export your clip — all in-browser, no upload needed.</p>
-        <div class="upload-zone" id="clip-drop-zone" onclick="document.getElementById('clip-file-input').click()">
-          <div class="uz-icon">✂️</div>
-          <p><strong>Click to load video</strong> or drag &amp; drop</p>
-          <p style="margin-top:4px;font-size:.72rem">MP4, MOV, WebM</p>
+        <div id="clip-loader">
+          <div class="field" style="margin-bottom:14px">
+            <label>Paste a YouTube, TikTok, Instagram, X or Reddit link</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="clip-url" placeholder="https://youtube.com/watch?v=..." style="flex:1" onkeydown="if(event.key==='Enter')loadClipFromUrl()"/>
+              <button class="btn btn-primary" id="clip-url-btn" onclick="loadClipFromUrl()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                Load
+              </button>
+            </div>
+            <div class="status" id="clip-url-status" style="display:none;margin-top:8px"></div>
+          </div>
+          <div style="text-align:center;font-size:.75rem;color:var(--muted);margin-bottom:14px">— or —</div>
+          <div class="upload-zone" id="clip-drop-zone" onclick="document.getElementById('clip-file-input').click()">
+            <div class="uz-icon">✂️</div>
+            <p><strong>Click to load video</strong> or drag &amp; drop</p>
+            <p style="margin-top:4px;font-size:.72rem">MP4, MOV, WebM</p>
+          </div>
         </div>
         <input type="file" id="clip-file-input" accept="video/*" style="display:none"/>
 
         <div id="clip-editor" style="display:none;margin-top:20px">
           <!-- Preview -->
           <video id="clip-preview" controls style="width:100%;border-radius:8px;background:#000;max-height:340px"></video>
+          <img id="clip-thumb" style="display:none;width:100%;border-radius:8px;background:#000;max-height:340px;object-fit:contain"/>
+          <div id="clip-url-note" style="display:none;font-size:.74rem;color:var(--a2);margin-top:8px">⚡ Server-side clip — only the selected range is downloaded from the source. Ideal for long videos.</div>
 
           <!-- Timeline -->
           <div style="margin-top:16px;background:var(--card);border-radius:10px;padding:16px">
@@ -439,7 +533,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
           <!-- Controls -->
           <div style="display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="clipPreviewRange()">▶ Preview clip</button>
+            <button class="btn btn-ghost btn-sm" id="clip-preview-btn" onclick="clipPreviewRange()">▶ Preview clip</button>
             <button class="btn btn-primary" id="clip-export-btn" onclick="exportClip()">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Export clip
@@ -456,8 +550,236 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div id="clip-output" style="display:none;margin-top:16px" class="result-box">
             <div class="result-label">Exported clip</div>
             <video id="clip-output-video" controls style="width:100%;border-radius:6px;margin-top:8px"></video>
-            <a id="clip-dl" class="btn btn-ghost btn-sm" style="margin-top:10px;display:inline-flex" download="clip.mp4">⬇ Download clip</a>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <a id="clip-dl" class="btn btn-ghost btn-sm" style="display:inline-flex" download="clip.mp4">⬇ Download clip</a>
+              <button class="btn btn-primary btn-sm" onclick="openClipInEditor()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l4 2-4 2V8z"/></svg>
+                Edit in Editor
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO EDITOR -->
+    <div class="panel" id="panel-editor">
+      <div class="editor-wrap">
+        <!-- TOOLBAR -->
+        <div class="editor-bar">
+          <button class="btn btn-ghost btn-sm" onclick="edAddMedia()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M7 8l4 2-4 2V8z"/></svg>
+            Add Clip
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="edAddText()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            Text
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="edAddMusic()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            Music
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="edOpenFrame()" title="Vertical frame / background">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="7" y1="7" x2="17" y2="7"/><line x1="7" y1="17" x2="17" y2="17"/></svg>
+            Format
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="edSplit()" title="Split at playhead">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+            Split
+          </button>
+          <button class="btn btn-ghost btn-sm" id="ed-del-btn" onclick="edDeleteSelected()" style="display:none;color:#eb5757;border-color:rgba(235,87,87,.3)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            Delete
+          </button>
+          <div style="flex:1"></div>
+          <div class="status" id="ed-export-status" style="display:none;margin-right:8px"></div>
+          <button class="btn btn-primary btn-sm" id="ed-export-btn" onclick="edExport()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Video
+          </button>
+        </div>
+
+        <!-- BODY: preview + props -->
+        <div class="editor-body">
+          <!-- PREVIEW -->
+          <div class="ed-preview-area">
+            <div class="ed-empty-state" id="ed-empty" onclick="edAddMedia()">
+              <div class="upload-zone" style="max-width:340px;pointer-events:none">
+                <div class="uz-icon">🎞️</div>
+                <p><strong>Click to add your first clip</strong></p>
+                <p style="font-size:.72rem;margin-top:4px">MP4, MOV — drag multiple clips to sequence them</p>
+              </div>
+            </div>
+            <div class="preview-stage" id="ed-stage" style="display:none">
+              <video id="ed-vid" playsinline></video>
+              <canvas id="ed-canvas"></canvas>
+            </div>
+            <div class="ed-time-bar" id="ed-timebar" style="display:none">
+              <button id="ed-play-btn" onclick="edTogglePlay()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1.1rem;line-height:1;width:24px">▶</button>
+              <span id="ed-time-lbl" style="font-size:.72rem;color:#aaa;min-width:88px;font-variant-numeric:tabular-nums">0:00 / 0:00</span>
+              <input type="range" id="ed-scrubber" min="0" max="100" value="0" step="0.01" style="flex:1" oninput="edScrub(this.value)"/>
+            </div>
+          </div>
+
+          <!-- PROPERTIES -->
+          <div class="ed-props">
+            <div id="ep-default" style="color:var(--muted);font-size:.78rem;line-height:1.7;padding-top:4px">
+              Select a clip, text, or audio element to edit its properties.
+            </div>
+            <!-- Clip props -->
+            <div id="ep-clip" style="display:none">
+              <h4>Video Clip</h4>
+              <label>Brightness</label>
+              <input type="range" id="ep-br" min="-1" max="1" step="0.05" value="0" oninput="edApplyFilter()"/>
+              <label>Contrast</label>
+              <input type="range" id="ep-ct" min="-1" max="1" step="0.05" value="0" oninput="edApplyFilter()"/>
+              <label>Saturation</label>
+              <input type="range" id="ep-sat" min="0" max="3" step="0.05" value="1" oninput="edApplyFilter()"/>
+              <label>Speed</label>
+              <select id="ep-speed">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1× (normal)</option>
+                <option value="1.5">1.5×</option>
+                <option value="2">2×</option>
+              </select>
+            </div>
+            <!-- Text props -->
+            <div id="ep-text" style="display:none">
+              <h4>Text Style</h4>
+              <div class="txt-style-grid" id="ep-style-grid"></div>
+              <label>Text</label>
+              <input type="text" id="ep-txt" oninput="edUpdateText()"/>
+              <label>Size</label>
+              <input type="range" id="ep-tsz" min="12" max="140" value="48" oninput="edUpdateText()"/>
+              <label>Color <input type="color" id="ep-tcol" value="#ffffff" onchange="edUpdateText()" style="margin-left:6px;vertical-align:middle"/></label>
+              <label>Stroke <input type="color" id="ep-scol" value="#000000" onchange="edUpdateText()" style="margin-left:6px;vertical-align:middle"/> <span style="font-size:.65rem;color:var(--muted)">width</span> <input type="range" id="ep-sw" min="0" max="20" value="6" style="width:60px;vertical-align:middle" oninput="edUpdateText()"/></label>
+              <label>Start (s)</label>
+              <input type="number" id="ep-ts" min="0" step="0.1" oninput="edUpdateText()"/>
+              <label>End (s)</label>
+              <input type="number" id="ep-te" min="0" step="0.1" oninput="edUpdateText()"/>
+              <label>X position</label>
+              <input type="range" id="ep-tx" min="0" max="100" value="50" oninput="edUpdateText()"/>
+              <label>Y position</label>
+              <input type="range" id="ep-ty" min="0" max="100" value="80" oninput="edUpdateText()"/>
+            </div>
+            <!-- Audio props -->
+            <div id="ep-audio" style="display:none">
+              <h4>Background Music</h4>
+              <label>Volume</label>
+              <input type="range" id="ep-vol" min="0" max="1" step="0.05" value="0.5" oninput="edAudioVol()"/>
+              <p style="font-size:.72rem;color:var(--muted);margin-top:12px">Music plays throughout the full video on export.</p>
+            </div>
+            <!-- Frame / format props -->
+            <div id="ep-frame" style="display:none">
+              <h4>Vertical Frame (9:16)</h4>
+              <p style="font-size:.72rem;color:var(--muted);margin:-4px 0 12px">Reframe to portrait with a top &amp; bottom background — perfect for adding a caption above the video.</p>
+              <div class="frame-grid">
+                <button class="frame-btn" data-fr="none" onclick="edSetFrame('none')">
+                  <div class="frame-ico" style="background:none"><div class="mid" style="border-radius:3px"></div></div>
+                  <span>Original</span>
+                </button>
+                <button class="frame-btn" data-fr="white" onclick="edSetFrame('white')">
+                  <div class="frame-ico"><div class="bar" style="background:#fff"></div><div class="mid"></div><div class="bar" style="background:#fff"></div></div>
+                  <span>White</span>
+                </button>
+                <button class="frame-btn" data-fr="black" onclick="edSetFrame('black')">
+                  <div class="frame-ico"><div class="bar" style="background:#000"></div><div class="mid"></div><div class="bar" style="background:#000"></div></div>
+                  <span>Black</span>
+                </button>
+                <button class="frame-btn" data-fr="blur" onclick="edSetFrame('blur')">
+                  <div class="frame-ico"><div class="bar" style="background:linear-gradient(135deg,#7c4fd0,#a98ce0);filter:blur(1px)"></div><div class="mid"></div><div class="bar" style="background:linear-gradient(135deg,#7c4fd0,#a98ce0);filter:blur(1px)"></div></div>
+                  <span>Blurred</span>
+                </button>
+              </div>
+              <p style="font-size:.72rem;color:var(--muted);margin-top:8px">Tip: after choosing a frame, click <b>Text</b> to add your caption in the top area.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="ed-timeline">
+          <div class="ed-ruler" id="ed-ruler" onclick="edRulerSeek(event)">
+            <canvas id="ed-ruler-cv"></canvas>
+            <div class="ed-ph" id="ed-ph-r" style="left:66px"></div>
+          </div>
+          <div class="ed-tracks" id="ed-tracks">
+            <div class="ed-ph" id="ed-ph-t" style="left:66px"></div>
+            <div class="ed-track">
+              <div class="track-lbl">Video</div>
+              <div class="track-body" id="tl-vid" onclick="edTrackSeek(event)"></div>
+            </div>
+            <div class="ed-track">
+              <div class="track-lbl">Text</div>
+              <div class="track-body" id="tl-txt" onclick="edTrackSeek(event)"></div>
+            </div>
+            <div class="ed-track">
+              <div class="track-lbl">Audio</div>
+              <div class="track-body" id="tl-aud"></div>
+            </div>
+          </div>
+        </div>
+
+        <input type="file" id="ed-media-in" accept="video/*" multiple style="display:none" onchange="edHandleMedia(this)"/>
+        <input type="file" id="ed-music-in" accept="audio/*" style="display:none" onchange="edHandleMusic(this)"/>
+      </div>
+    </div>
+
+    <!-- AUTO CLIPPER -->
+    <div class="panel" id="panel-autoclip">
+      <div class="tool-card">
+        <h3>AI Auto Clipper</h3>
+        <p>Upload a video and AI finds the most engaging moments, ranked by importance. Click any moment to jump to it in the preview.</p>
+        <div class="field">
+          <label>Video URL (from My Files or any public link)</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="ac-url" placeholder="https://... or upload below" style="flex:1"/>
+            <button class="btn btn-primary" id="ac-analyze-btn" onclick="startAutoClip()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Analyze
+            </button>
+          </div>
+        </div>
+        <div class="upload-zone" id="ac-drop" onclick="document.getElementById('ac-file-input').click()">
+          <div class="uz-icon">🎬</div>
+          <p><strong>Click to upload</strong> or drag &amp; drop</p>
+          <p style="margin-top:4px;font-size:.72rem">MP4, MOV — max 500MB</p>
+        </div>
+        <input type="file" id="ac-file-input" accept="video/*" style="display:none"/>
+        <div class="status" id="ac-status" style="display:none;margin-top:12px"></div>
+        <div id="ac-results" style="display:none;margin-top:20px">
+          <video id="ac-preview" controls style="width:100%;border-radius:8px;background:#000;margin-bottom:16px;max-height:320px"></video>
+          <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Best Moments — ranked by AI</div>
+          <div id="ac-clips-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO DOWNLOADER -->
+    <div class="panel" id="panel-downloader">
+      <div class="tool-card">
+        <h3>Video Downloader</h3>
+        <p>Download videos from YouTube, TikTok, Instagram, Twitter, Reddit and more. Paste any public video URL.</p>
+        <div class="field">
+          <label>Video URL</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="dl-url" placeholder="https://youtube.com/watch?v=..." style="flex:1" onkeydown="if(event.key==='Enter')fetchVideoInfo()"/>
+            <button class="btn btn-primary" id="dl-fetch-btn" onclick="fetchVideoInfo()">Fetch</button>
+          </div>
+        </div>
+        <div class="status" id="dl-status" style="display:none;margin-top:10px"></div>
+        <div id="dl-result" style="display:none;margin-top:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:16px">
+            <img id="dl-thumb" style="width:120px;height:68px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface)"/>
+            <div style="flex:1;min-width:0">
+              <div id="dl-title" style="font-weight:600;font-size:.9rem;margin-bottom:4px;line-height:1.3"></div>
+              <div id="dl-uploader" style="font-size:.75rem;color:var(--muted);margin-bottom:4px"></div>
+              <div id="dl-duration" style="font-size:.75rem;color:var(--a2)"></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="dl-download-btn" onclick="downloadVideo()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download MP4
+          </button>
         </div>
       </div>
     </div>
@@ -570,7 +892,7 @@ function populateUser() {
 }
 
 // ── PANELS ───────────────────────────────────────────────────────────────────
-const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', files:'My Files' }
+const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', autoclip:'AI Auto Clipper', downloader:'Video Downloader', files:'My Files' }
 window.switchPanel = (id, btn) => {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.getElementById('panel-'+id).classList.add('active')
@@ -794,6 +1116,8 @@ let clipDuration = 0
 let clipInPoint  = 0
 let clipOutPoint = 0
 let clipFile     = null
+let clipMode     = 'file'   // 'file' | 'url'
+let clipSourceUrl = null
 let ffmpegLoaded = false
 let ffmpegInst   = null
 let dragging     = null
@@ -810,18 +1134,63 @@ clipDrop?.addEventListener('dragleave', () => clipDrop.classList.remove('drag'))
 clipDrop?.addEventListener('drop', e => { e.preventDefault(); clipDrop.classList.remove('drag'); loadClipFile(e.dataTransfer.files[0]) })
 document.getElementById('clip-file-input')?.addEventListener('change', e => { if (e.target.files[0]) loadClipFile(e.target.files[0]) })
 
+window.loadClipFromUrl = async () => {
+  const url = document.getElementById('clip-url').value.trim()
+  if (!url) return setStatus('clip-url-status', 'Paste a video link first', 'err')
+  const btn = document.getElementById('clip-url-btn')
+  btn.disabled = true
+  setStatus('clip-url-status', 'Reading video info…', 'loading')
+  try {
+    const info = await api.download.info(url)
+    if (!info?.duration) throw new Error('Could not read this video. Make sure it is public.')
+    // Set up server-side clip mode — no full download
+    clipMode = 'url'
+    clipSourceUrl = url
+    clipFile = null
+    clipDuration = info.duration
+    clipInPoint  = 0
+    clipOutPoint = Math.min(info.duration, 60)
+    // UI: show thumbnail instead of video, show note, hide source-preview button
+    const vid = document.getElementById('clip-preview')
+    vid.pause(); vid.removeAttribute('src'); vid.load()
+    vid.style.display = 'none'
+    const thumb = document.getElementById('clip-thumb')
+    thumb.src = info.thumbnail || ''
+    thumb.style.display = info.thumbnail ? '' : 'none'
+    document.getElementById('clip-url-note').style.display = ''
+    document.getElementById('clip-preview-btn').style.display = 'none'
+    document.getElementById('clip-editor').style.display = ''
+    document.getElementById('clip-loader').style.display = 'none'
+    document.getElementById('clip-output').style.display = 'none'
+    document.getElementById('clip-dur-label').textContent = fmtTime(clipDuration)
+    document.getElementById('clip-url-status').style.display = 'none'
+    updateHandles()
+    updateInputs()
+  } catch (e) {
+    setStatus('clip-url-status', e.message || 'Could not load video', 'err')
+  }
+  btn.disabled = false
+}
+
 function loadClipFile(file) {
   if (!file?.type.startsWith('video/')) return
+  clipMode = 'file'
+  clipSourceUrl = null
   clipFile = file
-  const url = URL.createObjectURL(file)
+  // UI: show video, hide thumbnail/note, show preview button
+  document.getElementById('clip-thumb').style.display = 'none'
+  document.getElementById('clip-url-note').style.display = 'none'
+  document.getElementById('clip-preview-btn').style.display = ''
   const vid  = document.getElementById('clip-preview')
+  vid.style.display = ''
+  const url = URL.createObjectURL(file)
   vid.src = url
   vid.onloadedmetadata = () => {
     clipDuration = vid.duration
     clipInPoint  = 0
     clipOutPoint = clipDuration
     document.getElementById('clip-editor').style.display = ''
-    document.getElementById('clip-drop-zone').style.display = 'none'
+    document.getElementById('clip-loader').style.display = 'none'
     document.getElementById('clip-output').style.display = 'none'
     document.getElementById('clip-dur-label').textContent = fmtTime(clipDuration)
     updateHandles()
@@ -884,7 +1253,7 @@ document.addEventListener('mouseup', () => { dragging = null })
 
 // Click on track to seek
 document.getElementById('clip-track')?.addEventListener('click', e => {
-  if (dragging) return
+  if (dragging || clipMode === 'url') return
   const rect = document.getElementById('clip-track').getBoundingClientRect()
   const pct  = (e.clientX - rect.left) / rect.width
   const vid  = document.getElementById('clip-preview')
@@ -909,9 +1278,819 @@ window.clipPreviewRange = () => {
   vid.addEventListener('timeupdate', stop)
 }
 
+// ── VIDEO EDITOR ─────────────────────────────────────────────────────────────
+const ED_PX = 80
+
+const ED_STYLES = {
+  tiktok:   { label:'TikTok',    font:'Geist',       w:'800', color:'#ffffff', sc:'#000000', sw:7,  glow:0,  glowC:'transparent', bg:'' },
+  viral:    { label:'Viral Red', font:'Anton',        w:'400', color:'#ff1c1c', sc:'#ffffff', sw:9,  glow:0,  glowC:'transparent', bg:'' },
+  youtube:  { label:'YouTube',   font:'Anton',        w:'400', color:'#ffee00', sc:'#000000', sw:7,  glow:0,  glowC:'transparent', bg:'' },
+  bebas:    { label:'Bebas',     font:'Bebas Neue',   w:'400', color:'#ffffff', sc:'#000000', sw:5,  glow:0,  glowC:'transparent', bg:'' },
+  neon:     { label:'Neon',      font:'Geist',        w:'800', color:'#c084fc', sc:'transparent', sw:0, glow:22, glowC:'#a855f7', bg:'' },
+  subtitle: { label:'Subtitle',  font:'Geist',        w:'600', color:'#ffffff', sc:'transparent', sw:0, glow:0,  glowC:'transparent', bg:'rgba(0,0,0,0.72)' },
+  glitch:   { label:'Glitch',    font:'Oswald',       w:'700', color:'#00ffe0', sc:'#ff0055', sw:4,  glow:14, glowC:'#00ffe0', bg:'' },
+  impact:   { label:'Impact',    font:'Black Han Sans',w:'400',color:'#ffffff', sc:'#111111', sw:8,  glow:0,  glowC:'transparent', bg:'' },
+}
+
+function edBuildStyleGrid() {
+  const grid = document.getElementById('ep-style-grid')
+  if (!grid) return
+  grid.innerHTML = Object.entries(ED_STYLES).map(([key]) =>
+    `<button class="txt-style-btn" data-key="${key}" onclick="edApplyStyle('${key}')">
+       <canvas id="sprev-${key}" width="180" height="52" style="width:100%;height:52px;display:block"></canvas>
+     </button>`
+  ).join('')
+  document.fonts.ready.then(() => {
+    Object.entries(ED_STYLES).forEach(([key, s]) => edDrawStylePreview(key, s))
+  })
+}
+
+function edDrawStylePreview(key, s) {
+  const cv = document.getElementById('sprev-' + key)
+  if (!cv) return
+  const ctx = cv.getContext('2d')
+  const W = 180, H = 52
+  ctx.clearRect(0, 0, W, H)
+  ctx.fillStyle = s.bg || '#0d0920'
+  ctx.fillRect(0, 0, W, H)
+  const sz = 22
+  ctx.font = `${s.w} ${sz}px '${s.font}', sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  if (s.bg) {
+    const m = ctx.measureText(s.label)
+    ctx.fillStyle = s.bg
+    ctx.fillRect(W/2 - m.width/2 - 8, H/2 - sz*0.72, m.width + 16, sz*1.44)
+  }
+  ctx.shadowBlur = s.glow > 0 ? s.glow * 0.55 : 0
+  ctx.shadowColor = s.glowC || 'transparent'
+  if (s.sc !== 'transparent' && s.sw > 0) {
+    ctx.lineWidth = s.sw * 0.65
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = s.sc
+    ctx.strokeText(s.label, W/2, H/2)
+  }
+  ctx.fillStyle = s.color
+  ctx.fillText(s.label, W/2, H/2)
+  ctx.shadowBlur = 0
+}
+
+window.edApplyStyle = (key) => {
+  if (!edSel || edSel.type !== 'text') return
+  const t = edTexts.find(x => x.id === edSel.id); if (!t) return
+  const s = ED_STYLES[key]; if (!s) return
+  t.preset = key
+  t.fontFamily = s.font
+  t.color      = s.color
+  t.strokeColor = s.sc
+  t.strokeW    = s.sw
+  t.glow       = s.glow
+  t.glowColor  = s.glowC
+  t.bgColor    = s.bg
+  // sync UI
+  document.getElementById('ep-tcol').value = s.color
+  document.getElementById('ep-scol').value = s.sc === 'transparent' ? '#000000' : s.sc
+  document.getElementById('ep-sw').value   = s.sw
+  document.querySelectorAll('.txt-style-btn').forEach(b => b.classList.toggle('active', b.dataset.key === key))
+  edDrawCanvas()
+}
+
+let edClips = []     // {id, file, url, dur, tStart, trimIn, trimOut, trimDur}
+let edTexts = []     // {id, text, start, end, x, y, size, color, bold}
+let edAudio = null   // {file, url, volume}
+let edFilters = { br: 0, ct: 0, sat: 1 }
+let edTotalDur = 0
+let edCurTime = 0
+let edSel = null     // {type:'clip'|'text'|'audio'|'frame', id}
+let edPlaying = false
+let edRaf = null
+let edAudioEl = null
+let edFrame = { mode: 'none' }   // 'none'|'white'|'black'|'blur'
+
+window.edAddMedia = () => document.getElementById('ed-media-in').click()
+window.edAddMusic = () => document.getElementById('ed-music-in').click()
+
+window.edHandleMedia = async (inp) => {
+  for (const file of Array.from(inp.files)) {
+    if (!file.type.startsWith('video/')) continue
+    const url = URL.createObjectURL(file)
+    const dur = await getEdVidDur(url)
+    const id = 'c' + Date.now() + Math.random().toString(36).slice(2,6)
+    edClips.push({ id, file, url, dur, tStart: 0, trimIn: 0, trimOut: dur, trimDur: dur })
+  }
+  inp.value = ''
+  edRecalc()
+  edRenderTL()
+  edShowPreview()
+  edLoadAt(0)
+}
+
+window.edHandleMusic = (inp) => {
+  const file = inp.files[0]; if (!file) return
+  inp.value = ''
+  const url = URL.createObjectURL(file)
+  edAudio = { file, url, volume: 0.5 }
+  if (!edAudioEl) { edAudioEl = new Audio(); edAudioEl.loop = false }
+  edAudioEl.src = url
+  edAudioEl.volume = 0.5
+  edSel = { type: 'audio', id: 'audio' }
+  edShowProps('audio')
+  edRenderTL()
+}
+
+function getEdVidDur(url) {
+  return new Promise(res => {
+    const v = document.createElement('video'); v.src = url
+    v.onloadedmetadata = () => res(v.duration)
+    v.onerror = () => res(10)
+  })
+}
+
+function edRecalc() {
+  let t = 0
+  for (const c of edClips) { c.trimDur = c.trimOut - c.trimIn; c.tStart = t; t += c.trimDur }
+  edTotalDur = t
+}
+
+function edShowPreview() {
+  document.getElementById('ed-empty').style.display = 'none'
+  document.getElementById('ed-stage').style.display = ''
+  document.getElementById('ed-timebar').style.display = ''
+}
+
+function edLoadAt(time) {
+  let t = 0
+  for (const c of edClips) {
+    if (time < t + c.trimDur || t + c.trimDur >= edTotalDur - 0.01) {
+      const vid = document.getElementById('ed-vid')
+      if (vid.src !== c.url) { vid.src = c.url }
+      vid.currentTime = c.trimIn + (time - t)
+      edApplyFilter()
+      return
+    }
+    t += c.trimDur
+  }
+}
+
+function edDrawCanvas() {
+  const vid = document.getElementById('ed-vid')
+  const cv = document.getElementById('ed-canvas')
+  const ctx = cv.getContext('2d')
+  let w, h
+  if (edFrame.mode !== 'none') {
+    // portrait 9:16 surface — canvas draws everything
+    w = 540; h = 960
+    cv.width = w; cv.height = h
+    const vw = vid.videoWidth, vh = vid.videoHeight
+    // background fill
+    if (edFrame.mode === 'blur' && vw && vh) {
+      const cover = Math.max(w / vw, h / vh)
+      const bw = vw * cover, bh = vh * cover
+      ctx.filter = 'blur(16px) brightness(0.92)'
+      ctx.drawImage(vid, (w - bw) / 2, (h - bh) / 2, bw, bh)
+      ctx.filter = 'none'
+    } else {
+      ctx.fillStyle = edFrame.mode === 'white' ? '#ffffff' : '#000000'
+      ctx.fillRect(0, 0, w, h)
+    }
+    // foreground video, scaled to width, vertically centered
+    if (vw && vh) {
+      const dw = w, dh = w * vh / vw
+      const dy = (h - dh) / 2
+      ctx.filter = `brightness(${1 + edFilters.br}) contrast(${1 + edFilters.ct}) saturate(${edFilters.sat})`
+      ctx.drawImage(vid, 0, dy, dw, dh)
+      ctx.filter = 'none'
+    }
+  } else {
+    w = vid.clientWidth || 640
+    h = vid.clientHeight || 360
+    if (!w || !h) return
+    cv.width = w; cv.height = h
+    ctx.clearRect(0, 0, w, h)
+  }
+  for (const t of edTexts) {
+    if (edCurTime < t.start || edCurTime > t.end) continue
+    const sz = Math.round((t.size || 48) * w / 640)
+    const font = t.fontFamily || 'Geist'
+    ctx.font = `${t.bold ? 'bold ' : ''}${sz}px '${font}', sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    const x = (t.x / 100) * w
+    const y = (t.y / 100) * h
+    // background bar (subtitle style)
+    if (t.bgColor) {
+      const m = ctx.measureText(t.text)
+      const pad = sz * 0.32
+      ctx.fillStyle = t.bgColor
+      ctx.beginPath()
+      if (ctx.roundRect) ctx.roundRect(x - m.width/2 - pad, y - sz*0.72, m.width + pad*2, sz*1.44, 6)
+      else ctx.rect(x - m.width/2 - pad, y - sz*0.72, m.width + pad*2, sz*1.44)
+      ctx.fill()
+    }
+    // glow
+    const glow = t.glow || 0
+    ctx.shadowBlur = glow * w / 640
+    ctx.shadowColor = t.glowColor || 'transparent'
+    // stroke
+    const sc = t.strokeColor || 'transparent'
+    const sw = (t.strokeW || 0) * w / 640
+    if (sc !== 'transparent' && sw > 0) {
+      ctx.lineWidth = sw * 2
+      ctx.lineJoin = 'round'
+      ctx.strokeStyle = sc
+      ctx.strokeText(t.text, x, y)
+    }
+    // fill
+    ctx.fillStyle = t.color || '#ffffff'
+    ctx.fillText(t.text, x, y)
+    ctx.shadowBlur = 0
+  }
+}
+
+window.edApplyFilter = () => {
+  const vid = document.getElementById('ed-vid')
+  const br = 1 + parseFloat(document.getElementById('ep-br')?.value || 0)
+  const ct = 1 + parseFloat(document.getElementById('ep-ct')?.value || 0)
+  const sat = parseFloat(document.getElementById('ep-sat')?.value || 1)
+  vid.style.filter = `brightness(${br}) contrast(${ct}) saturate(${sat})`
+  edFilters = { br: br - 1, ct: ct - 1, sat }
+}
+
+// ── TIMELINE ──────────────────────────────────────────────────────────────────
+function edRenderTL() {
+  const W = Math.max(edTotalDur * ED_PX, 300)
+  // Video track
+  const vtEl = document.getElementById('tl-vid')
+  vtEl.style.width = W + 'px'
+  vtEl.innerHTML = ''
+  for (const c of edClips) {
+    const el = document.createElement('div')
+    el.className = 'tl-clip video' + (edSel?.id === c.id ? ' selected' : '')
+    el.style.cssText = `left:${c.tStart * ED_PX}px;width:${c.trimDur * ED_PX}px`
+    el.textContent = c.file.name.replace(/\.[^.]+$/, '')
+    el.onclick = (e) => { e.stopPropagation(); edSelectClip(c.id) }
+    vtEl.appendChild(el)
+  }
+  // Text track
+  const ttEl = document.getElementById('tl-txt')
+  ttEl.style.width = W + 'px'
+  ttEl.innerHTML = ''
+  for (const t of edTexts) {
+    const el = document.createElement('div')
+    el.className = 'tl-clip text-cl' + (edSel?.id === t.id ? ' selected' : '')
+    el.style.cssText = `left:${t.start * ED_PX}px;width:${Math.max((t.end - t.start) * ED_PX, 20)}px`
+    el.textContent = t.text
+    el.onclick = (e) => { e.stopPropagation(); edSelectText(t.id) }
+    ttEl.appendChild(el)
+  }
+  // Audio track
+  const atEl = document.getElementById('tl-aud')
+  atEl.style.width = W + 'px'
+  atEl.innerHTML = ''
+  if (edAudio) {
+    const el = document.createElement('div')
+    el.className = 'tl-clip audio-cl' + (edSel?.type === 'audio' ? ' selected' : '')
+    el.style.cssText = `left:0;width:${W}px`
+    el.textContent = '♪ ' + edAudio.file.name
+    el.onclick = (e) => { e.stopPropagation(); edSel = { type:'audio', id:'audio' }; edShowProps('audio'); edRenderTL() }
+    atEl.appendChild(el)
+  }
+  edDrawRuler(W)
+  edMovePH()
+}
+
+function edDrawRuler(W) {
+  const cv = document.getElementById('ed-ruler-cv')
+  cv.width = W + 66; cv.height = 22
+  cv.style.width = (W + 66) + 'px'
+  const ctx = cv.getContext('2d')
+  ctx.clearRect(0, 0, cv.width, 22)
+  const step = ED_PX >= 60 ? 1 : ED_PX >= 30 ? 2 : 5
+  for (let t = 0; t <= edTotalDur + step; t += step) {
+    const x = t * ED_PX + 66
+    ctx.fillStyle = 'rgba(168,85,247,.5)'
+    ctx.fillRect(x, 14, 1, 8)
+    ctx.fillStyle = 'rgba(200,190,230,.55)'
+    ctx.font = '9px Geist, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(`${Math.floor(t/60)}:${String(t % 60).padStart(2,'0')}`, x, 10)
+  }
+}
+
+function edMovePH() {
+  const x = edCurTime * ED_PX + 66
+  document.getElementById('ed-ph-r').style.left = x + 'px'
+  document.getElementById('ed-ph-t').style.left = x + 'px'
+}
+
+window.edRulerSeek = (e) => {
+  const rect = document.getElementById('ed-ruler').getBoundingClientRect()
+  edSeekTo(Math.max(0, (e.clientX - rect.left - 66) / ED_PX))
+}
+
+window.edTrackSeek = (e) => {
+  if (e.target.classList.contains('tl-clip')) return
+  const rect = e.currentTarget.getBoundingClientRect()
+  edSeekTo(Math.max(0, (e.clientX - rect.left) / ED_PX))
+}
+
+function edSeekTo(t) {
+  edCurTime = Math.min(Math.max(t, 0), edTotalDur)
+  edLoadAt(edCurTime)
+  edMovePH()
+  edUpdScrub()
+  edDrawCanvas()
+}
+
+function edUpdScrub() {
+  const sc = document.getElementById('ed-scrubber')
+  sc.max = edTotalDur; sc.value = edCurTime
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  document.getElementById('ed-time-lbl').textContent = `${fmt(edCurTime)} / ${fmt(edTotalDur)}`
+}
+
+window.edScrub = (v) => edSeekTo(parseFloat(v))
+
+window.edTogglePlay = () => {
+  const vid = document.getElementById('ed-vid')
+  if (edPlaying) {
+    vid.pause(); edAudioEl?.pause()
+    edPlaying = false; document.getElementById('ed-play-btn').textContent = '▶'
+    cancelAnimationFrame(edRaf)
+  } else {
+    vid.play(); edAudioEl?.play()
+    edPlaying = true; document.getElementById('ed-play-btn').textContent = '⏸'
+    edTick()
+  }
+}
+
+function edTick() {
+  const vid = document.getElementById('ed-vid')
+  for (let i = 0; i < edClips.length; i++) {
+    const c = edClips[i]
+    if (vid.src === c.url) {
+      edCurTime = c.tStart + Math.max(0, vid.currentTime - c.trimIn)
+      if (vid.currentTime >= c.trimOut - 0.05) {
+        if (i + 1 < edClips.length) {
+          const n = edClips[i+1]; vid.src = n.url; vid.currentTime = n.trimIn; vid.play()
+        } else {
+          vid.pause(); edAudioEl?.pause()
+          edPlaying = false; document.getElementById('ed-play-btn').textContent = '▶'
+          return
+        }
+      }
+      break
+    }
+  }
+  edMovePH(); edUpdScrub(); edDrawCanvas()
+  if (edPlaying) edRaf = requestAnimationFrame(edTick)
+}
+
+// ── SELECTION & PROPS ─────────────────────────────────────────────────────────
+function edShowProps(type) {
+  document.getElementById('ep-default').style.display = type ? 'none' : ''
+  document.getElementById('ep-clip').style.display  = type === 'clip'  ? '' : 'none'
+  document.getElementById('ep-text').style.display  = type === 'text'  ? '' : 'none'
+  document.getElementById('ep-audio').style.display = type === 'audio' ? '' : 'none'
+  document.getElementById('ep-frame').style.display = type === 'frame' ? '' : 'none'
+  document.getElementById('ed-del-btn').style.display = (type && type !== 'frame') ? '' : 'none'
+}
+
+window.edOpenFrame = () => {
+  edSel = null
+  edShowProps('frame')
+  document.querySelectorAll('.frame-btn').forEach(b => b.classList.toggle('active', b.dataset.fr === edFrame.mode))
+  edRenderTL()
+}
+
+window.edSetFrame = (mode) => {
+  edFrame.mode = mode
+  document.querySelectorAll('.frame-btn').forEach(b => b.classList.toggle('active', b.dataset.fr === mode))
+  const stage = document.getElementById('ed-stage')
+  stage.classList.toggle('framed', mode !== 'none')
+  edResizeFrameCanvas()
+  edSeekTo(edCurTime)
+  edDrawCanvas()
+}
+
+function edResizeFrameCanvas() {
+  const cv = document.getElementById('ed-canvas')
+  if (edFrame.mode === 'none') { cv.style.width = ''; cv.style.height = ''; return }
+  // portrait 9:16 surface sized to the preview height
+  const H = 340
+  cv.style.height = H + 'px'
+  cv.style.width = Math.round(H * 9 / 16) + 'px'
+}
+
+;['seeked','loadeddata','play'].forEach(ev =>
+  document.getElementById('ed-vid')?.addEventListener(ev, () => { if (edFrame.mode !== 'none') edDrawCanvas() })
+)
+
+function edSelectClip(id) {
+  edSel = { type: 'clip', id }; edShowProps('clip'); edRenderTL()
+}
+
+function edSelectText(id) {
+  edSel = { type: 'text', id }
+  const t = edTexts.find(x => x.id === id); if (!t) return
+  edBuildStyleGrid()
+  document.getElementById('ep-txt').value  = t.text
+  document.getElementById('ep-tsz').value  = t.size || 48
+  document.getElementById('ep-tcol').value = t.color || '#ffffff'
+  document.getElementById('ep-scol').value = (t.strokeColor && t.strokeColor !== 'transparent') ? t.strokeColor : '#000000'
+  document.getElementById('ep-sw').value   = t.strokeW || 0
+  document.getElementById('ep-ts').value   = t.start
+  document.getElementById('ep-te').value   = t.end
+  document.getElementById('ep-tx').value   = t.x
+  document.getElementById('ep-ty').value   = t.y
+  document.querySelectorAll('.txt-style-btn').forEach(b => b.classList.toggle('active', b.dataset.key === (t.preset || 'tiktok')))
+  edShowProps('text'); edRenderTL()
+}
+
+window.edUpdateText = () => {
+  if (!edSel || edSel.type !== 'text') return
+  const t = edTexts.find(x => x.id === edSel.id); if (!t) return
+  t.text        = document.getElementById('ep-txt').value
+  t.size        = parseFloat(document.getElementById('ep-tsz').value)
+  t.color       = document.getElementById('ep-tcol').value
+  t.strokeColor = document.getElementById('ep-scol').value
+  t.strokeW     = parseFloat(document.getElementById('ep-sw').value)
+  t.start       = parseFloat(document.getElementById('ep-ts').value) || 0
+  t.end         = parseFloat(document.getElementById('ep-te').value) || 3
+  t.x           = parseFloat(document.getElementById('ep-tx').value)
+  t.y           = parseFloat(document.getElementById('ep-ty').value)
+  edRenderTL(); edDrawCanvas()
+}
+
+window.edAudioVol = () => {
+  if (edAudio) edAudio.volume = parseFloat(document.getElementById('ep-vol').value)
+  if (edAudioEl) edAudioEl.volume = edAudio.volume
+}
+
+window.edAddText = () => {
+  if (!edClips.length) return
+  const id = 't' + Date.now()
+  // In a frame, default to a clean caption in the top bar; otherwise TikTok style mid-low
+  const framed = edFrame.mode !== 'none'
+  const preset = framed ? (edFrame.mode === 'blur' ? 'tiktok' : 'subtitle') : 'tiktok'
+  const s = ED_STYLES[preset]
+  const t = { id, text: framed ? 'Your caption here' : 'YOUR TEXT',
+    start: 0, end: edTotalDur || 3,
+    x: 50, y: framed ? 11 : 80, size: framed ? 38 : 64,
+    color: s.color, fontFamily: s.font,
+    strokeColor: s.sc, strokeW: s.sw, glow: s.glow, glowColor: s.glowC, bgColor: s.bg, preset }
+  edTexts.push(t); edSelectText(id); edRenderTL(); edDrawCanvas()
+}
+
+window.edSplit = () => {
+  if (!edClips.length) return
+  let t = 0
+  for (let i = 0; i < edClips.length; i++) {
+    const c = edClips[i]
+    if (edCurTime >= t && edCurTime < t + c.trimDur) {
+      const at = c.trimIn + (edCurTime - t)
+      if (at <= c.trimIn + 0.1 || at >= c.trimOut - 0.1) break
+      const nc = { id: 'c'+Date.now(), file: c.file, url: c.url, dur: c.dur, tStart: 0, trimIn: at, trimOut: c.trimOut, trimDur: 0 }
+      c.trimOut = at; edClips.splice(i + 1, 0, nc); edRecalc(); edRenderTL(); break
+    }
+    t += c.trimDur
+  }
+}
+
+window.edDeleteSelected = () => {
+  if (!edSel) return
+  if (edSel.type === 'clip') {
+    edClips = edClips.filter(c => c.id !== edSel.id); edRecalc()
+    if (!edClips.length) {
+      document.getElementById('ed-empty').style.display = ''
+      document.getElementById('ed-stage').style.display = 'none'
+      document.getElementById('ed-timebar').style.display = 'none'
+    }
+  } else if (edSel.type === 'text') {
+    edTexts = edTexts.filter(t => t.id !== edSel.id)
+  } else if (edSel.type === 'audio') {
+    edAudioEl?.pause(); edAudio = null
+  }
+  edSel = null; edShowProps(null); edRenderTL(); edDrawCanvas()
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+window.edExport = async () => {
+  if (!edClips.length) return
+  const btn = document.getElementById('ed-export-btn')
+  btn.disabled = true
+  setStatus('ed-export-status', 'Loading processor...', 'loading')
+  try {
+    if (!ffmpegLoaded) {
+      const { createFFmpeg } = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js')
+      ffmpegInst = createFFmpeg({ log: false })
+      await ffmpegInst.load()
+      ffmpegLoaded = true
+    }
+    const { fetchFile } = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js')
+    const ff = ffmpegInst
+    setStatus('ed-export-status', 'Processing...', 'loading')
+
+    // Write all clip files to ffmpeg FS
+    for (let i = 0; i < edClips.length; i++) {
+      ff.FS('writeFile', `src${i}.mp4`, await fetchFile(edClips[i].file))
+    }
+
+    const framed = edFrame.mode !== 'none'
+
+    // Build eq filter
+    const eq = `eq=brightness=${edFilters.br}:contrast=${1 + edFilters.ct}:saturation=${edFilters.sat}`
+
+    // Landscape drawtext (only baked into base pass when NOT framed)
+    const dtFilters = edTexts.map(t => {
+      const esc = t.text.replace(/[\\':]/g, c => '\\' + c)
+      const hex = (t.color || '#ffffff').replace('#', '')
+      return `drawtext=text='${esc}':fontsize=${t.size||48}:fontcolor=0x${hex}:x=w*${t.x/100}-text_w/2:y=h*${t.y/100}-text_h/2:enable='between(t,${t.start},${t.end})'`
+    }).join(',')
+
+    const vf = framed ? eq : (dtFilters ? `${eq},${dtFilters}` : eq)
+    const stageOut = framed ? 'stage.mp4' : 'out.mp4'
+
+    if (edClips.length === 1) {
+      const c = edClips[0]
+      const args = ['-i','src0.mp4','-ss',c.trimIn.toFixed(3),'-to',c.trimOut.toFixed(3),'-vf',vf,'-c:v','libx264','-preset','ultrafast','-crf','23']
+      if (edAudio) {
+        ff.FS('writeFile', 'mus.mp3', await fetchFile(edAudio.file))
+        args.push('-i','mus.mp3','-filter_complex',`[1:a]volume=${edAudio.volume}[a]`,'-map','0:v','-map','[a]','-c:a','aac','-shortest')
+      } else { args.push('-an') }
+      args.push(stageOut)
+      await ff.run(...args)
+    } else {
+      // Trim each clip individually, then concat
+      const trimFiles = []
+      for (let i = 0; i < edClips.length; i++) {
+        const c = edClips[i]; const fname = `tr${i}.mp4`
+        await ff.run('-i',`src${i}.mp4`,'-ss',c.trimIn.toFixed(3),'-to',c.trimOut.toFixed(3),'-c','copy',fname)
+        trimFiles.push(fname)
+      }
+      const enc = new TextEncoder()
+      ff.FS('writeFile','list.txt', enc.encode(trimFiles.map(f => `file '${f}'`).join('\n')))
+      const concatArgs = ['-f','concat','-safe','0','-i','list.txt','-vf',vf,'-c:v','libx264','-preset','ultrafast','-crf','23']
+      if (edAudio) {
+        ff.FS('writeFile','mus.mp3', await fetchFile(edAudio.file))
+        concatArgs.push('-i','mus.mp3','-filter_complex',`[1:a]volume=${edAudio.volume}[a]`,'-map','0:v','-map','[a]','-c:a','aac','-shortest')
+      } else { concatArgs.push('-an') }
+      concatArgs.push(stageOut)
+      await ff.run(...concatArgs)
+    }
+
+    // ── FRAME PASS: reframe stage.mp4 → 9:16 portrait with bg + caption ──
+    if (framed) {
+      setStatus('ed-export-status', 'Applying frame...', 'loading')
+      const SF = 1080 / 640
+      let fc
+      if (edFrame.mode === 'blur') {
+        fc = `[0:v]split=2[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=18:2[bg];[b]scale=1080:1920:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2[v]`
+      } else {
+        const col = edFrame.mode === 'white' ? 'white' : 'black'
+        fc = `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=${col}[v]`
+      }
+      const portraitDt = edTexts.map(t => {
+        const esc = t.text.replace(/[\\':]/g, c => '\\' + c)
+        const hex = (t.color || '#ffffff').replace('#', '')
+        const fs = Math.round((t.size || 38) * SF)
+        let s = `drawtext=text='${esc}':fontsize=${fs}:fontcolor=0x${hex}:x=w*${t.x/100}-text_w/2:y=h*${t.y/100}-text_h/2`
+        if (t.strokeColor && t.strokeColor !== 'transparent' && t.strokeW > 0)
+          s += `:bordercolor=0x${t.strokeColor.replace('#','')}:borderw=${Math.max(1, Math.round(t.strokeW * SF / 4))}`
+        if (t.bgColor) s += `:box=1:boxcolor=black@0.6:boxborderw=20`
+        s += `:enable='between(t,${t.start},${t.end})'`
+        return s
+      })
+      let last = '[v]'
+      if (portraitDt.length) { fc += `;[v]${portraitDt.join(',')}[vo]`; last = '[vo]' }
+      await ff.run('-i','stage.mp4','-filter_complex',fc,'-map',last,'-map','0:a?','-c:v','libx264','-preset','ultrafast','-crf','23','-c:a','aac','out.mp4')
+    }
+
+    const data = ff.FS('readFile', 'out.mp4')
+    // Cleanup
+    try { ff.FS('unlink','out.mp4') } catch {}
+    try { ff.FS('unlink','stage.mp4') } catch {}
+    for (let i=0;i<edClips.length;i++) { try { ff.FS('unlink',`src${i}.mp4`) } catch {} try { ff.FS('unlink',`tr${i}.mp4`) } catch {} }
+    try { ff.FS('unlink','list.txt') } catch {}
+    try { ff.FS('unlink','mus.mp3') } catch {}
+
+    const blob = new Blob([data.buffer], { type: 'video/mp4' })
+    const url  = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'clipzo_edit.mp4'
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+    setStatus('ed-export-status', 'Exported!', 'ok')
+    setTimeout(() => { document.getElementById('ed-export-status').style.display = 'none' }, 3000)
+  } catch (e) {
+    console.error('Editor export:', e)
+    setStatus('ed-export-status', 'Export failed: ' + e.message, 'err')
+  }
+  btn.disabled = false
+}
+
+// ── AUTO CLIPPER ─────────────────────────────────────────────────────────────
+let acJobId = null
+let acPollTimer = null
+let acVideoUrl = null
+
+window.startAutoClip = async () => {
+  const url = document.getElementById('ac-url').value.trim()
+  if (!url) return setStatus('ac-status', 'Please enter a video URL or upload a file', 'err')
+  acVideoUrl = url
+  document.getElementById('ac-results').style.display = 'none'
+  const btn = document.getElementById('ac-analyze-btn')
+  btn.disabled = true
+  try {
+    setStatus('ac-status', 'Submitting to AI for analysis...', 'loading')
+    const { jobId } = await api.autoclip.start(url)
+    acJobId = jobId
+    pollAutoClip()
+  } catch (e) {
+    setStatus('ac-status', e.message, 'err')
+    btn.disabled = false
+  }
+}
+
+function pollAutoClip() {
+  clearTimeout(acPollTimer)
+  acPollTimer = setTimeout(async () => {
+    try {
+      const result = await api.autoclip.poll(acJobId)
+      if (result.status === 'completed') {
+        document.getElementById('ac-analyze-btn').disabled = false
+        renderAutoClipResults(result)
+        document.getElementById('ac-status').style.display = 'none'
+      } else if (result.status === 'error') {
+        document.getElementById('ac-analyze-btn').disabled = false
+        setStatus('ac-status', result.error || 'Processing failed', 'err')
+      } else {
+        setStatus('ac-status', `Analyzing video... (${result.status})`, 'loading')
+        pollAutoClip()
+      }
+    } catch (e) {
+      document.getElementById('ac-analyze-btn').disabled = false
+      setStatus('ac-status', e.message, 'err')
+    }
+  }, 3000)
+}
+
+function renderAutoClipResults(result) {
+  const clips = result.clips || []
+  document.getElementById('ac-preview').src = acVideoUrl
+  document.getElementById('ac-results').style.display = ''
+  const list = document.getElementById('ac-clips-list')
+  if (!clips.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No highlighted moments detected. Try a longer video with speech.</div>'
+    return
+  }
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  list.innerHTML = clips.map((clip, i) => {
+    const ts = clip.timestamps?.[0] || {}
+    const start = (ts.start || 0) / 1000
+    const end   = (ts.end   || 0) / 1000
+    return `<div onclick="acSeekTo(${start})" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--a2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:26px;height:26px;background:var(--a1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#f0eeff;flex-shrink:0">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.82rem;font-weight:500;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${clip.text}"</div>
+        <div style="font-size:.72rem;color:var(--muted)">${fmt(start)} – ${fmt(end)}</div>
+      </div>
+      <div style="background:rgba(168,85,247,.15);border:1px solid var(--a1);border-radius:20px;padding:3px 10px;font-size:.7rem;color:var(--a2);flex-shrink:0">${clip.rank}%</div>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();editClip(${start},${end})">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>
+        Edit
+      </button>
+    </div>`
+  }).join('')
+}
+
+// Load an AI-found clip into the Video Editor, trimmed to the highlight
+window.editClip = async (start, end) => {
+  const src = document.getElementById('ac-url').value.trim() || acVideoUrl
+  if (!src) return setStatus('ac-status', 'No source video available', 'err')
+  setStatus('ac-status', 'Loading clip into editor...', 'loading')
+  let file
+  try {
+    const blob = await fetch(src).then(r => { if (!r.ok) throw new Error('bad'); return r.blob() })
+    file = new File([blob], 'clip.mp4', { type: blob.type || 'video/mp4' })
+  } catch {
+    return setStatus('ac-status', 'Could not load this video for editing (cross-origin). Upload the file under "My Files" first, then edit.', 'err')
+  }
+  const url = URL.createObjectURL(file)
+  const dur = await getEdVidDur(url)
+  const tin = Math.max(0, start)
+  const tout = Math.min(end > tin ? end : dur, dur)
+  // reset editor with just this clip
+  edClips = [{ id: 'c' + Date.now(), file, url, dur, tStart: 0, trimIn: tin, trimOut: tout, trimDur: tout - tin }]
+  edTexts = []
+  edAudioEl?.pause(); edAudio = null
+  edFrame = { mode: 'none' }
+  document.getElementById('ed-stage').classList.remove('framed')
+  edResizeFrameCanvas()
+  edRecalc()
+  switchPanel('editor', null)
+  edShowPreview(); edRenderTL(); edShowProps(null); edSeekTo(0)
+  document.getElementById('ac-status').style.display = 'none'
+}
+
+window.acSeekTo = (sec) => {
+  const vid = document.getElementById('ac-preview')
+  vid.currentTime = sec
+  vid.play()
+  vid.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
+const acDrop = document.getElementById('ac-drop')
+acDrop?.addEventListener('dragover', e => { e.preventDefault(); acDrop.classList.add('drag') })
+acDrop?.addEventListener('dragleave', () => acDrop.classList.remove('drag'))
+acDrop?.addEventListener('drop', e => { e.preventDefault(); acDrop.classList.remove('drag'); acHandleFile(e.dataTransfer.files[0]) })
+document.getElementById('ac-file-input')?.addEventListener('change', e => { if (e.target.files[0]) acHandleFile(e.target.files[0]) })
+
+async function acHandleFile(file) {
+  if (!file?.type.startsWith('video/')) return
+  const formData = new FormData()
+  formData.append('file', file)
+  const btn = document.getElementById('ac-analyze-btn')
+  btn.disabled = true
+  setStatus('ac-status', 'Uploading video...', 'loading')
+  try {
+    const result = await api.upload.file(formData)
+    document.getElementById('ac-url').value = result.url
+    setStatus('ac-status', 'Uploaded! Click Analyze to find best moments.', 'ok')
+    btn.disabled = false
+  } catch (e) {
+    setStatus('ac-status', 'Upload failed: ' + e.message, 'err')
+    btn.disabled = false
+  }
+}
+
+// ── VIDEO DOWNLOADER ──────────────────────────────────────────────────────────
+let dlInfo = null
+
+window.fetchVideoInfo = async () => {
+  const url = document.getElementById('dl-url').value.trim()
+  if (!url) return setStatus('dl-status', 'Please enter a URL', 'err')
+  const btn = document.getElementById('dl-fetch-btn')
+  btn.disabled = true
+  document.getElementById('dl-result').style.display = 'none'
+  setStatus('dl-status', 'Fetching video info...', 'loading')
+  try {
+    dlInfo = await api.download.info(url)
+    btn.disabled = false
+    document.getElementById('dl-status').style.display = 'none'
+    document.getElementById('dl-thumb').src = dlInfo.thumbnail || ''
+    document.getElementById('dl-title').textContent = dlInfo.title || '(no title)'
+    document.getElementById('dl-uploader').textContent = dlInfo.uploader ? `by ${dlInfo.uploader}` : (dlInfo.platform || '')
+    const d = dlInfo.duration || 0
+    const h = Math.floor(d/3600), m = Math.floor((d%3600)/60), s = Math.floor(d%60)
+    document.getElementById('dl-duration').textContent = d ? (h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`) : ''
+    document.getElementById('dl-result').style.display = ''
+  } catch (e) {
+    btn.disabled = false
+    setStatus('dl-status', e.message, 'err')
+  }
+}
+
+window.downloadVideo = () => {
+  const url = document.getElementById('dl-url').value.trim()
+  if (!url) return
+  const streamUrl = api.download.streamUrl(url)
+  const a = document.createElement('a')
+  a.href = streamUrl
+  a.download = ((dlInfo?.title || 'video').replace(/[^\w\s-]/g, '').trim() || 'video') + '.mp4'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
 window.exportClip = async () => {
-  if (!clipFile) return
   const btn = document.getElementById('clip-export-btn')
+
+  // Server-side clip for URL sources — downloads only the selected range
+  if (clipMode === 'url') {
+    if (!clipSourceUrl) return
+    btn.disabled = true
+    document.getElementById('clip-output').style.display = 'none'
+    setStatus('clip-status','Clipping on server… only your selected range is downloaded','loading')
+    try {
+      const res = await fetch(api.download.clipUrl(clipSourceUrl, clipInPoint.toFixed(2), clipOutPoint.toFixed(2)))
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Server clip failed')
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      document.getElementById('clip-output-video').src = url
+      document.getElementById('clip-dl').href = url
+      document.getElementById('clip-dl').download = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}.mp4`
+      document.getElementById('clip-output').style.display = ''
+      setStatus('clip-status','Done!','ok')
+    } catch(e) {
+      setStatus('clip-status', e.message || 'Clip failed', 'err')
+    }
+    btn.disabled = false
+    return
+  }
+
+  if (!clipFile) return
   btn.disabled = true
   document.getElementById('clip-output').style.display = 'none'
   setStatus('clip-status','','loading')
@@ -956,6 +2135,28 @@ window.exportClip = async () => {
     setStatus('clip-status', 'Export failed: ' + e.message, 'err')
   }
   btn.disabled = false
+}
+
+window.openClipInEditor = async () => {
+  const vid = document.getElementById('clip-output-video')
+  if (!vid?.src) return
+  try {
+    const blob = await fetch(vid.src).then(r => r.blob())
+    const fileName = document.getElementById('clip-dl').download || 'clip.mp4'
+    const file = new File([blob], fileName, { type: 'video/mp4' })
+    const url = URL.createObjectURL(file)
+    const dur = await getEdVidDur(url)
+    const id = 'c' + Date.now() + Math.random().toString(36).slice(2, 6)
+    edClips.push({ id, file, url, dur, tStart: 0, trimIn: 0, trimOut: dur, trimDur: dur })
+    edRecalc()
+    edRenderTL()
+    edShowPreview()
+    edLoadAt(0)
+    const btn = document.querySelector('[data-panel="editor"]')
+    switchPanel('editor', btn)
+  } catch (e) {
+    console.error('openClipInEditor:', e)
+  }
 }
 </script>
 </body>
