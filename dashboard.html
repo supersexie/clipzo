@@ -2272,6 +2272,12 @@ window.setClipFormat = (fmt) => {
   clipFormat = fmt
   document.querySelectorAll('.clip-fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt))
   document.getElementById('clip-crop-row').style.display = fmt === 'original' ? 'none' : ''
+  const labels = { original: 'Export clip (16:9)', blur: 'Export 9:16 Blur', black: 'Export 9:16 Black', white: 'Export 9:16 White' }
+  const btn = document.getElementById('clip-export-btn')
+  if (btn) {
+    const svg = btn.querySelector('svg')?.outerHTML || ''
+    btn.innerHTML = svg + ' ' + (labels[fmt] || 'Export clip')
+  }
 }
 
 window.setClipCrop = (crop) => {
