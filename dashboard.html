@@ -2013,8 +2013,8 @@ window.startAutoClip = async () => {
   const btn = document.getElementById('ac-analyze-btn')
   btn.disabled = true
   try {
-    setStatus('ac-status', 'Submitting to AI for analysis...', 'loading')
-    const { jobId } = await api.autoclip.start(url)
+    setStatus('ac-status', 'Downloading & analyzing video — this may take a minute...', 'loading')
+    const { jobId } = await api.download.analyze(url)
     acJobId = jobId
     pollAutoClip()
   } catch (e) {
