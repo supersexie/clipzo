@@ -55,7 +55,17 @@ export const api = {
     info:      (url) => req('POST', '/api/download/info', { url }),
     analyze:   (url) => req('POST', '/api/download/analyze', { url }),
     streamUrl: (url) => `${BASE}/api/download/stream?url=${encodeURIComponent(url)}&token=${encodeURIComponent(getToken())}`,
-    clipUrl:   (url, start, end) => `${BASE}/api/download/clip?url=${encodeURIComponent(url)}&start=${start}&end=${end}&token=${encodeURIComponent(getToken())}`,
+    clipUrl:   (url, start, end, frame, crop) => {
+      const params = [
+        `url=${encodeURIComponent(url)}`,
+        `start=${start}`,
+        `end=${end}`,
+        `token=${encodeURIComponent(getToken())}`,
+      ]
+      if (frame && frame !== 'original') params.push(`frame=${frame}`)
+      if (crop && crop !== 'fit') params.push(`crop=${encodeURIComponent(crop)}`)
+      return `${BASE}/api/download/clip?${params.join('&')}`
+    },
   },
   autoclip: {
     start: (file_url) => req('POST', '/api/autoclip', { file_url }),
