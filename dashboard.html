@@ -550,11 +550,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div id="clip-output" style="display:none;margin-top:16px" class="result-box">
             <div class="result-label">Exported clip</div>
             <video id="clip-output-video" controls style="width:100%;border-radius:6px;margin-top:8px"></video>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
               <a id="clip-dl" class="btn btn-ghost btn-sm" style="display:inline-flex" download="clip.mp4">⬇ Download clip</a>
-              <button class="btn btn-primary btn-sm" onclick="openClipInEditor()">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l4 2-4 2V8z"/></svg>
-                Edit in Editor
+              <span style="color:var(--muted);font-size:.72rem;margin:0 2px">Edit in 9:16 with:</span>
+              <button class="btn btn-ghost btn-sm" onclick="openClipInEditor('blur')" style="gap:4px">
+                <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#7c4fd0,#a98ce0);filter:blur(1px)"></span>
+                Blur
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="openClipInEditor('black')" style="gap:4px">
+                <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#000;border:1px solid rgba(255,255,255,.2)"></span>
+                Black
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="openClipInEditor('white')" style="gap:4px">
+                <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#fff;border:1px solid rgba(255,255,255,.15)"></span>
+                White
               </button>
             </div>
           </div>
@@ -2137,7 +2146,7 @@ window.exportClip = async () => {
   btn.disabled = false
 }
 
-window.openClipInEditor = async () => {
+window.openClipInEditor = async (frameMode) => {
   const vid = document.getElementById('clip-output-video')
   if (!vid?.src) return
   try {
@@ -2152,8 +2161,11 @@ window.openClipInEditor = async () => {
     edRenderTL()
     edShowPreview()
     edLoadAt(0)
-    const btn = document.querySelector('[data-panel="editor"]')
-    switchPanel('editor', btn)
+    const navBtn = document.querySelector('[data-panel="editor"]')
+    switchPanel('editor', navBtn)
+    if (frameMode) {
+      setTimeout(() => edSetFrame(frameMode), 300)
+    }
   } catch (e) {
     console.error('openClipInEditor:', e)
   }
