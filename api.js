@@ -51,6 +51,15 @@ export const api = {
     start: (file_url) => req('POST', '/api/transcribe', { file_url }),
     poll:  (jobId)    => req('GET',  `/api/transcribe/${jobId}`),
   },
+  download: {
+    info:      (url) => req('POST', '/api/download/info', { url }),
+    streamUrl: (url) => `${BASE}/api/download/stream?url=${encodeURIComponent(url)}&token=${encodeURIComponent(getToken())}`,
+    clipUrl:   (url, start, end) => `${BASE}/api/download/clip?url=${encodeURIComponent(url)}&start=${start}&end=${end}&token=${encodeURIComponent(getToken())}`,
+  },
+  autoclip: {
+    start: (file_url) => req('POST', '/api/autoclip', { file_url }),
+    poll:  (jobId, count) => req('GET',  `/api/autoclip/${jobId}?count=${count || 5}`),
+  },
 }
 
 export { getToken, setSession, clearSession }

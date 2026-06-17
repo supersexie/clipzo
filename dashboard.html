@@ -763,15 +763,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <div class="panel" id="panel-autoclip">
       <div class="tool-card">
         <h3>AI Auto Clipper</h3>
-        <p>Upload a video and AI finds the most engaging moments, ranked by importance. Click any moment to jump to it in the preview.</p>
+        <p>Upload a video and AI finds the most viral/engaging moments. Choose how many clips you want, then download them all at once or individually.</p>
         <div class="field">
           <label>Video URL (from My Files or any public link)</label>
           <div style="display:flex;gap:8px">
             <input type="text" id="ac-url" placeholder="https://... or upload below" style="flex:1"/>
             <button class="btn btn-primary" id="ac-analyze-btn" onclick="startAutoClip()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Analyze
+              Find Viral Moments
             </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Number of clips</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="range" id="ac-count" min="1" max="10" value="5" style="flex:1" oninput="document.getElementById('ac-count-val').textContent=this.value"/>
+            <span id="ac-count-val" style="font-weight:600;font-size:.9rem;min-width:20px;text-align:center">5</span>
           </div>
         </div>
         <div class="upload-zone" id="ac-drop" onclick="document.getElementById('ac-file-input').click()">
@@ -783,7 +790,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="status" id="ac-status" style="display:none;margin-top:12px"></div>
         <div id="ac-results" style="display:none;margin-top:20px">
           <video id="ac-preview" controls style="width:100%;border-radius:8px;background:#000;margin-bottom:16px;max-height:320px"></video>
-          <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Best Moments — ranked by AI</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Viral Moments — ranked by AI</div>
+            <button class="btn btn-primary btn-sm" id="ac-download-all-btn" onclick="acDownloadAll()">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download All Clips
+            </button>
+          </div>
+          <div class="status" id="ac-batch-status" style="display:none;margin-bottom:10px"></div>
           <div id="ac-clips-list"></div>
         </div>
       </div>
@@ -1955,12 +1969,15 @@ window.edExport = async () => {
 let acJobId = null
 let acPollTimer = null
 let acVideoUrl = null
+let acClips = []
 
 window.startAutoClip = async () => {
   const url = document.getElementById('ac-url').value.trim()
   if (!url) return setStatus('ac-status', 'Please enter a video URL or upload a file', 'err')
   acVideoUrl = url
+  acClips = []
   document.getElementById('ac-results').style.display = 'none'
+  document.getElementById('ac-batch-status').style.display = 'none'
   const btn = document.getElementById('ac-analyze-btn')
   btn.disabled = true
   try {
@@ -1976,9 +1993,10 @@ window.startAutoClip = async () => {
 
 function pollAutoClip() {
   clearTimeout(acPollTimer)
+  const count = parseInt(document.getElementById('ac-count').value) || 5
   acPollTimer = setTimeout(async () => {
     try {
-      const result = await api.autoclip.poll(acJobId)
+      const result = await api.autoclip.poll(acJobId, count)
       if (result.status === 'completed') {
         document.getElementById('ac-analyze-btn').disabled = false
         renderAutoClipResults(result)
@@ -1987,7 +2005,7 @@ function pollAutoClip() {
         document.getElementById('ac-analyze-btn').disabled = false
         setStatus('ac-status', result.error || 'Processing failed', 'err')
       } else {
-        setStatus('ac-status', `Analyzing video... (${result.status})`, 'loading')
+        setStatus('ac-status', `Finding viral moments... (${result.status})`, 'loading')
         pollAutoClip()
       }
     } catch (e) {
@@ -1998,32 +2016,80 @@ function pollAutoClip() {
 }
 
 function renderAutoClipResults(result) {
-  const clips = result.clips || []
+  acClips = result.clips || []
   document.getElementById('ac-preview').src = acVideoUrl
   document.getElementById('ac-results').style.display = ''
+  document.getElementById('ac-download-all-btn').style.display = acClips.length > 1 ? '' : 'none'
   const list = document.getElementById('ac-clips-list')
-  if (!clips.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No highlighted moments detected. Try a longer video with speech.</div>'
+  if (!acClips.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No viral moments detected. Try a longer video with more speech or action.</div>'
     return
   }
   const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
-  list.innerHTML = clips.map((clip, i) => {
-    const ts = clip.timestamps?.[0] || {}
-    const start = (ts.start || 0) / 1000
-    const end   = (ts.end   || 0) / 1000
-    return `<div onclick="acSeekTo(${start})" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--a2)'" onmouseout="this.style.borderColor='var(--border)'">
+  list.innerHTML = acClips.map((clip, i) => {
+    const dur = clip.duration || (clip.end - clip.start)
+    return `<div onclick="acSeekTo(${clip.start})" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--a2)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="width:26px;height:26px;background:var(--a1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#f0eeff;flex-shrink:0">${i+1}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:.82rem;font-weight:500;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${clip.text}"</div>
-        <div style="font-size:.72rem;color:var(--muted)">${fmt(start)} – ${fmt(end)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${fmt(clip.start)} – ${fmt(clip.end)} <span style="margin-left:4px;color:var(--a2)">(${dur.toFixed(1)}s)</span></div>
       </div>
       <div style="background:rgba(168,85,247,.15);border:1px solid var(--a1);border-radius:20px;padding:3px 10px;font-size:.7rem;color:var(--a2);flex-shrink:0">${clip.rank}%</div>
-      <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();editClip(${start},${end})">
+      <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();acDownloadOne(${i})" title="Download this clip">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();editClip(${clip.start},${clip.end})">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>
         Edit
       </button>
     </div>`
   }).join('')
+}
+
+window.acDownloadOne = async (idx) => {
+  const clip = acClips[idx]
+  if (!clip || !acVideoUrl) return
+  setStatus('ac-batch-status', `Downloading clip ${idx + 1}...`, 'loading')
+  try {
+    const clipUrl = api.download.clipUrl(acVideoUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+    const res = await fetch(clipUrl)
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Download failed') }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = `viral_clip_${idx + 1}.mp4`
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    setStatus('ac-batch-status', `Clip ${idx + 1} downloaded!`, 'ok')
+    setTimeout(() => { document.getElementById('ac-batch-status').style.display = 'none' }, 3000)
+  } catch (e) {
+    setStatus('ac-batch-status', e.message, 'err')
+  }
+}
+
+window.acDownloadAll = async () => {
+  if (!acClips.length || !acVideoUrl) return
+  const btn = document.getElementById('ac-download-all-btn')
+  btn.disabled = true
+  for (let i = 0; i < acClips.length; i++) {
+    const clip = acClips[i]
+    setStatus('ac-batch-status', `Downloading clip ${i + 1} of ${acClips.length}...`, 'loading')
+    try {
+      const clipUrl = api.download.clipUrl(acVideoUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+      const res = await fetch(clipUrl)
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed') }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `viral_clip_${i + 1}.mp4`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setStatus('ac-batch-status', `Clip ${i + 1} failed: ${e.message}. Continuing...`, 'err')
+      await new Promise(r => setTimeout(r, 1500))
+    }
+  }
+  setStatus('ac-batch-status', `All ${acClips.length} clips downloaded!`, 'ok')
+  setTimeout(() => { document.getElementById('ac-batch-status').style.display = 'none' }, 5000)
+  btn.disabled = false
 }
 
 // Load an AI-found clip into the Video Editor, trimmed to the highlight
@@ -2042,11 +2108,10 @@ window.editClip = async (start, end) => {
   const dur = await getEdVidDur(url)
   const tin = Math.max(0, start)
   const tout = Math.min(end > tin ? end : dur, dur)
-  // reset editor with just this clip
   edClips = [{ id: 'c' + Date.now(), file, url, dur, tStart: 0, trimIn: tin, trimOut: tout, trimDur: tout - tin }]
   edTexts = []
   edAudioEl?.pause(); edAudio = null
-  edFrame = { mode: 'none' }
+  edFrame = { mode: 'none', crop: 'fit' }
   document.getElementById('ed-stage').classList.remove('framed')
   edResizeFrameCanvas()
   edRecalc()
