@@ -2722,16 +2722,24 @@ const CV_STYLES = [['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'],
 
 // A small visual mockup of what a chosen output format looks like. Uses the
 // source thumbnail (or a gradient placeholder) as the stand-in clip.
-function cvFmtEl(cls, thumb) {
+function cvFmtEl(cls, thumb, style = '') {
   return thumb
-    ? `<img class="${cls}" src="${thumb}" alt=""/>`
-    : `<div class="${cls}" style="background:linear-gradient(135deg,#5b3fa0,#9a7be0)"></div>`
+    ? `<img class="${cls}" src="${thumb}" style="${style}" alt=""/>`
+    : `<div class="${cls}" style="${style};background:linear-gradient(135deg,#5b3fa0,#9a7be0)"></div>`
 }
-function fmtPreviewHTML(format, thumb) {
+// Height of the centered main clip as a % of the 9:16 frame, for a given crop.
+// The clip fills the frame width, so height% = (9/16) / cropAspectRatio.
+const CV_CROP_AR = { fit: 16 / 9, '16:9': 16 / 9, '4:3': 4 / 3, '1:1': 1, '3:4': 3 / 4 }
+function cvFgHeightPct(crop) {
+  const ar = CV_CROP_AR[crop] || 16 / 9
+  return Math.min(96, ((9 / 16) / ar) * 100)
+}
+function fmtPreviewHTML(format, thumb, crop) {
   if (format === 'original') return `<div class="fmtp fmtp-wide">${cvFmtEl('cover', thumb)}</div>`
   const bgColor = format === 'white' ? '#fff' : '#000'
   const bg = format === 'blur' ? cvFmtEl('cover blur', thumb) : ''
-  return `<div class="fmtp fmtp-tall" style="background:${bgColor}">${bg}${cvFmtEl('fg', thumb)}</div>`
+  const fg = cvFmtEl('fg', thumb, `height:${cvFgHeightPct(crop).toFixed(1)}%`)
+  return `<div class="fmtp fmtp-tall" style="background:${bgColor}">${bg}${fg}</div>`
 }
 
 function cvRenderResults(result) {
@@ -2811,7 +2819,7 @@ window.setCvItemFormat = (i, f, btn) => {
   const pad = document.getElementById(`cv-pad-${i}`)
   if (pad) pad.style.aspectRatio = f === 'original' ? '16/9' : '9/16'
   const prev = document.getElementById(`cv-fmt-prev-${i}`)
-  if (prev) prev.innerHTML = fmtPreviewHTML(f, document.getElementById('clip-thumb')?.src)
+  if (prev) prev.innerHTML = fmtPreviewHTML(f, document.getElementById('clip-thumb')?.src, cvSettings[i].crop)
   // Crop only applies when reframing to 9:16.
   const crop = document.getElementById(`cv-crop-${i}`)
   if (crop) crop.style.display = f === 'original' ? 'none' : ''
@@ -2820,6 +2828,9 @@ window.setCvItemCrop = (i, c, btn) => {
   cvSettings[i].crop = c
   document.querySelectorAll(`#cv-crop-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
+  // Reflect the crop in the format preview (the centered clip resizes).
+  const prev = document.getElementById(`cv-fmt-prev-${i}`)
+  if (prev) prev.innerHTML = fmtPreviewHTML(cvSettings[i].format, document.getElementById('clip-thumb')?.src, c)
 }
 window.toggleCvItemCaptions = (i, on) => {
   cvSettings[i].captionsOn = on
