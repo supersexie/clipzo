@@ -6,7 +6,7 @@
 <title>CLIPZO — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Baloo+2:wght@800&family=Permanent+Marker&family=Luckiest+Guy&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Baloo+2:wght@800&family=Permanent+Marker&family=Luckiest+Guy&family=Archivo+Black&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -455,6 +455,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <button class="cap-style-btn" data-style="script" onclick="setCapStyle('script',this)">✍️ Script</button>
               <button class="cap-style-btn" data-style="alternate" onclick="setCapStyle('alternate',this)">🔁 Alternate</button>
               <button class="cap-style-btn" data-style="badge" onclick="setCapStyle('badge',this)">🏷️ Badge</button>
+              <button class="cap-style-btn" data-style="headline" onclick="setCapStyle('headline',this)">📰 Headline</button>
             </div>
             <div id="cap-settings-slot"></div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -674,6 +675,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                 <button class="cap-style-btn" data-style="script" onclick="setClipCaptionStyle('script',this)">✍️ Script</button>
                 <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
                 <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
+                <button class="cap-style-btn" data-style="headline" onclick="setClipCaptionStyle('headline',this)">📰 Headline</button>
               </div>
               <div id="clip-cap-settings-slot"></div>
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;margin-top:10px">Position — drag the caption where you want it</div>
@@ -2484,6 +2486,7 @@ const CAP_FONTS = [
   ['Baloo 2 ExtraBold', 'Baloo 2'],
   ['Permanent Marker', 'Permanent Marker'],
   ['Luckiest Guy', 'Luckiest Guy'],
+  ['Archivo Black', 'Archivo Black'],
 ]
 function capSettingsHTML(idPrefix) {
   return `<div class="cap-settings">
@@ -2587,6 +2590,7 @@ const CAP_STYLE_PREVIEW = {
   script:         { font: "'Permanent Marker',cursive", color: '#ff0000', upper: false, box: false },
   alternate:      { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false, multi: ['#16ff5d', '#ffffff'] },
   badge:          { font: "'Baloo 2',sans-serif",       color: '#ffffff', upper: false, box: true, bg: '#7c3aed', weight: 800 },
+  headline:       { font: "'Archivo Black',sans-serif", color: '#000000', upper: false, box: true, bg: '#ffffff', radius: '12px' },
 }
 function applyChipStyle(chip, style) {
   if (!chip) return
@@ -2599,6 +2603,7 @@ function applyChipStyle(chip, style) {
   chip.style.letterSpacing = '.5px'
   chip.style.background = p.box ? (p.bg || 'rgba(0,0,0,.7)') : 'transparent'
   chip.style.boxShadow = 'none'
+  chip.style.borderRadius = p.radius || ''
   // Thick coloured or black outline so text reads on the dark pad — mirrors the burned caption look.
   const oc = p.outline || '#000'
   chip.style.textShadow = p.box ? 'none' : `-1.5px -1.5px 0 ${oc},1.5px -1.5px 0 ${oc},-1.5px 1.5px 0 ${oc},1.5px 1.5px 0 ${oc}`
@@ -2861,7 +2866,7 @@ let cvSettings = []
 const CV_FMTS = [['original', '16:9'], ['blur', '9:16 Blur'], ['black', '9:16 Black'], ['white', '9:16 White']]
 const CV_STYLES = [
   ['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic'],
-  ['random', '🌈 Random'], ['rounded', '🔵 Rounded'], ['meme', '😂 Meme'], ['neon', '💖 Neon'], ['script', '✍️ Script'], ['alternate', '🔁 Alt'], ['badge', '🏷️ Badge'],
+  ['random', '🌈 Random'], ['rounded', '🔵 Rounded'], ['meme', '😂 Meme'], ['neon', '💖 Neon'], ['script', '✍️ Script'], ['alternate', '🔁 Alt'], ['badge', '🏷️ Badge'], ['headline', '📰 Headline'],
 ]
 
 // A small visual mockup of what a chosen output format looks like. Uses the
