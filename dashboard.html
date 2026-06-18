@@ -2768,6 +2768,12 @@ function cvRenderResults(result) {
           ${CV_FMTS.map(([f, l]) => `<button class="cv-mini-btn ${f === 'original' ? 'active' : ''}" onclick="setCvItemFormat(${i},'${f}',this)">${l}</button>`).join('')}
         </div>
         <div class="cv-fmt-preview" id="cv-fmt-prev-${i}">${fmtPreviewHTML('original', thumbBg)}</div>
+        <div id="cv-crop-${i}" style="display:none">
+          <div class="cv-ctrl-label">Crop main clip</div>
+          <div class="cv-mini-row">
+            ${['fit', '16:9', '4:3', '1:1', '3:4'].map(c => `<button class="cv-mini-btn ${c === 'fit' ? 'active' : ''}" onclick="setCvItemCrop(${i},'${c}',this)">${c === 'fit' ? 'Fit' : c}</button>`).join('')}
+          </div>
+        </div>
         <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleCvItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
         <div id="cv-cap-sec-${i}" style="display:none;margin-top:6px">
           <div class="cv-mini-row" style="margin-bottom:8px">
@@ -2806,6 +2812,14 @@ window.setCvItemFormat = (i, f, btn) => {
   if (pad) pad.style.aspectRatio = f === 'original' ? '16/9' : '9/16'
   const prev = document.getElementById(`cv-fmt-prev-${i}`)
   if (prev) prev.innerHTML = fmtPreviewHTML(f, document.getElementById('clip-thumb')?.src)
+  // Crop only applies when reframing to 9:16.
+  const crop = document.getElementById(`cv-crop-${i}`)
+  if (crop) crop.style.display = f === 'original' ? 'none' : ''
+}
+window.setCvItemCrop = (i, c, btn) => {
+  cvSettings[i].crop = c
+  document.querySelectorAll(`#cv-crop-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
 }
 window.toggleCvItemCaptions = (i, on) => {
   cvSettings[i].captionsOn = on
