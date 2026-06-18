@@ -214,6 +214,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-left{flex:1;min-width:0}
 .clip-right{width:340px;flex-shrink:0}
 @media(max-width:900px){.clip-layout{flex-direction:column}.clip-right{width:100%}}
+.manual-clip{margin-top:16px}
+.manual-clip>summary{cursor:pointer;padding:11px 13px;font-size:.8rem;font-weight:600;list-style:none;background:var(--card);border:1px solid var(--border);border-radius:10px;user-select:none}
+.manual-clip>summary::-webkit-details-marker{display:none}
+.manual-clip>summary::before{content:'▸';display:inline-block;margin-right:8px;color:var(--a2);transition:transform .15s}
+.manual-clip[open]>summary::before{transform:rotate(90deg)}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -548,6 +553,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <img id="clip-thumb" style="display:none;width:100%;border-radius:8px;background:#000;max-height:300px;object-fit:contain"/>
           <div id="clip-url-note" style="display:none;font-size:.74rem;color:var(--a2);margin-top:8px">⚡ Server-side clip — only the selected range is downloaded from the source. Ideal for long videos.</div>
 
+          <details id="clip-manual-tools" class="manual-clip" open>
+          <summary>✂️ Manual clip<span style="opacity:.55;font-weight:400"> — optional, for trimming a specific range yourself</span></summary>
           <!-- Timeline -->
           <div style="margin-top:16px;background:var(--card);border-radius:10px;padding:16px">
             <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:8px">
@@ -682,6 +689,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               </div>
             </div>
           </div>
+          </details><!-- /#clip-manual-tools -->
 
           </div><!-- /.clip-left -->
           <div class="clip-right" id="clip-right-col" style="display:none">
@@ -1396,6 +1404,28 @@ clipDrop?.addEventListener('dragleave', () => clipDrop.classList.remove('drag'))
 clipDrop?.addEventListener('drop', e => { e.preventDefault(); clipDrop.classList.remove('drag'); loadClipFile(e.dataTransfer.files[0]) })
 document.getElementById('clip-file-input')?.addEventListener('change', e => { if (e.target.files[0]) loadClipFile(e.target.files[0]) })
 
+// Lay out the clipper by mode. URL mode: viral moments are primary (under the
+// thumbnail) and manual clipping is an optional collapsed panel on the side.
+// File mode: manual clipping is primary (under the thumbnail), no viral panel.
+function arrangeClipper(mode) {
+  const note = document.getElementById('clip-url-note')
+  const viral = document.getElementById('clip-viral-section')
+  const manual = document.getElementById('clip-manual-tools')
+  const rightCol = document.getElementById('clip-right-col')
+  if (!note || !viral || !manual || !rightCol) return
+  if (mode === 'url') {
+    note.after(viral)             // viral moments directly under the thumbnail
+    rightCol.appendChild(manual)  // manual clip → optional side panel
+    manual.open = false
+    rightCol.style.display = ''
+  } else {
+    note.after(manual)            // manual clip primary, under the thumbnail
+    manual.open = true
+    rightCol.appendChild(viral)   // park the hidden viral section in the side col
+    rightCol.style.display = 'none'
+  }
+}
+
 window.loadClipFromUrl = async () => {
   const url = document.getElementById('clip-url').value.trim()
   if (!url) return setStatus('clip-url-status', 'Paste a video link first', 'err')
@@ -1424,7 +1454,7 @@ window.loadClipFromUrl = async () => {
     document.getElementById('clip-editor').style.display = ''
     document.getElementById('clip-loader').style.display = 'none'
     document.getElementById('clip-output').style.display = 'none'
-    document.getElementById('clip-right-col').style.display = ''
+    arrangeClipper('url')
     document.getElementById('clip-viral-section').style.display = ''
     document.getElementById('clip-viral-results').style.display = 'none'
     document.getElementById('clip-viral-status').style.display = 'none'
@@ -1447,8 +1477,8 @@ function loadClipFile(file) {
   document.getElementById('clip-thumb').style.display = 'none'
   document.getElementById('clip-url-note').style.display = 'none'
   document.getElementById('clip-preview-btn').style.display = ''
-  document.getElementById('clip-right-col').style.display = 'none'
   document.getElementById('clip-viral-section').style.display = 'none'
+  arrangeClipper('file')
   const vid  = document.getElementById('clip-preview')
   vid.style.display = ''
   const url = URL.createObjectURL(file)
