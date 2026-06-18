@@ -6,7 +6,7 @@
 <title>CLIPZO — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -2433,10 +2433,34 @@ window.toggleClipCaptions = (on) => {
   document.getElementById('clip-caption-section').style.display = on ? '' : 'none'
 }
 
+// Make the "CAPTIONS" preview chip render in the selected style's real font/colour.
+const CAP_STYLE_PREVIEW = {
+  karaoke:        { font: "'Anton',sans-serif",     color: '#16ff5d', upper: true,  box: false },
+  karaoke_yellow: { font: "'Anton',sans-serif",     color: '#ffe000', upper: true,  box: false },
+  clean:          { font: "'Montserrat',sans-serif", color: '#ffffff', upper: false, box: false, weight: 700 },
+  boxed:          { font: "'Montserrat',sans-serif", color: '#ffffff', upper: false, box: true,  weight: 700 },
+  bangers:        { font: "'Bangers',cursive",       color: '#ffffff', upper: true,  box: false },
+}
+function applyChipStyle(chip, style) {
+  if (!chip) return
+  const p = CAP_STYLE_PREVIEW[style] || CAP_STYLE_PREVIEW.karaoke
+  chip.style.fontFamily = p.font
+  chip.style.fontWeight = p.weight || 400
+  chip.style.color = p.color
+  chip.style.textTransform = p.upper ? 'uppercase' : 'none'
+  chip.style.fontSize = '.95rem'
+  chip.style.letterSpacing = '.5px'
+  chip.style.background = p.box ? 'rgba(0,0,0,.7)' : 'transparent'
+  chip.style.boxShadow = 'none'
+  // Black outline so coloured text reads on the dark pad — mirrors the burned caption look.
+  chip.style.textShadow = p.box ? 'none' : '-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000'
+}
+
 window.setClipCaptionStyle = (s, btn) => {
   clipCaptionStyle = s
   document.querySelectorAll('#clip-cap-styles .cap-style-btn').forEach(b => b.classList.remove('active'))
   btn?.classList.add('active')
+  applyChipStyle(document.getElementById('clip-cap-chip'), s)
 }
 
 // Drag the caption chip around the pad to set its position (x,y as 0..1).
@@ -2463,6 +2487,7 @@ window.setClipCaptionStyle = (s, btn) => {
   window.addEventListener('pointerup', up)
   // Tapping anywhere on the pad also moves the caption there.
   pad.addEventListener('pointerdown', (e) => { if (e.target !== chip) place(e.clientX, e.clientY) })
+  applyChipStyle(chip, clipCaptionStyle)
 })()
 
 // Orchestrate captioning a produced clip blob: upload -> transcribe -> burn.
@@ -2740,6 +2765,7 @@ window.setCvCaptionStyle = (s, btn) => {
   cvCaptionStyle = s
   document.querySelectorAll('#cv-cap-styles .cap-style-btn').forEach(b => b.classList.remove('active'))
   btn?.classList.add('active')
+  applyChipStyle(document.getElementById('cv-cap-chip'), s)
 }
 ;(function initCvCaptionPad() {
   const pad = document.getElementById('cv-cap-pad')
@@ -2758,6 +2784,7 @@ window.setCvCaptionStyle = (s, btn) => {
   window.addEventListener('pointermove', (e) => { if (dragging) place(e.clientX, e.clientY) })
   window.addEventListener('pointerup', () => { dragging = false })
   pad.addEventListener('pointerdown', (e) => { if (e.target !== chip) place(e.clientX, e.clientY) })
+  applyChipStyle(chip, cvCaptionStyle)
 })()
 
 window.cvJumpTo = (start, end) => {
