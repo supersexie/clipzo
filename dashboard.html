@@ -2440,15 +2440,23 @@ async function captionizeBlob(blob, baseName) {
   setStatus('clip-status', 'Transcribing audio…', 'loading')
   const t = await api.transcribe.start(up.url)
   const jobId = t.job_id
-  let ready = false
+  let result = null
   for (let i = 0; i < 80; i++) {
     await new Promise((r) => setTimeout(r, 3000))
     const p = await api.transcribe.poll(jobId)
-    if (p.status === 'completed') { ready = true; break }
-    if (p.status === 'error') throw new Error('Transcription failed')
+    if (p.status === 'completed') { result = p; break }
+    if (p.status === 'error') { result = { failed: true }; break }
     setStatus('clip-status', `Transcribing audio… ${i * 3}s`, 'loading')
   }
-  if (!ready) throw new Error('Transcription timed out — try a shorter clip')
+  if (!result) throw new Error('Transcription timed out — try a shorter clip')
+
+  // No speech (silence) or couldn't transcribe → export the clip clean, no text.
+  const usable = !result.failed && (result.words || [])
+    .filter((w) => w.text && w.text.trim() && (w.confidence == null || w.confidence >= 0.35)).length > 0
+  if (!usable) {
+    setStatus('clip-status', 'No speech detected — exported without captions', 'ok')
+    return URL.createObjectURL(blob)
+  }
 
   setStatus('clip-status', 'Burning captions onto your clip…', 'loading')
   return api.caption.burn(jobId, up.url, clipCaptionStyle, clipCaptionPos)
