@@ -226,6 +226,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cv-mini-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-cap-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.72rem;font-weight:600;margin-top:10px}
 .cv-cap-toggle input{width:14px;height:14px;accent-color:var(--a2)}
+.cap-settings{margin-top:10px}
+.cap-settings-toggle{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--muted);font-size:.7rem;font-weight:600;padding:6px 10px;cursor:pointer;transition:border-color .15s}
+.cap-settings-toggle:hover,.cap-settings-toggle.active{border-color:var(--a2);color:#fff}
+.cap-settings-body{margin-top:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.cap-set-row{display:flex;flex-direction:column;gap:6px}
+.cap-set-row>label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.cap-set-row select{background:var(--surface);border:1px solid var(--border);border-radius:7px;color:#fff;font-size:.8rem;padding:7px 8px}
+.cap-set-row input[type=range]{width:100%;accent-color:var(--a2)}
+.cap-stroke-row{display:flex;align-items:center;gap:8px}
+.cap-swatch{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;padding:0}
+.cap-swatch.active{border-color:var(--a2);box-shadow:0 0 0 2px rgba(168,85,247,.35)}
 .cv-fmt-preview{margin-top:8px}
 .fmtp{position:relative;border-radius:5px;overflow:hidden;background:#000;border:1px solid var(--border)}
 .fmtp-wide{width:90px;aspect-ratio:16/9}
@@ -445,6 +456,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <button class="cap-style-btn" data-style="alternate" onclick="setCapStyle('alternate',this)">🔁 Alternate</button>
               <button class="cap-style-btn" data-style="badge" onclick="setCapStyle('badge',this)">🏷️ Badge</button>
             </div>
+            <div id="cap-settings-slot"></div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="cap-burn-btn" onclick="burnCaptions()">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l2 7h7l-6 4 2 7-5-4-5 4 2-7-6-4h7z"/></svg>
@@ -663,7 +675,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                 <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
                 <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
               </div>
-              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Position — drag the caption where you want it</div>
+              <div id="clip-cap-settings-slot"></div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;margin-top:10px">Position — drag the caption where you want it</div>
               <div id="clip-cap-pad" class="cap-pad">
                 <div id="clip-cap-chip" class="cap-chip">CAPTIONS</div>
               </div>
@@ -1272,6 +1285,7 @@ window.downloadSRT = () => {
 }
 
 let capStyle = 'karaoke'
+let capCustom = null
 window.setCapStyle = (s, btn) => {
   capStyle = s
   document.querySelectorAll('.cap-style-btn').forEach(b => b.classList.remove('active'))
@@ -1286,7 +1300,7 @@ window.burnCaptions = async () => {
   document.getElementById('cap-burn-result').style.display = 'none'
   setStatus('cap-burn-status', 'Burning captions… this can take a minute', 'loading')
   try {
-    const blobUrl = await api.caption.burn(captionJobId, url, capStyle)
+    const blobUrl = await api.caption.burn(captionJobId, url, capStyle, undefined, capCustom)
     document.getElementById('cap-burn-video').src = blobUrl
     document.getElementById('cap-burn-dl').href = blobUrl
     document.getElementById('cap-burn-result').style.display = ''
@@ -2459,10 +2473,100 @@ window.setClipCrop = (crop) => {
   document.querySelectorAll('.clip-crop-btn').forEach(b => b.classList.toggle('active', b.dataset.crop === crop))
 }
 
+// ── Shared "Font & stroke settings" panel — used by Captions, Clipper, and the
+// viral per-clip controls. Each instance is addressed by a unique idPrefix and
+// keeps its own custom={font,sizePct,outline,outlineWidthPct} object.
+const CAP_FONTS = [
+  ['', 'Auto (style default)'],
+  ['Anton', 'Anton'],
+  ['Bangers', 'Bangers'],
+  ['Montserrat', 'Montserrat'],
+  ['Baloo 2 ExtraBold', 'Baloo 2'],
+  ['Permanent Marker', 'Permanent Marker'],
+  ['Luckiest Guy', 'Luckiest Guy'],
+]
+function capSettingsHTML(idPrefix) {
+  return `<div class="cap-settings">
+    <button type="button" class="cap-settings-toggle" onclick="toggleCapSettings('${idPrefix}',this)">⚙️ Font &amp; stroke settings</button>
+    <div class="cap-settings-body" id="${idPrefix}-settings-body" style="display:none">
+      <div class="cap-set-row">
+        <label>Font</label>
+        <select id="${idPrefix}-font" onchange="onCapFontChange('${idPrefix}')">
+          ${CAP_FONTS.map(([v, l]) => `<option value="${v}" style="font-family:'${l}',sans-serif">${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="cap-set-row">
+        <label>Font Size</label>
+        <input type="range" min="0" max="100" value="50" id="${idPrefix}-size" oninput="onCapCustomChange('${idPrefix}')"/>
+      </div>
+      <div class="cap-set-row">
+        <label>Stroke</label>
+        <div class="cap-stroke-row">
+          <button type="button" class="cap-swatch active" data-color="#000000" style="background:#000" onclick="setCapStrokeColor('${idPrefix}','#000000',this)" title="Black stroke"></button>
+          <button type="button" class="cap-swatch" data-color="#ffffff" style="background:#fff" onclick="setCapStrokeColor('${idPrefix}','#ffffff',this)" title="White stroke"></button>
+          <input type="range" min="0" max="100" value="50" id="${idPrefix}-stroke-width" oninput="onCapCustomChange('${idPrefix}')"/>
+        </div>
+      </div>
+    </div>
+  </div>`
+}
+// Fill the static settings slots (standalone Captions panel + Clipper) once.
+// The viral per-clip slots are filled per card inside cvRenderResults instead.
+document.getElementById('cap-settings-slot')?.insertAdjacentHTML('beforeend', capSettingsHTML('cap'))
+document.getElementById('clip-cap-settings-slot')?.insertAdjacentHTML('beforeend', capSettingsHTML('clip-cap'))
+
+window.toggleCapSettings = (prefix, btn) => {
+  const body = document.getElementById(`${prefix}-settings-body`)
+  if (!body) return
+  const open = body.style.display === 'none'
+  body.style.display = open ? '' : 'none'
+  btn?.classList.toggle('active', open)
+}
+function readCapCustom(prefix) {
+  const fontEl = document.getElementById(`${prefix}-font`)
+  const sizeEl = document.getElementById(`${prefix}-size`)
+  const strokeWEl = document.getElementById(`${prefix}-stroke-width`)
+  const activeSwatch = document.querySelector(`#${prefix}-settings-body .cap-swatch.active`)
+  return {
+    font: fontEl?.value || undefined,
+    sizePct: sizeEl ? Number(sizeEl.value) : undefined,
+    outlineWidthPct: strokeWEl ? Number(strokeWEl.value) : undefined,
+    outline: activeSwatch?.dataset.color || '#000000',
+  }
+}
+// Store the freshly-read custom settings into the right place for this prefix,
+// and (when this instance has a position-pad chip) refresh the live preview.
+window.onCapCustomChange = (prefix) => {
+  const custom = readCapCustom(prefix)
+  let chipId = null
+  if (prefix === 'cap') {
+    capCustom = custom // standalone Captions panel has no position-pad chip
+  } else if (prefix === 'clip-cap') {
+    clipCaptionCustom = custom
+    chipId = 'clip-cap-chip'
+  } else {
+    const m = /^cv-cap-(\d+)$/.exec(prefix)
+    if (m) { cvSettings[Number(m[1])].custom = custom; chipId = `cv-chip-${m[1]}` }
+  }
+  const chip = chipId && document.getElementById(chipId)
+  if (chip && custom.font) chip.style.fontFamily = `'${custom.font}',sans-serif`
+}
+window.onCapFontChange = (prefix) => {
+  const fontEl = document.getElementById(`${prefix}-font`)
+  if (fontEl) fontEl.style.fontFamily = fontEl.value ? `'${fontEl.value}',sans-serif` : ''
+  onCapCustomChange(prefix)
+}
+window.setCapStrokeColor = (prefix, color, btn) => {
+  document.querySelectorAll(`#${prefix}-settings-body .cap-swatch`).forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+  onCapCustomChange(prefix)
+}
+
 // ── Clip auto-captions ─────────────────────────────────────────────────────────
 let clipCaptionsOn = false
 let clipCaptionStyle = 'karaoke'
 let clipCaptionPos = { x: 0.5, y: 0.72 } // 0..1 within the output frame
+let clipCaptionCustom = null // { font, sizePct, outline, outlineWidthPct } manual overrides
 
 window.toggleClipCaptions = (on) => {
   clipCaptionsOn = on
@@ -2549,6 +2653,9 @@ async function captionizeBlob(blob, baseName, opts = {}) {
   const statusId = opts.statusId || 'clip-status'
   const style = opts.style || clipCaptionStyle
   const position = opts.position || clipCaptionPos
+  // 'custom' may be legitimately null (no manual overrides for this clip) — only
+  // fall back to the Clipper's global custom settings when the key is omitted.
+  const custom = 'custom' in opts ? opts.custom : clipCaptionCustom
   setStatus(statusId, 'Uploading clip for captioning…', 'loading')
   const fd = new FormData()
   fd.append('file', new File([blob], (baseName || 'clip') + '.mp4', { type: 'video/mp4' }))
@@ -2576,7 +2683,7 @@ async function captionizeBlob(blob, baseName, opts = {}) {
   }
 
   setStatus(statusId, 'Burning captions onto your clip…', 'loading')
-  return api.caption.burn(jobId, up.url, style, position)
+  return api.caption.burn(jobId, up.url, style, position, custom)
 }
 
 // Fill the title/meta line on the exported-clip card.
@@ -2781,7 +2888,7 @@ function fmtPreviewHTML(format, thumb, crop) {
 
 function cvRenderResults(result) {
   cvClips = result.clips || []
-  cvSettings = cvClips.map(() => ({ format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }))
+  cvSettings = cvClips.map(() => ({ format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 }, custom: null }))
   document.getElementById('clip-viral-results').style.display = ''
   document.getElementById('clip-viral-dl-all').style.display = cvClips.length > 1 ? '' : 'none'
   const list = document.getElementById('clip-viral-list')
@@ -2824,7 +2931,8 @@ function cvRenderResults(result) {
           <div class="cv-mini-row" style="margin-bottom:8px">
             ${CV_STYLES.map(([k, l], j) => `<button class="cap-style-btn cv-mini-btn ${j === 0 ? 'active' : ''}" data-style="${k}" onclick="setCvItemStyle(${i},'${k}',this)">${l}</button>`).join('')}
           </div>
-          <div style="font-size:.66rem;color:var(--muted);margin-bottom:4px">Drag the caption where you want it</div>
+          <div id="cv-cap-settings-slot-${i}"></div>
+          <div style="font-size:.66rem;color:var(--muted);margin-bottom:4px;margin-top:8px">Drag the caption where you want it</div>
           <div class="cap-pad" id="cv-pad-${i}" style="width:110px"><div class="cap-chip" id="cv-chip-${i}">CAPTIONS</div></div>
         </div>
         <div class="clip-card-actions">
@@ -2844,6 +2952,8 @@ function cvRenderResults(result) {
   cvClips.forEach((_, i) => {
     initCvItemPad(i)
     applyChipStyle(document.getElementById(`cv-chip-${i}`), cvSettings[i].style)
+    const slot = document.getElementById(`cv-cap-settings-slot-${i}`)
+    if (slot) slot.innerHTML = capSettingsHTML(`cv-cap-${i}`)
   })
 }
 
@@ -3030,7 +3140,7 @@ window.cvDownloadOne = async (idx, opts = {}) => {
     }
     const blob = await res.blob()
     const outUrl = s.captionsOn
-      ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: s.style, position: s.pos })
+      ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: s.style, position: s.pos, custom: s.custom })
       : URL.createObjectURL(blob)
 
     // Show the rendered (reframed/captioned) result in the card.

@@ -92,13 +92,14 @@ export const api = {
   },
   caption: {
     // Burn captions onto the video. Returns an object URL for a video blob.
-    // style: preset key (karaoke|karaoke_yellow|clean|boxed|bangers)
+    // style: preset key (karaoke|karaoke_yellow|clean|boxed|bangers|...)
     // position: optional { x, y } each 0..1, or null for the style default.
-    burn: async (jobId, url, style, position) => {
+    // custom: optional { font, sizePct, outline, outlineWidthPct } manual overrides.
+    burn: async (jobId, url, style, position, custom) => {
       const res = await fetch(BASE + '/api/caption/burn', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId, url, style, position: position || undefined }),
+        body: JSON.stringify({ jobId, url, style, position: position || undefined, custom: custom || undefined }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
