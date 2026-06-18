@@ -6,8 +6,9 @@
 <title>CLIPZO — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Baloo+2:wght@800&family=Permanent+Marker&family=Luckiest+Guy&family=Archivo+Black&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Baloo+2:wght@800&family=Permanent+Marker&family=Luckiest+Guy&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
+@font-face{font-family:'TikTok Sans 18pt';src:url('/fonts/TikTokSans-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#07070f;--surface:#0f0a1e;--card:#130d24;
@@ -2486,7 +2487,7 @@ const CAP_FONTS = [
   ['Baloo 2 ExtraBold', 'Baloo 2'],
   ['Permanent Marker', 'Permanent Marker'],
   ['Luckiest Guy', 'Luckiest Guy'],
-  ['Archivo Black', 'Archivo Black'],
+  ['TikTok Sans 18pt', 'TikTok Sans'],
 ]
 function capSettingsHTML(idPrefix) {
   return `<div class="cap-settings">
@@ -2590,7 +2591,7 @@ const CAP_STYLE_PREVIEW = {
   script:         { font: "'Permanent Marker',cursive", color: '#ff0000', upper: false, box: false },
   alternate:      { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false, multi: ['#16ff5d', '#ffffff'] },
   badge:          { font: "'Baloo 2',sans-serif",       color: '#ffffff', upper: false, box: true, bg: '#7c3aed', weight: 800 },
-  headline:       { font: "'Archivo Black',sans-serif", color: '#000000', upper: false, box: true, bg: '#ffffff', radius: '12px' },
+  headline:       { font: "'TikTok Sans 18pt',sans-serif", color: '#000000', upper: false, box: true, bg: '#ffffff', radius: '12px', weight: 700 },
 }
 function applyChipStyle(chip, style) {
   if (!chip) return
