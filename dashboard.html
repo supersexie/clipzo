@@ -6,7 +6,7 @@
 <title>CLIPZO — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@700&family=Baloo+2:wght@800&family=Permanent+Marker&family=Luckiest+Guy&family=Bebas+Neue&family=Oswald:wght@700&family=Black+Han+Sans&family=Geist:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -432,8 +432,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div class="result-label">🔥 Burn captions into video</div>
             <p style="font-size:.72rem;color:var(--muted);margin:4px 0 10px">Render the captions directly onto your video — pick a style.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-              <button class="cap-style-btn active" data-style="karaoke" onclick="setCapStyle('karaoke',this)">🟢 Viral Karaoke</button>
-              <button class="cap-style-btn" data-style="clean" onclick="setCapStyle('clean',this)">⬜ Clean Subtitles</button>
+              <button class="cap-style-btn active" data-style="karaoke" onclick="setCapStyle('karaoke',this)">🟢 Viral Green</button>
+              <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setCapStyle('karaoke_yellow',this)">🟡 Viral Yellow</button>
+              <button class="cap-style-btn" data-style="clean" onclick="setCapStyle('clean',this)">⬜ Clean</button>
+              <button class="cap-style-btn" data-style="boxed" onclick="setCapStyle('boxed',this)">▪️ Box</button>
+              <button class="cap-style-btn" data-style="bangers" onclick="setCapStyle('bangers',this)">💥 Comic</button>
+              <button class="cap-style-btn" data-style="random" onclick="setCapStyle('random',this)">🌈 Random Color</button>
+              <button class="cap-style-btn" data-style="rounded" onclick="setCapStyle('rounded',this)">🔵 Rounded</button>
+              <button class="cap-style-btn" data-style="meme" onclick="setCapStyle('meme',this)">😂 Meme</button>
+              <button class="cap-style-btn" data-style="neon" onclick="setCapStyle('neon',this)">💖 Neon</button>
+              <button class="cap-style-btn" data-style="script" onclick="setCapStyle('script',this)">✍️ Script</button>
+              <button class="cap-style-btn" data-style="alternate" onclick="setCapStyle('alternate',this)">🔁 Alternate</button>
+              <button class="cap-style-btn" data-style="badge" onclick="setCapStyle('badge',this)">🏷️ Badge</button>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="cap-burn-btn" onclick="burnCaptions()">
@@ -645,6 +655,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                 <button class="cap-style-btn" data-style="clean" onclick="setClipCaptionStyle('clean',this)">⬜ Clean</button>
                 <button class="cap-style-btn" data-style="boxed" onclick="setClipCaptionStyle('boxed',this)">▪️ Box</button>
                 <button class="cap-style-btn" data-style="bangers" onclick="setClipCaptionStyle('bangers',this)">💥 Comic</button>
+                <button class="cap-style-btn" data-style="random" onclick="setClipCaptionStyle('random',this)">🌈 Random Color</button>
+                <button class="cap-style-btn" data-style="rounded" onclick="setClipCaptionStyle('rounded',this)">🔵 Rounded</button>
+                <button class="cap-style-btn" data-style="meme" onclick="setClipCaptionStyle('meme',this)">😂 Meme</button>
+                <button class="cap-style-btn" data-style="neon" onclick="setClipCaptionStyle('neon',this)">💖 Neon</button>
+                <button class="cap-style-btn" data-style="script" onclick="setClipCaptionStyle('script',this)">✍️ Script</button>
+                <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
+                <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
               </div>
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Position — drag the caption where you want it</div>
               <div id="clip-cap-pad" class="cap-pad">
@@ -2454,11 +2471,18 @@ window.toggleClipCaptions = (on) => {
 
 // Make the "CAPTIONS" preview chip render in the selected style's real font/colour.
 const CAP_STYLE_PREVIEW = {
-  karaoke:        { font: "'Anton',sans-serif",     color: '#16ff5d', upper: true,  box: false },
-  karaoke_yellow: { font: "'Anton',sans-serif",     color: '#ffe000', upper: true,  box: false },
-  clean:          { font: "'Montserrat',sans-serif", color: '#ffffff', upper: false, box: false, weight: 700 },
-  boxed:          { font: "'Montserrat',sans-serif", color: '#ffffff', upper: false, box: true,  weight: 700 },
-  bangers:        { font: "'Bangers',cursive",       color: '#ffffff', upper: true,  box: false },
+  karaoke:        { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false },
+  karaoke_yellow: { font: "'Anton',sans-serif",         color: '#ffe000', upper: true,  box: false },
+  clean:          { font: "'Montserrat',sans-serif",    color: '#ffffff', upper: false, box: false, weight: 700 },
+  boxed:          { font: "'Montserrat',sans-serif",    color: '#ffffff', upper: false, box: true,  weight: 700 },
+  bangers:        { font: "'Bangers',cursive",          color: '#ffffff', upper: true,  box: false },
+  random:         { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false, multi: ['#16ff5d', '#ffffff', '#ffa200', '#ff66ff'] },
+  rounded:        { font: "'Baloo 2',sans-serif",       color: '#ffffff', upper: false, box: false, weight: 800 },
+  meme:           { font: "'Luckiest Guy',cursive",     color: '#ff0000', upper: true,  box: false, outline: '#ffe000' },
+  neon:           { font: "'Baloo 2',sans-serif",       color: '#e93cb2', upper: true,  box: false, weight: 800 },
+  script:         { font: "'Permanent Marker',cursive", color: '#ff0000', upper: false, box: false },
+  alternate:      { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false, multi: ['#16ff5d', '#ffffff'] },
+  badge:          { font: "'Baloo 2',sans-serif",       color: '#ffffff', upper: false, box: true, bg: '#7c3aed', weight: 800 },
 }
 function applyChipStyle(chip, style) {
   if (!chip) return
@@ -2469,10 +2493,20 @@ function applyChipStyle(chip, style) {
   chip.style.textTransform = p.upper ? 'uppercase' : 'none'
   chip.style.fontSize = '.95rem'
   chip.style.letterSpacing = '.5px'
-  chip.style.background = p.box ? 'rgba(0,0,0,.7)' : 'transparent'
+  chip.style.background = p.box ? (p.bg || 'rgba(0,0,0,.7)') : 'transparent'
   chip.style.boxShadow = 'none'
-  // Black outline so coloured text reads on the dark pad — mirrors the burned caption look.
-  chip.style.textShadow = p.box ? 'none' : '-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000'
+  // Thick coloured or black outline so text reads on the dark pad — mirrors the burned caption look.
+  const oc = p.outline || '#000'
+  chip.style.textShadow = p.box ? 'none' : `-1.5px -1.5px 0 ${oc},1.5px -1.5px 0 ${oc},-1.5px 1.5px 0 ${oc},1.5px 1.5px 0 ${oc}`
+  // Multi-colour styles (Random/Alternate): paint each letter a different colour.
+  if (p.multi) {
+    const text = chip.textContent.replace(/<[^>]+>/g, '')
+    chip.innerHTML = text.split('').map((ch, i) =>
+      `<span style="color:${p.multi[i % p.multi.length]}">${ch}</span>`
+    ).join('')
+  } else if (chip.querySelector('span')) {
+    chip.textContent = chip.textContent // strip any leftover per-letter spans
+  }
 }
 
 window.setClipCaptionStyle = (s, btn) => {
@@ -2718,7 +2752,10 @@ function cvPollViral() {
 // Per-clip settings: each viral clip carries its own format/captions/position.
 let cvSettings = []
 const CV_FMTS = [['original', '16:9'], ['blur', '9:16 Blur'], ['black', '9:16 Black'], ['white', '9:16 White']]
-const CV_STYLES = [['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic']]
+const CV_STYLES = [
+  ['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic'],
+  ['random', '🌈 Random'], ['rounded', '🔵 Rounded'], ['meme', '😂 Meme'], ['neon', '💖 Neon'], ['script', '✍️ Script'], ['alternate', '🔁 Alt'], ['badge', '🏷️ Badge'],
+]
 
 // A small visual mockup of what a chosen output format looks like. Uses the
 // source thumbnail (or a gradient placeholder) as the stand-in clip.
