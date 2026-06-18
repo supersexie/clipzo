@@ -20,9 +20,28 @@ async function req(method, path, body, isFormData = false) {
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || 'Request failed')
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    // 402 = paid-only gate (no active plan or monthly quota used up). Surface a
+    // structured error so the UI can show an upgrade prompt instead of a raw message.
+    const err = new Error(data.message || data.error || 'Request failed')
+    err.status = res.status
+    err.code = data.error // 'no_active_plan' | 'quota_exceeded' | ...
+    err.needsPlan = res.status === 402
+    throw err
+  }
   return data
+}
+
+// Your 6 Whop checkout links. After creating the plans in Whop, copy each plan's
+// public checkout URL and paste it here. Used by the pricing buttons + upgrade prompts.
+const WHOP_CHECKOUT = {
+  starter_monthly:  'https://whop.com/checkout/plan_Qk5UKuHDvvjq4', // $29.99/mo
+  starter_yearly:   'https://whop.com/checkout/plan_H6ZitU3lkTM8g', // $149.99/yr
+  creator_monthly:  'https://whop.com/checkout/plan_gghoT9UzJUjIJ', // $49.99/mo
+  creator_yearly:   'https://whop.com/checkout/plan_ePC34XsWeqHFB', // $294.99/yr
+  business_monthly: 'https://whop.com/checkout/plan_tzNBvuv4dEl9e', // $99.99/mo
+  business_yearly:  'https://whop.com/checkout/plan_lwshiUS61ibEa', // $594.99/yr
 }
 
 export const api = {
@@ -71,6 +90,17 @@ export const api = {
     start: (file_url) => req('POST', '/api/autoclip', { file_url }),
     poll:  (jobId, count) => req('GET',  `/api/autoclip/${jobId}?count=${count || 5}`),
   },
+  billing: {
+    // tier: 'starter'|'creator'|'business', interval: 'monthly'|'yearly'
+    checkoutUrl: (tier, interval) => WHOP_CHECKOUT[`${tier}_${interval}`] || WHOP_CHECKOUT.creator_monthly,
+    // True when the user has an active paid plan with quota remaining.
+    canClip: async () => {
+      try {
+        const me = await req('GET', '/api/user/me')
+        return me.plan_status === 'active' && (me.videos_remaining ?? 0) > 0
+      } catch { return false }
+    },
+  },
 }
 
-export { getToken, setSession, clearSession }
+export { getToken, setSession, clearSession, WHOP_CHECKOUT }

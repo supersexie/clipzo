@@ -489,14 +489,14 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-    <div class="reveal price-card">
+    <div class="reveal price-card" data-tier="starter">
       <h3 class="price-plan">Starter</h3>
       <div class="price-amount">
-        <span class="price-num" data-monthly="25" data-annual="150">$25</span>
+        <span class="price-num" data-monthly="29.99" data-annual="149.99">$29.99</span>
         <span class="price-period">/mo</span>
       </div>
-      <p class="price-sub">Billed monthly</p>
-      <a href="/dashboard.html" class="btn-outline w-full mt-6">Get Started</a>
+      <p class="price-sub" data-sub>Billed monthly</p>
+      <a href="#" class="btn-outline w-full mt-6 plan-cta">Get Started</a>
       <ul class="price-features">
         <li>30 videos / month</li>
         <li>200 credits</li>
@@ -508,15 +508,15 @@
       </ul>
     </div>
 
-    <div class="reveal price-card price-card-featured">
+    <div class="reveal price-card price-card-featured" data-tier="creator">
       <div class="popular-badge">Most Popular</div>
       <h3 class="price-plan">Creator</h3>
       <div class="price-amount">
-        <span class="price-num" data-monthly="49" data-annual="294">$49</span>
+        <span class="price-num" data-monthly="49.99" data-annual="294.99">$49.99</span>
         <span class="price-period">/mo</span>
       </div>
-      <p class="price-sub">Billed monthly</p>
-      <a href="/dashboard.html" class="btn-lime w-full mt-6 text-center py-3 rounded-xl font-bold">Get Started</a>
+      <p class="price-sub" data-sub>Billed monthly</p>
+      <a href="#" class="btn-lime w-full mt-6 text-center py-3 rounded-xl font-bold plan-cta">Get Started</a>
       <ul class="price-features">
         <li>90 videos / month</li>
         <li>500 credits</li>
@@ -528,14 +528,14 @@
       </ul>
     </div>
 
-    <div class="reveal price-card">
+    <div class="reveal price-card" data-tier="business">
       <h3 class="price-plan">Business</h3>
       <div class="price-amount">
-        <span class="price-num" data-monthly="99" data-annual="594">$99</span>
+        <span class="price-num" data-monthly="99.99" data-annual="594.99">$99.99</span>
         <span class="price-period">/mo</span>
       </div>
-      <p class="price-sub">Billed monthly</p>
-      <a href="/dashboard.html" class="btn-outline w-full mt-6">Get Started</a>
+      <p class="price-sub" data-sub>Billed monthly</p>
+      <a href="#" class="btn-outline w-full mt-6 plan-cta">Get Started</a>
       <ul class="price-features">
         <li>200 videos / month</li>
         <li>1,200 credits</li>
@@ -698,5 +698,40 @@
 </footer>
 
 <script src="script.js"></script>
+<script type="module">
+  import { api } from './api.js'
+
+  // Monthly/annual toggle: swap displayed prices + remember the choice so the
+  // CTA sends the buyer to the matching Whop checkout.
+  let interval = 'monthly'
+  const monthlyBtn = document.getElementById('toggleMonthly')
+  const annualBtn = document.getElementById('toggleAnnual')
+
+  function applyInterval(next) {
+    interval = next
+    const annual = interval === 'yearly'
+    monthlyBtn?.classList.toggle('active', !annual)
+    annualBtn?.classList.toggle('active', annual)
+    document.querySelectorAll('.price-num').forEach((el) => {
+      const v = annual ? el.dataset.annual : el.dataset.monthly
+      if (v) el.textContent = '$' + v
+    })
+    document.querySelectorAll('[data-sub]').forEach((el) => {
+      el.textContent = annual ? 'Billed yearly' : 'Billed monthly'
+    })
+  }
+  monthlyBtn?.addEventListener('click', () => applyInterval('monthly'))
+  annualBtn?.addEventListener('click', () => applyInterval('yearly'))
+
+  // Each plan CTA -> the right Whop checkout for that tier + interval.
+  document.querySelectorAll('.price-card').forEach((card) => {
+    const tier = card.dataset.tier
+    const cta = card.querySelector('.plan-cta')
+    cta?.addEventListener('click', (e) => {
+      e.preventDefault()
+      window.location.href = api.billing.checkoutUrl(tier, interval)
+    })
+  })
+</script>
 </body>
 </html>
