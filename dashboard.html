@@ -226,6 +226,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cv-mini-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-cap-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.72rem;font-weight:600;margin-top:10px}
 .cv-cap-toggle input{width:14px;height:14px;accent-color:var(--a2)}
+.cv-fmt-preview{margin-top:8px}
+.fmtp{position:relative;border-radius:5px;overflow:hidden;background:#000;border:1px solid var(--border)}
+.fmtp-wide{width:90px;aspect-ratio:16/9}
+.fmtp-tall{width:52px;aspect-ratio:9/16}
+.fmtp .cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.fmtp .blur{filter:blur(5px) brightness(.65);transform:scale(1.25)}
+.fmtp .fg{position:absolute;left:0;top:50%;width:100%;height:31.6%;transform:translateY(-50%);object-fit:cover}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -2713,6 +2720,20 @@ let cvSettings = []
 const CV_FMTS = [['original', '16:9'], ['blur', '9:16 Blur'], ['black', '9:16 Black'], ['white', '9:16 White']]
 const CV_STYLES = [['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic']]
 
+// A small visual mockup of what a chosen output format looks like. Uses the
+// source thumbnail (or a gradient placeholder) as the stand-in clip.
+function cvFmtEl(cls, thumb) {
+  return thumb
+    ? `<img class="${cls}" src="${thumb}" alt=""/>`
+    : `<div class="${cls}" style="background:linear-gradient(135deg,#5b3fa0,#9a7be0)"></div>`
+}
+function fmtPreviewHTML(format, thumb) {
+  if (format === 'original') return `<div class="fmtp fmtp-wide">${cvFmtEl('cover', thumb)}</div>`
+  const bgColor = format === 'white' ? '#fff' : '#000'
+  const bg = format === 'blur' ? cvFmtEl('cover blur', thumb) : ''
+  return `<div class="fmtp fmtp-tall" style="background:${bgColor}">${bg}${cvFmtEl('fg', thumb)}</div>`
+}
+
 function cvRenderResults(result) {
   cvClips = result.clips || []
   cvSettings = cvClips.map(() => ({ format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }))
@@ -2746,6 +2767,7 @@ function cvRenderResults(result) {
         <div class="cv-mini-row">
           ${CV_FMTS.map(([f, l]) => `<button class="cv-mini-btn ${f === 'original' ? 'active' : ''}" onclick="setCvItemFormat(${i},'${f}',this)">${l}</button>`).join('')}
         </div>
+        <div class="cv-fmt-preview" id="cv-fmt-prev-${i}">${fmtPreviewHTML('original', thumbBg)}</div>
         <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleCvItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
         <div id="cv-cap-sec-${i}" style="display:none;margin-top:6px">
           <div class="cv-mini-row" style="margin-bottom:8px">
@@ -2782,6 +2804,8 @@ window.setCvItemFormat = (i, f, btn) => {
   btn.classList.add('active')
   const pad = document.getElementById(`cv-pad-${i}`)
   if (pad) pad.style.aspectRatio = f === 'original' ? '16/9' : '9/16'
+  const prev = document.getElementById(`cv-fmt-prev-${i}`)
+  if (prev) prev.innerHTML = fmtPreviewHTML(f, document.getElementById('clip-thumb')?.src)
 }
 window.toggleCvItemCaptions = (i, on) => {
   cvSettings[i].captionsOn = on
