@@ -195,6 +195,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-fmt-btn{border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);padding:10px 8px 8px;text-align:center;transition:border-color .15s;color:#fff;min-width:90px}
 .clip-fmt-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-fmt-btn.active{border-color:var(--a2);background:rgba(168,85,247,.08)}
+.cap-style-btn{border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);padding:9px 14px;font-size:.8rem;font-weight:600;color:#fff;transition:border-color .15s}
+.cap-style-btn:hover{border-color:rgba(168,85,247,.5)}
+.cap-style-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -389,6 +392,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div class="result-label">SRT Captions</div>
             <textarea id="cap-srt" readonly style="font-family:monospace;font-size:.72rem"></textarea>
             <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="downloadSRT()">⬇ Download SRT</button>
+          </div>
+          <div class="result-box" style="margin-top:10px">
+            <div class="result-label">🔥 Burn captions into video</div>
+            <p style="font-size:.72rem;color:var(--muted);margin:4px 0 10px">Render the captions directly onto your video — pick a style.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="cap-style-btn active" data-style="karaoke" onclick="setCapStyle('karaoke',this)">🟢 Viral Karaoke</button>
+              <button class="cap-style-btn" data-style="clean" onclick="setCapStyle('clean',this)">⬜ Clean Subtitles</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-primary" id="cap-burn-btn" onclick="burnCaptions()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l2 7h7l-6 4 2 7-5-4-5 4 2-7-6-4h7z"/></svg>
+                Burn into video
+              </button>
+              <div class="status" id="cap-burn-status" style="display:none"></div>
+            </div>
+            <div id="cap-burn-result" style="display:none;margin-top:12px">
+              <video id="cap-burn-video" controls style="width:100%;max-width:300px;border-radius:10px;display:block"></video>
+              <a id="cap-burn-dl" class="btn btn-ghost btn-sm" style="margin-top:8px;display:inline-flex" download="captioned.mp4">⬇ Download MP4</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1173,6 +1195,34 @@ window.downloadSRT = () => {
   const blob = new Blob([srt], { type:'text/plain' })
   const a    = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download:'captions.srt' })
   a.click(); URL.revokeObjectURL(a.href)
+}
+
+let capStyle = 'karaoke'
+window.setCapStyle = (s, btn) => {
+  capStyle = s
+  document.querySelectorAll('.cap-style-btn').forEach(b => b.classList.remove('active'))
+  btn?.classList.add('active')
+}
+
+window.burnCaptions = async () => {
+  const url = document.getElementById('cap-url').value.trim()
+  if (!captionJobId || !url) return setStatus('cap-burn-status', 'Transcribe a video first', 'err')
+  const btn = document.getElementById('cap-burn-btn')
+  btn.disabled = true
+  document.getElementById('cap-burn-result').style.display = 'none'
+  setStatus('cap-burn-status', 'Burning captions… this can take a minute', 'loading')
+  try {
+    const blobUrl = await api.caption.burn(captionJobId, url, capStyle)
+    document.getElementById('cap-burn-video').src = blobUrl
+    document.getElementById('cap-burn-dl').href = blobUrl
+    document.getElementById('cap-burn-result').style.display = ''
+    setStatus('cap-burn-status', 'Done!', 'ok')
+    loadUsage()
+  } catch (e) {
+    setStatus('cap-burn-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
+  } finally {
+    btn.disabled = false
+  }
 }
 
 // ── IMAGE GEN ─────────────────────────────────────────────────────────────────

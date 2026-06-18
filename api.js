@@ -90,6 +90,25 @@ export const api = {
     start: (file_url) => req('POST', '/api/autoclip', { file_url }),
     poll:  (jobId, count) => req('GET',  `/api/autoclip/${jobId}?count=${count || 5}`),
   },
+  caption: {
+    // Burn captions onto the video. Returns an object URL for a video blob.
+    // style: 'karaoke' | 'clean'
+    burn: async (jobId, url, style) => {
+      const res = await fetch(BASE + '/api/caption/burn', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId, url, style }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const err = new Error(data.message || data.error || 'Caption burn failed')
+        err.status = res.status
+        err.needsPlan = res.status === 402
+        throw err
+      }
+      return URL.createObjectURL(await res.blob())
+    },
+  },
   billing: {
     // tier: 'starter'|'creator'|'business', interval: 'monthly'|'yearly'
     checkoutUrl: (tier, interval) => WHOP_CHECKOUT[`${tier}_${interval}`] || WHOP_CHECKOUT.creator_monthly,
