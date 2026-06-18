@@ -2750,7 +2750,7 @@ function cvRenderResults(result) {
     const dur = clip.duration || (clip.end - clip.start)
     const bg = thumbBg ? `background-image:url('${thumbBg}');background-size:cover;background-position:center;` : 'background:var(--card);'
     return `<div id="cv-item-${i}" class="clip-card">
-      <div class="cv-thumb" onclick="cvJumpTo(${clip.start},${clip.end})" title="Preview range in the player" style="width:128px;flex-shrink:0;aspect-ratio:9/16;${bg}border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden">
+      <div class="cv-thumb" onclick="cvPreviewOne(${i})" title="Click to preview this clip" style="width:128px;flex-shrink:0;align-self:flex-start;aspect-ratio:9/16;${bg}border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden">
         <div style="position:absolute;inset:0;background:rgba(0,0,0,.4)"></div>
         <div style="position:absolute;top:6px;left:6px;background:var(--a1);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:#f0eeff;z-index:1">${i+1}</div>
         <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24" style="color:#fff;opacity:.92;position:relative;z-index:1"><polygon points="6 4 20 12 6 20 6 4"/></svg>
@@ -2857,6 +2857,34 @@ window.cvJumpTo = (start, end) => {
   clipOutPoint = end
   updateHandles()
   updateInputs()
+}
+
+// Render a quick raw preview of a clip (original framing, no captions) into its
+// card so the user can see the actual moment before choosing format/captions.
+window.cvPreviewOne = async (i) => {
+  const clip = cvClips[i]
+  if (!clip || !clipSourceUrl) return
+  const item = document.getElementById(`cv-item-${i}`)
+  const thumb = item?.querySelector('.cv-thumb')
+  if (!thumb) return // already previewed/rendered
+  thumb.style.pointerEvents = 'none'
+  thumb.style.opacity = '.6'
+  setStatus('clip-viral-status', `Loading preview for clip ${i + 1}…`, 'loading')
+  try {
+    const res = await fetch(api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}))
+      const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
+    }
+    const url = URL.createObjectURL(await res.blob())
+    const v = document.createElement('video')
+    v.src = url; v.controls = true; v.className = 'clip-card-video'
+    thumb.replaceWith(v)
+    document.getElementById('clip-viral-status').style.display = 'none'
+  } catch (e) {
+    thumb.style.pointerEvents = ''; thumb.style.opacity = ''
+    setStatus('clip-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
+  }
 }
 
 window.cvDownloadOne = async (idx, opts = {}) => {
