@@ -2879,7 +2879,11 @@ window.cvPreviewOne = async (i) => {
   const thumb = item?.querySelector('.cv-thumb')
   if (!thumb) return // already previewed/rendered
   thumb.style.pointerEvents = 'none'
-  thumb.style.opacity = '.6'
+  // Loading overlay while the preview clip is cut server-side.
+  const loader = document.createElement('div')
+  loader.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(0,0,0,.6);z-index:3;font-size:.6rem;color:#fff;text-align:center;padding:6px'
+  loader.innerHTML = '<div class="spinner"></div><span>Loading preview…</span>'
+  thumb.appendChild(loader)
   setStatus('clip-viral-status', `Loading preview for clip ${i + 1}…`, 'loading')
   try {
     const res = await fetch(api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
@@ -2889,11 +2893,14 @@ window.cvPreviewOne = async (i) => {
     }
     const url = URL.createObjectURL(await res.blob())
     const v = document.createElement('video')
-    v.src = url; v.controls = true; v.className = 'clip-card-video'
+    v.src = url; v.controls = true; v.muted = true; v.autoplay = true; v.playsInline = true
+    v.className = 'clip-card-video'
     thumb.replaceWith(v)
+    v.play?.().catch(() => {}) // autoplay the preview (muted so browsers allow it)
     document.getElementById('clip-viral-status').style.display = 'none'
   } catch (e) {
-    thumb.style.pointerEvents = ''; thumb.style.opacity = ''
+    loader.remove()
+    thumb.style.pointerEvents = ''
     setStatus('clip-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
   }
 }
