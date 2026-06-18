@@ -2476,7 +2476,9 @@ window.exportClip = async () => {
       const res = await fetch(api.download.clipUrl(clipSourceUrl, clipInPoint.toFixed(2), clipOutPoint.toFixed(2), clipFormat, clipCropRatio))
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Server clip failed')
+        const e = new Error(err.message || err.error || 'Server clip failed')
+        e.needsPlan = res.status === 402
+        throw e
       }
       const blob = await res.blob()
       const base = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}`
