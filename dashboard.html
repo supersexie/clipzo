@@ -210,6 +210,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-card-desc{font-size:.74rem;color:var(--muted);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
 .clip-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
 @media(max-width:560px){.clip-card-video{width:104px}}
+.clip-layout{display:flex;gap:20px;align-items:flex-start}
+.clip-left{flex:1;min-width:0}
+.clip-right{width:340px;flex-shrink:0}
+@media(max-width:900px){.clip-layout{flex-direction:column}.clip-right{width:100%}}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -537,9 +541,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <input type="file" id="clip-file-input" accept="video/*" style="display:none"/>
 
         <div id="clip-editor" style="display:none;margin-top:20px">
+          <div class="clip-layout">
+          <div class="clip-left">
           <!-- Preview -->
-          <video id="clip-preview" controls style="width:100%;border-radius:8px;background:#000;max-height:340px"></video>
-          <img id="clip-thumb" style="display:none;width:100%;border-radius:8px;background:#000;max-height:340px;object-fit:contain"/>
+          <video id="clip-preview" controls style="width:100%;border-radius:8px;background:#000;max-height:300px"></video>
+          <img id="clip-thumb" style="display:none;width:100%;border-radius:8px;background:#000;max-height:300px;object-fit:contain"/>
           <div id="clip-url-note" style="display:none;font-size:.74rem;color:var(--a2);margin-top:8px">⚡ Server-side clip — only the selected range is downloaded from the source. Ideal for long videos.</div>
 
           <!-- Timeline -->
@@ -677,8 +683,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             </div>
           </div>
 
+          </div><!-- /.clip-left -->
+          <div class="clip-right" id="clip-right-col" style="display:none">
           <!-- Viral Moments (URL mode only) -->
-          <div id="clip-viral-section" style="display:none;margin-top:20px;padding:20px;background:var(--card);border-radius:12px;border:1px solid var(--border)">
+          <div id="clip-viral-section" style="display:none;padding:20px;background:var(--card);border-radius:12px;border:1px solid var(--border)">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
               <h4 style="margin:0;font-size:.95rem">Find Viral Moments</h4>
               <button class="btn btn-primary btn-sm" id="clip-viral-btn" onclick="clipFindViral()">
@@ -742,6 +750,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <div id="clip-viral-list"></div>
             </div>
           </div>
+          </div><!-- /.clip-right -->
+          </div><!-- /.clip-layout -->
         </div>
       </div>
     </div>
@@ -1414,6 +1424,7 @@ window.loadClipFromUrl = async () => {
     document.getElementById('clip-editor').style.display = ''
     document.getElementById('clip-loader').style.display = 'none'
     document.getElementById('clip-output').style.display = 'none'
+    document.getElementById('clip-right-col').style.display = ''
     document.getElementById('clip-viral-section').style.display = ''
     document.getElementById('clip-viral-results').style.display = 'none'
     document.getElementById('clip-viral-status').style.display = 'none'
@@ -1436,6 +1447,7 @@ function loadClipFile(file) {
   document.getElementById('clip-thumb').style.display = 'none'
   document.getElementById('clip-url-note').style.display = 'none'
   document.getElementById('clip-preview-btn').style.display = ''
+  document.getElementById('clip-right-col').style.display = 'none'
   document.getElementById('clip-viral-section').style.display = 'none'
   const vid  = document.getElementById('clip-preview')
   vid.style.display = ''
