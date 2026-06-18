@@ -628,12 +628,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             </div>
             <div class="status" id="clip-viral-status" style="display:none;margin-bottom:10px"></div>
             <div id="clip-viral-results" style="display:none">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
                 <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Viral Moments — ranked by AI</div>
                 <button class="btn btn-primary btn-sm" id="clip-viral-dl-all" onclick="clipViralDownloadAll()">
                   <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Download All
                 </button>
+              </div>
+              <!-- Download format for viral clips -->
+              <div style="background:var(--surface);border-radius:8px;padding:10px 12px;margin-bottom:12px">
+                <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Download viral clips as:</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap" id="cv-format-buttons">
+                  <button class="clip-crop-btn active" data-cvfmt="original" onclick="setCvFormat('original')">Original (16:9)</button>
+                  <button class="clip-crop-btn" data-cvfmt="blur" onclick="setCvFormat('blur')">9:16 Blur</button>
+                  <button class="clip-crop-btn" data-cvfmt="black" onclick="setCvFormat('black')">9:16 Black</button>
+                  <button class="clip-crop-btn" data-cvfmt="white" onclick="setCvFormat('white')">9:16 White</button>
+                </div>
+                <div id="cv-crop-row" style="display:none;margin-top:8px">
+                  <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Crop main clip:</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap" id="cv-crop-buttons">
+                    <button class="clip-crop-btn active" data-cvcrop="fit" onclick="setCvCrop('fit')">Fit</button>
+                    <button class="clip-crop-btn" data-cvcrop="16:9" onclick="setCvCrop('16:9')">16:9</button>
+                    <button class="clip-crop-btn" data-cvcrop="4:3" onclick="setCvCrop('4:3')">4:3</button>
+                    <button class="clip-crop-btn" data-cvcrop="1:1" onclick="setCvCrop('1:1')">1:1</button>
+                    <button class="clip-crop-btn" data-cvcrop="3:4" onclick="setCvCrop('3:4')">3:4</button>
+                  </div>
+                </div>
               </div>
               <div id="clip-viral-list"></div>
             </div>
@@ -2471,6 +2491,20 @@ function cvRenderResults(result) {
   }).join('')
 }
 
+let cvFormat = 'original'   // 'original'|'blur'|'black'|'white'
+let cvCrop = 'fit'          // 'fit'|'16:9'|'4:3'|'1:1'|'3:4'
+
+window.setCvFormat = (fmt) => {
+  cvFormat = fmt
+  document.querySelectorAll('.clip-crop-btn[data-cvfmt]').forEach(b => b.classList.toggle('active', b.dataset.cvfmt === fmt))
+  document.getElementById('cv-crop-row').style.display = fmt === 'original' ? 'none' : ''
+}
+
+window.setCvCrop = (crop) => {
+  cvCrop = crop
+  document.querySelectorAll('.clip-crop-btn[data-cvcrop]').forEach(b => b.classList.toggle('active', b.dataset.cvcrop === crop))
+}
+
 window.cvJumpTo = (start, end) => {
   clipInPoint = start
   clipOutPoint = end
@@ -2481,9 +2515,10 @@ window.cvJumpTo = (start, end) => {
 window.cvDownloadOne = async (idx) => {
   const clip = cvClips[idx]
   if (!clip || !clipSourceUrl) return
-  setStatus('clip-viral-status', `Downloading clip ${idx + 1}...`, 'loading')
+  const note = cvFormat === 'original' ? '' : ` (9:16 ${cvFormat})`
+  setStatus('clip-viral-status', `Downloading clip ${idx + 1}${note}...`, 'loading')
   try {
-    const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+    const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2), cvFormat, cvCrop)
     const res = await fetch(clipUrl)
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Download failed') }
     const blob = await res.blob()
@@ -2504,9 +2539,10 @@ window.clipViralDownloadAll = async () => {
   btn.disabled = true
   for (let i = 0; i < cvClips.length; i++) {
     const clip = cvClips[i]
-    setStatus('clip-viral-status', `Downloading clip ${i + 1} of ${cvClips.length}...`, 'loading')
+    const note = cvFormat === 'original' ? '' : ` (9:16 ${cvFormat})`
+    setStatus('clip-viral-status', `Downloading clip ${i + 1} of ${cvClips.length}${note}...`, 'loading')
     try {
-      const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2))
+      const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2), cvFormat, cvCrop)
       const res = await fetch(clipUrl)
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed') }
       const blob = await res.blob()
