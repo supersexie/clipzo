@@ -198,6 +198,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cap-style-btn{border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface);padding:9px 14px;font-size:.8rem;font-weight:600;color:#fff;transition:border-color .15s}
 .cap-style-btn:hover{border-color:rgba(168,85,247,.5)}
 .cap-style-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
+.cap-pad{position:relative;width:160px;aspect-ratio:9/16;margin:0 auto;background:repeating-linear-gradient(45deg,#1a1a24,#1a1a24 8px,#1e1e2a 8px,#1e1e2a 16px);border:2px solid var(--border);border-radius:10px;overflow:hidden;touch-action:none}
+.cap-chip{position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);background:rgba(168,85,247,.9);color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.5px;padding:4px 8px;border-radius:5px;cursor:grab;user-select:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.cap-chip:active{cursor:grabbing}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -589,6 +592,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                 <button class="clip-crop-btn" data-crop="1:1" onclick="setClipCrop('1:1')">1:1</button>
                 <button class="clip-crop-btn" data-crop="3:4" onclick="setClipCrop('3:4')">3:4</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Auto-captions -->
+          <div style="margin-top:16px;background:var(--card);border-radius:10px;padding:14px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;font-weight:600">
+              <input type="checkbox" id="clip-cap-toggle" onchange="toggleClipCaptions(this.checked)" style="width:16px;height:16px;accent-color:var(--a2)"/>
+              🔥 Add auto-captions to this clip
+            </label>
+            <div id="clip-caption-section" style="display:none;margin-top:14px">
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Caption style</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="clip-cap-styles">
+                <button class="cap-style-btn active" data-style="karaoke" onclick="setClipCaptionStyle('karaoke',this)">🟢 Viral Green</button>
+                <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setClipCaptionStyle('karaoke_yellow',this)">🟡 Viral Yellow</button>
+                <button class="cap-style-btn" data-style="clean" onclick="setClipCaptionStyle('clean',this)">⬜ Clean</button>
+                <button class="cap-style-btn" data-style="boxed" onclick="setClipCaptionStyle('boxed',this)">▪️ Box</button>
+                <button class="cap-style-btn" data-style="bangers" onclick="setClipCaptionStyle('bangers',this)">💥 Comic</button>
+              </div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Position — drag the caption where you want it</div>
+              <div id="clip-cap-pad" class="cap-pad">
+                <div id="clip-cap-chip" class="cap-chip">CAPTIONS</div>
+              </div>
+              <p style="font-size:.68rem;color:var(--muted);margin-top:8px">Captioning transcribes your clip, so export takes a little longer.</p>
             </div>
           </div>
 
@@ -2348,11 +2374,84 @@ window.setClipFormat = (fmt) => {
     const svg = btn.querySelector('svg')?.outerHTML || ''
     btn.innerHTML = svg + ' ' + (labels[fmt] || 'Export clip')
   }
+  // Match the caption position pad to the chosen output aspect ratio.
+  const pad = document.getElementById('clip-cap-pad')
+  if (pad) {
+    pad.style.aspectRatio = fmt === 'original' ? '16/9' : '9/16'
+    pad.style.width = fmt === 'original' ? '240px' : '160px'
+  }
 }
 
 window.setClipCrop = (crop) => {
   clipCropRatio = crop
   document.querySelectorAll('.clip-crop-btn').forEach(b => b.classList.toggle('active', b.dataset.crop === crop))
+}
+
+// ── Clip auto-captions ─────────────────────────────────────────────────────────
+let clipCaptionsOn = false
+let clipCaptionStyle = 'karaoke'
+let clipCaptionPos = { x: 0.5, y: 0.72 } // 0..1 within the output frame
+
+window.toggleClipCaptions = (on) => {
+  clipCaptionsOn = on
+  document.getElementById('clip-caption-section').style.display = on ? '' : 'none'
+}
+
+window.setClipCaptionStyle = (s, btn) => {
+  clipCaptionStyle = s
+  document.querySelectorAll('#clip-cap-styles .cap-style-btn').forEach(b => b.classList.remove('active'))
+  btn?.classList.add('active')
+}
+
+// Drag the caption chip around the pad to set its position (x,y as 0..1).
+;(function initCaptionPad() {
+  const pad = document.getElementById('clip-cap-pad')
+  const chip = document.getElementById('clip-cap-chip')
+  if (!pad || !chip) return
+  let dragging = false
+  const place = (clientX, clientY) => {
+    const r = pad.getBoundingClientRect()
+    let x = (clientX - r.left) / r.width
+    let y = (clientY - r.top) / r.height
+    x = Math.min(0.98, Math.max(0.02, x))
+    y = Math.min(0.98, Math.max(0.02, y))
+    clipCaptionPos = { x, y }
+    chip.style.left = x * 100 + '%'
+    chip.style.top = y * 100 + '%'
+  }
+  const down = (e) => { dragging = true; chip.setPointerCapture?.(e.pointerId); e.preventDefault() }
+  const move = (e) => { if (dragging) place(e.clientX, e.clientY) }
+  const up = () => { dragging = false }
+  chip.addEventListener('pointerdown', down)
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+  // Tapping anywhere on the pad also moves the caption there.
+  pad.addEventListener('pointerdown', (e) => { if (e.target !== chip) place(e.clientX, e.clientY) })
+})()
+
+// Orchestrate captioning a produced clip blob: upload -> transcribe -> burn.
+// Returns an object URL for the captioned video.
+async function captionizeBlob(blob, baseName) {
+  setStatus('clip-status', 'Uploading clip for captioning…', 'loading')
+  const fd = new FormData()
+  fd.append('file', new File([blob], (baseName || 'clip') + '.mp4', { type: 'video/mp4' }))
+  const up = await api.upload.file(fd)
+
+  setStatus('clip-status', 'Transcribing audio…', 'loading')
+  const t = await api.transcribe.start(up.url)
+  const jobId = t.job_id
+  let ready = false
+  for (let i = 0; i < 80; i++) {
+    await new Promise((r) => setTimeout(r, 3000))
+    const p = await api.transcribe.poll(jobId)
+    if (p.status === 'completed') { ready = true; break }
+    if (p.status === 'error') throw new Error('Transcription failed')
+    setStatus('clip-status', `Transcribing audio… ${i * 3}s`, 'loading')
+  }
+  if (!ready) throw new Error('Transcription timed out — try a shorter clip')
+
+  setStatus('clip-status', 'Burning captions onto your clip…', 'loading')
+  return api.caption.burn(jobId, up.url, clipCaptionStyle, clipCaptionPos)
 }
 
 window.openLastClipInEditor = async () => {
@@ -2380,14 +2479,15 @@ window.exportClip = async () => {
         throw new Error(err.error || 'Server clip failed')
       }
       const blob = await res.blob()
-      const url  = URL.createObjectURL(blob)
+      const base = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}`
+      const url = clipCaptionsOn ? await captionizeBlob(blob, base) : URL.createObjectURL(blob)
       document.getElementById('clip-output-video').src = url
       document.getElementById('clip-dl').href = url
-      document.getElementById('clip-dl').download = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}.mp4`
+      document.getElementById('clip-dl').download = `${base}${clipCaptionsOn ? '_captioned' : ''}.mp4`
       document.getElementById('clip-output').style.display = ''
       setStatus('clip-status','Done!','ok')
     } catch(e) {
-      setStatus('clip-status', e.message || 'Clip failed', 'err')
+      setStatus('clip-status', e.needsPlan ? e.message + ' — upgrade to continue' : (e.message || 'Clip failed'), 'err')
     }
     btn.disabled = false
     return
@@ -2427,15 +2527,16 @@ window.exportClip = async () => {
     ffmpeg.FS('unlink', 'output.mp4')
 
     const blob = new Blob([data.buffer], { type: 'video/mp4' })
-    const url  = URL.createObjectURL(blob)
+    const base = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}`
+    const url = clipCaptionsOn ? await captionizeBlob(blob, base) : URL.createObjectURL(blob)
     document.getElementById('clip-output-video').src = url
     document.getElementById('clip-dl').href = url
-    document.getElementById('clip-dl').download = `clip_${clipInPoint.toFixed(1)}-${clipOutPoint.toFixed(1)}.mp4`
+    document.getElementById('clip-dl').download = `${base}${clipCaptionsOn ? '_captioned' : ''}.mp4`
     document.getElementById('clip-output').style.display = ''
     setStatus('clip-status','Done!','ok')
   } catch(e) {
     console.error(e)
-    setStatus('clip-status', 'Export failed: ' + e.message, 'err')
+    setStatus('clip-status', e.needsPlan ? e.message + ' — upgrade to continue' : ('Export failed: ' + e.message), 'err')
   }
   btn.disabled = false
 }
