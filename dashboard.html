@@ -219,6 +219,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .manual-clip>summary::-webkit-details-marker{display:none}
 .manual-clip>summary::before{content:'▸';display:inline-block;margin-right:8px;color:var(--a2);transition:transform .15s}
 .manual-clip[open]>summary::before{transform:rotate(90deg)}
+.cv-ctrl-label{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 4px}
+.cv-mini-row{display:flex;gap:5px;flex-wrap:wrap}
+.cv-mini-btn{border:1.5px solid var(--border);border-radius:6px;background:var(--surface);color:#fff;font-size:.66rem;font-weight:600;padding:5px 8px;cursor:pointer;transition:border-color .15s}
+.cv-mini-btn:hover{border-color:rgba(168,85,247,.5)}
+.cv-mini-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
+.cv-cap-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:.72rem;font-weight:600;margin-top:10px}
+.cv-cap-toggle input{width:14px;height:14px;accent-color:var(--a2)}
 .clip-crop-btn{border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--surface);padding:6px 12px;font-size:.72rem;color:#fff;transition:border-color .15s}
 .clip-crop-btn:hover{border-color:rgba(168,85,247,.5)}
 .clip-crop-btn.active{border-color:var(--a2);background:rgba(168,85,247,.15);color:var(--a2)}
@@ -717,44 +724,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                   Download All
                 </button>
               </div>
-              <!-- Download format for viral clips -->
-              <div style="background:var(--surface);border-radius:8px;padding:10px 12px;margin-bottom:12px">
-                <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Download viral clips as:</div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap" id="cv-format-buttons">
-                  <button class="clip-crop-btn active" data-cvfmt="original" onclick="setCvFormat('original')">Original (16:9)</button>
-                  <button class="clip-crop-btn" data-cvfmt="blur" onclick="setCvFormat('blur')">9:16 Blur</button>
-                  <button class="clip-crop-btn" data-cvfmt="black" onclick="setCvFormat('black')">9:16 Black</button>
-                  <button class="clip-crop-btn" data-cvfmt="white" onclick="setCvFormat('white')">9:16 White</button>
-                </div>
-                <div id="cv-crop-row" style="display:none;margin-top:8px">
-                  <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Crop main clip:</div>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap" id="cv-crop-buttons">
-                    <button class="clip-crop-btn active" data-cvcrop="fit" onclick="setCvCrop('fit')">Fit</button>
-                    <button class="clip-crop-btn" data-cvcrop="16:9" onclick="setCvCrop('16:9')">16:9</button>
-                    <button class="clip-crop-btn" data-cvcrop="4:3" onclick="setCvCrop('4:3')">4:3</button>
-                    <button class="clip-crop-btn" data-cvcrop="1:1" onclick="setCvCrop('1:1')">1:1</button>
-                    <button class="clip-crop-btn" data-cvcrop="3:4" onclick="setCvCrop('3:4')">3:4</button>
-                  </div>
-                </div>
-                <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
-                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.74rem;font-weight:600">
-                    <input type="checkbox" id="cv-cap-toggle" onchange="toggleCvCaptions(this.checked)" style="width:15px;height:15px;accent-color:var(--a2)"/>
-                    🔥 Add auto-captions to viral clips
-                  </label>
-                  <div id="cv-caption-section" style="display:none;margin-top:10px">
-                    <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Caption style</div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="cv-cap-styles">
-                      <button class="cap-style-btn active" data-style="karaoke" onclick="setCvCaptionStyle('karaoke',this)">🟢 Green</button>
-                      <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setCvCaptionStyle('karaoke_yellow',this)">🟡 Yellow</button>
-                      <button class="cap-style-btn" data-style="clean" onclick="setCvCaptionStyle('clean',this)">⬜ Clean</button>
-                      <button class="cap-style-btn" data-style="boxed" onclick="setCvCaptionStyle('boxed',this)">▪️ Box</button>
-                      <button class="cap-style-btn" data-style="bangers" onclick="setCvCaptionStyle('bangers',this)">💥 Comic</button>
-                    </div>
-                    <div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Position — drag the caption where you want it</div>
-                    <div id="cv-cap-pad" class="cap-pad"><div id="cv-cap-chip" class="cap-chip">CAPTIONS</div></div>
-                  </div>
-                </div>
-              </div>
+              <p style="font-size:.7rem;color:var(--muted);margin-bottom:12px">Each clip has its own format, captions &amp; position — customize and download them separately.</p>
               <div id="clip-viral-list"></div>
             </div>
           </div>
@@ -2738,8 +2708,14 @@ function cvPollViral() {
   }, 3000)
 }
 
+// Per-clip settings: each viral clip carries its own format/captions/position.
+let cvSettings = []
+const CV_FMTS = [['original', '16:9'], ['blur', '9:16 Blur'], ['black', '9:16 Black'], ['white', '9:16 White']]
+const CV_STYLES = [['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic']]
+
 function cvRenderResults(result) {
   cvClips = result.clips || []
+  cvSettings = cvClips.map(() => ({ format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }))
   document.getElementById('clip-viral-results').style.display = ''
   document.getElementById('clip-viral-dl-all').style.display = cvClips.length > 1 ? '' : 'none'
   const list = document.getElementById('clip-viral-list')
@@ -2748,12 +2724,15 @@ function cvRenderResults(result) {
     return
   }
   const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  const thumbBg = document.getElementById('clip-thumb')?.src
   list.innerHTML = cvClips.map((clip, i) => {
     const dur = clip.duration || (clip.end - clip.start)
+    const bg = thumbBg ? `background-image:url('${thumbBg}');background-size:cover;background-position:center;` : 'background:var(--card);'
     return `<div id="cv-item-${i}" class="clip-card">
-      <div class="cv-thumb" onclick="cvJumpTo(${clip.start},${clip.end})" title="Preview range in the player" style="width:128px;flex-shrink:0;aspect-ratio:9/16;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative">
-        <div style="position:absolute;top:6px;left:6px;background:var(--a1);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:#f0eeff">${i+1}</div>
-        <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24" style="color:var(--muted)"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      <div class="cv-thumb" onclick="cvJumpTo(${clip.start},${clip.end})" title="Preview range in the player" style="width:128px;flex-shrink:0;aspect-ratio:9/16;${bg}border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.4)"></div>
+        <div style="position:absolute;top:6px;left:6px;background:var(--a1);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:#f0eeff;z-index:1">${i+1}</div>
+        <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24" style="color:#fff;opacity:.92;position:relative;z-index:1"><polygon points="6 4 20 12 6 20 6 4"/></svg>
       </div>
       <div class="clip-card-info">
         <div class="clip-card-title">#${i+1} Viral Moment</div>
@@ -2763,6 +2742,18 @@ function cvRenderResults(result) {
           <span>· ${fmt(clip.start)}–${fmt(clip.end)}</span>
         </div>
         <div class="clip-card-desc">"${clip.text}"</div>
+        <div class="cv-ctrl-label">Format</div>
+        <div class="cv-mini-row">
+          ${CV_FMTS.map(([f, l]) => `<button class="cv-mini-btn ${f === 'original' ? 'active' : ''}" onclick="setCvItemFormat(${i},'${f}',this)">${l}</button>`).join('')}
+        </div>
+        <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleCvItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
+        <div id="cv-cap-sec-${i}" style="display:none;margin-top:6px">
+          <div class="cv-mini-row" style="margin-bottom:8px">
+            ${CV_STYLES.map(([k, l], j) => `<button class="cap-style-btn cv-mini-btn ${j === 0 ? 'active' : ''}" data-style="${k}" onclick="setCvItemStyle(${i},'${k}',this)">${l}</button>`).join('')}
+          </div>
+          <div style="font-size:.66rem;color:var(--muted);margin-bottom:4px">Drag the caption where you want it</div>
+          <div class="cap-pad" id="cv-pad-${i}" style="width:110px"><div class="cap-chip" id="cv-chip-${i}">CAPTIONS</div></div>
+        </div>
         <div class="clip-card-actions">
           <button class="btn btn-primary btn-sm" id="cv-render-${i}" style="display:inline-flex" onclick="cvDownloadOne(${i})">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -2776,58 +2767,52 @@ function cvRenderResults(result) {
       </div>
     </div>`
   }).join('')
+  // Wire each card's caption position pad + default chip font.
+  cvClips.forEach((_, i) => {
+    initCvItemPad(i)
+    applyChipStyle(document.getElementById(`cv-chip-${i}`), cvSettings[i].style)
+  })
 }
 
-let cvFormat = 'original'   // 'original'|'blur'|'black'|'white'
-let cvCrop = 'fit'          // 'fit'|'16:9'|'4:3'|'1:1'|'3:4'
-
-window.setCvFormat = (fmt) => {
-  cvFormat = fmt
-  document.querySelectorAll('.clip-crop-btn[data-cvfmt]').forEach(b => b.classList.toggle('active', b.dataset.cvfmt === fmt))
-  document.getElementById('cv-crop-row').style.display = fmt === 'original' ? 'none' : ''
-  const pad = document.getElementById('cv-cap-pad')
-  if (pad) { pad.style.aspectRatio = fmt === 'original' ? '16/9' : '9/16'; pad.style.width = fmt === 'original' ? '200px' : '140px' }
+// ── Per-clip control handlers ───────────────────────────────────────────────────
+window.setCvItemFormat = (i, f, btn) => {
+  cvSettings[i].format = f
+  const card = document.getElementById(`cv-item-${i}`)
+  card.querySelectorAll('.cv-mini-row .cv-mini-btn:not(.cap-style-btn)').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  const pad = document.getElementById(`cv-pad-${i}`)
+  if (pad) pad.style.aspectRatio = f === 'original' ? '16/9' : '9/16'
 }
-
-window.setCvCrop = (crop) => {
-  cvCrop = crop
-  document.querySelectorAll('.clip-crop-btn[data-cvcrop]').forEach(b => b.classList.toggle('active', b.dataset.cvcrop === crop))
+window.toggleCvItemCaptions = (i, on) => {
+  cvSettings[i].captionsOn = on
+  document.getElementById(`cv-cap-sec-${i}`).style.display = on ? '' : 'none'
 }
-
-// ── Viral-clip auto-captions ────────────────────────────────────────────────────
-let cvCaptionsOn = false
-let cvCaptionStyle = 'karaoke'
-let cvCaptionPos = { x: 0.5, y: 0.72 }
-
-window.toggleCvCaptions = (on) => {
-  cvCaptionsOn = on
-  document.getElementById('cv-caption-section').style.display = on ? '' : 'none'
+window.setCvItemStyle = (i, s, btn) => {
+  cvSettings[i].style = s
+  document.querySelectorAll(`#cv-cap-sec-${i} .cap-style-btn`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  applyChipStyle(document.getElementById(`cv-chip-${i}`), s)
 }
-window.setCvCaptionStyle = (s, btn) => {
-  cvCaptionStyle = s
-  document.querySelectorAll('#cv-cap-styles .cap-style-btn').forEach(b => b.classList.remove('active'))
-  btn?.classList.add('active')
-  applyChipStyle(document.getElementById('cv-cap-chip'), s)
-}
-;(function initCvCaptionPad() {
-  const pad = document.getElementById('cv-cap-pad')
-  const chip = document.getElementById('cv-cap-chip')
+// Drag-to-place pad for one card (chip uses pointer capture, so listeners stay on
+// the chip and are cleaned up when the list re-renders — no window-listener leak).
+function initCvItemPad(i) {
+  const pad = document.getElementById(`cv-pad-${i}`)
+  const chip = document.getElementById(`cv-chip-${i}`)
   if (!pad || !chip) return
   let dragging = false
   const place = (cx, cy) => {
     const r = pad.getBoundingClientRect()
-    let x = Math.min(0.98, Math.max(0.02, (cx - r.left) / r.width))
-    let y = Math.min(0.98, Math.max(0.02, (cy - r.top) / r.height))
-    cvCaptionPos = { x, y }
+    const x = Math.min(0.98, Math.max(0.02, (cx - r.left) / r.width))
+    const y = Math.min(0.98, Math.max(0.02, (cy - r.top) / r.height))
+    cvSettings[i].pos = { x, y }
     chip.style.left = x * 100 + '%'
     chip.style.top = y * 100 + '%'
   }
   chip.addEventListener('pointerdown', (e) => { dragging = true; chip.setPointerCapture?.(e.pointerId); e.preventDefault() })
-  window.addEventListener('pointermove', (e) => { if (dragging) place(e.clientX, e.clientY) })
-  window.addEventListener('pointerup', () => { dragging = false })
+  chip.addEventListener('pointermove', (e) => { if (dragging) place(e.clientX, e.clientY) })
+  chip.addEventListener('pointerup', () => { dragging = false })
   pad.addEventListener('pointerdown', (e) => { if (e.target !== chip) place(e.clientX, e.clientY) })
-  applyChipStyle(chip, cvCaptionStyle)
-})()
+}
 
 window.cvJumpTo = (start, end) => {
   clipInPoint = start
@@ -2839,21 +2824,21 @@ window.cvJumpTo = (start, end) => {
 window.cvDownloadOne = async (idx, opts = {}) => {
   const clip = cvClips[idx]
   if (!clip || !clipSourceUrl) return
+  const s = cvSettings[idx] || { format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }
   const item = document.getElementById(`cv-item-${idx}`)
   const renderBtn = document.getElementById(`cv-render-${idx}`)
   if (renderBtn) renderBtn.disabled = true
-  const capNote = cvCaptionsOn ? ' with captions' : ''
-  setStatus('clip-viral-status', `Rendering clip ${idx + 1}${capNote}…`, 'loading')
+  setStatus('clip-viral-status', `Rendering clip ${idx + 1}${s.captionsOn ? ' with captions' : ''}…`, 'loading')
   try {
-    const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2), cvFormat, cvCrop)
+    const clipUrl = api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2), s.format, s.crop)
     const res = await fetch(clipUrl)
     if (!res.ok) {
       const e = await res.json().catch(() => ({}))
       const er = new Error(e.message || e.error || 'Render failed'); er.needsPlan = res.status === 402; throw er
     }
     const blob = await res.blob()
-    const outUrl = cvCaptionsOn
-      ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: cvCaptionStyle, position: cvCaptionPos })
+    const outUrl = s.captionsOn
+      ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: s.style, position: s.pos })
       : URL.createObjectURL(blob)
 
     // Swap the placeholder thumbnail for the rendered video (preview on the left).
@@ -2866,7 +2851,7 @@ window.cvDownloadOne = async (idx, opts = {}) => {
     // Turn the render button into a re-download link.
     if (renderBtn) {
       const a = document.createElement('a')
-      a.href = outUrl; a.download = `viral_clip_${idx + 1}${cvCaptionsOn ? '_captioned' : ''}.mp4`
+      a.href = outUrl; a.download = `viral_clip_${idx + 1}${s.captionsOn ? '_captioned' : ''}.mp4`
       a.className = 'btn btn-primary btn-sm'; a.style.display = 'inline-flex'
       a.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download'
       renderBtn.replaceWith(a)
@@ -2874,7 +2859,7 @@ window.cvDownloadOne = async (idx, opts = {}) => {
     // Trigger the download now (unless batching — Download All handles its own).
     if (!opts.noAutoDownload) {
       const dl = document.createElement('a')
-      dl.href = outUrl; dl.download = `viral_clip_${idx + 1}${cvCaptionsOn ? '_captioned' : ''}.mp4`
+      dl.href = outUrl; dl.download = `viral_clip_${idx + 1}${s.captionsOn ? '_captioned' : ''}.mp4`
       document.body.appendChild(dl); dl.click(); dl.remove()
     }
     setStatus('clip-viral-status', `Clip ${idx + 1} ready!`, 'ok')
@@ -2891,8 +2876,8 @@ window.clipViralDownloadAll = async () => {
   const btn = document.getElementById('clip-viral-dl-all')
   btn.disabled = true
   for (let i = 0; i < cvClips.length; i++) {
-    setStatus('clip-viral-status', `Rendering clip ${i + 1} of ${cvClips.length}${cvCaptionsOn ? ' with captions' : ''}…`, 'loading')
-    await cvDownloadOne(i) // renders the card + triggers its download
+    setStatus('clip-viral-status', `Rendering clip ${i + 1} of ${cvClips.length}…`, 'loading')
+    await cvDownloadOne(i) // renders the card with its own settings + triggers download
   }
   setStatus('clip-viral-status', `All ${cvClips.length} clips ready!`, 'ok')
   setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 5000)
