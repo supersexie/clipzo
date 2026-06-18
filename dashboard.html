@@ -2808,7 +2808,6 @@ function cvRenderResults(result) {
     initCvItemPad(i)
     applyChipStyle(document.getElementById(`cv-chip-${i}`), cvSettings[i].style)
   })
-  cvRenderAllPreviews() // pre-render raw previews so playback (and plain download) is instant
 }
 
 // ── Per-clip control handlers ───────────────────────────────────────────────────
@@ -2899,53 +2898,68 @@ function cvCardLoader(idx, on) {
   } else { loader?.remove() }
 }
 
-// Pre-render every clip (raw, original framing) right after analysis so playback
-// is instant and a plain download reuses the blob (no second server cut).
-async function cvRenderAllPreviews() {
-  for (let i = 0; i < cvClips.length; i++) {
-    if (cvSettings[i].rawUrl) continue
-    setStatus('clip-viral-status', `Preparing previews… ${i + 1} of ${cvClips.length}`, 'loading')
-    cvCardLoader(i, true)
-    try {
-      const res = await fetch(api.download.clipUrl(clipSourceUrl, cvClips[i].start.toFixed(2), cvClips[i].end.toFixed(2)))
+// Extract a YouTube video id from a URL (watch / youtu.be / shorts / embed / live).
+function ytId(url) {
+  const m = (url || '').match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/)
+  return m ? m[1] : null
+}
+
+// A reusable preview lightbox (created once).
+;(function cvBuildPreviewModal() {
+  if (document.getElementById('cv-preview-modal')) return
+  const m = document.createElement('div')
+  m.id = 'cv-preview-modal'
+  m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;padding:20px'
+  m.innerHTML = `<div style="position:relative;width:min(92vw,760px)"><button id="cv-preview-close" style="position:absolute;top:-36px;right:0;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1">✕</button><div id="cv-preview-body" style="width:100%"></div></div>`
+  document.body.appendChild(m)
+  m.addEventListener('click', (e) => { if (e.target === m) window.cvClosePreview() })
+  document.getElementById('cv-preview-close').addEventListener('click', () => window.cvClosePreview())
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.cvClosePreview() })
+})()
+window.cvClosePreview = () => {
+  const body = document.getElementById('cv-preview-body')
+  if (body) body.innerHTML = '' // stops any playback
+  const m = document.getElementById('cv-preview-modal')
+  if (m) m.style.display = 'none'
+}
+
+// Instant preview: for YouTube sources, embed the player at the exact moment
+// (no server render). For other sources, cut the clip once and play it.
+window.cvPreviewOne = async (i) => {
+  const clip = cvClips[i]
+  if (!clip || !clipSourceUrl) return
+  const modal = document.getElementById('cv-preview-modal')
+  const body = document.getElementById('cv-preview-body')
+  const vid = ytId(clipSourceUrl)
+
+  if (vid) {
+    const start = Math.max(0, Math.floor(clip.start))
+    const end = Math.ceil(clip.end)
+    body.innerHTML =
+      `<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">` +
+      `<iframe src="https://www.youtube.com/embed/${vid}?start=${start}&end=${end}&autoplay=1&rel=0" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe></div>` +
+      `<p style="text-align:center;color:#aaa;font-size:.74rem;margin-top:10px">Preview of the moment — your downloaded clip uses the format &amp; captions you pick.</p>`
+    modal.style.display = 'flex'
+    return
+  }
+
+  // Non-YouTube → render the clip once (cached) and play it.
+  body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:220px;color:#fff;gap:10px"><div class="spinner"></div> Loading preview…</div>'
+  modal.style.display = 'flex'
+  try {
+    let url = cvSettings[i].rawUrl
+    if (!url) {
+      const res = await fetch(api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
       if (!res.ok) {
         const e = await res.json().catch(() => ({}))
         const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
       }
-      const url = URL.createObjectURL(await res.blob())
+      url = URL.createObjectURL(await res.blob())
       cvSettings[i].rawUrl = url
-      cvSetCardVideo(i, url, false) // load it; user plays on click
-    } catch (e) {
-      cvCardLoader(i, false)
-      // No plan → stop the batch and prompt upgrade; other errors → leave the
-      // placeholder (still clickable to retry) and continue.
-      if (e.needsPlan) { setStatus('clip-viral-status', e.message + ' — upgrade to continue', 'err'); return }
     }
-  }
-  setStatus('clip-viral-status', 'Previews ready — play any clip, then customize & download', 'ok')
-  setTimeout(() => { const s = document.getElementById('clip-viral-status'); if (s) s.style.display = 'none' }, 4000)
-}
-
-// Fallback: if a clip's pre-render failed, clicking its placeholder retries.
-window.cvPreviewOne = async (i) => {
-  const clip = cvClips[i]
-  if (!clip || !clipSourceUrl) return
-  if (cvSettings[i].rawUrl) { cvSetCardVideo(i, cvSettings[i].rawUrl, true); return }
-  cvCardLoader(i, true)
-  setStatus('clip-viral-status', `Loading preview for clip ${i + 1}…`, 'loading')
-  try {
-    const res = await fetch(api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}))
-      const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
-    }
-    const url = URL.createObjectURL(await res.blob())
-    cvSettings[i].rawUrl = url
-    cvSetCardVideo(i, url, true)
-    document.getElementById('clip-viral-status').style.display = 'none'
+    body.innerHTML = `<video src="${url}" controls autoplay playsinline style="width:100%;max-height:75vh;border-radius:10px;background:#000"></video>`
   } catch (e) {
-    cvCardLoader(i, false)
-    setStatus('clip-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
+    body.innerHTML = `<p style="color:#fff;text-align:center;padding:24px">${e.needsPlan ? e.message + ' — upgrade to continue' : e.message}</p>`
   }
 }
 
