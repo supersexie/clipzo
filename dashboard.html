@@ -2808,6 +2808,7 @@ function cvRenderResults(result) {
     initCvItemPad(i)
     applyChipStyle(document.getElementById(`cv-chip-${i}`), cvSettings[i].style)
   })
+  cvRenderAllPreviews() // pre-render raw previews so playback (and plain download) is instant
 }
 
 // ── Per-clip control handlers ───────────────────────────────────────────────────
@@ -2870,20 +2871,67 @@ window.cvJumpTo = (start, end) => {
   updateInputs()
 }
 
-// Render a quick raw preview of a clip (original framing, no captions) into its
-// card so the user can see the actual moment before choosing format/captions.
+// Swap a card's media (placeholder thumb or existing video) for a video at url.
+function cvSetCardVideo(idx, url, autoplay) {
+  const item = document.getElementById(`cv-item-${idx}`)
+  if (!item) return
+  const media = item.querySelector('.cv-thumb, video.clip-card-video')
+  const v = document.createElement('video')
+  v.src = url; v.controls = true; v.playsInline = true; v.className = 'clip-card-video'
+  if (autoplay) { v.muted = true; v.autoplay = true }
+  if (media) media.replaceWith(v)
+  if (autoplay) v.play?.().catch(() => {})
+}
+
+// Put a spinner overlay on a card's placeholder thumb while it renders.
+function cvCardLoader(idx, on) {
+  const thumb = document.querySelector(`#cv-item-${idx} .cv-thumb`)
+  if (!thumb) return
+  let loader = thumb.querySelector('.cv-loader')
+  if (on) {
+    if (!loader) {
+      loader = document.createElement('div')
+      loader.className = 'cv-loader'
+      loader.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:3'
+      loader.innerHTML = '<div class="spinner"></div>'
+      thumb.appendChild(loader)
+    }
+  } else { loader?.remove() }
+}
+
+// Pre-render every clip (raw, original framing) right after analysis so playback
+// is instant and a plain download reuses the blob (no second server cut).
+async function cvRenderAllPreviews() {
+  for (let i = 0; i < cvClips.length; i++) {
+    if (cvSettings[i].rawUrl) continue
+    setStatus('clip-viral-status', `Preparing previews… ${i + 1} of ${cvClips.length}`, 'loading')
+    cvCardLoader(i, true)
+    try {
+      const res = await fetch(api.download.clipUrl(clipSourceUrl, cvClips[i].start.toFixed(2), cvClips[i].end.toFixed(2)))
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
+      }
+      const url = URL.createObjectURL(await res.blob())
+      cvSettings[i].rawUrl = url
+      cvSetCardVideo(i, url, false) // load it; user plays on click
+    } catch (e) {
+      cvCardLoader(i, false)
+      // No plan → stop the batch and prompt upgrade; other errors → leave the
+      // placeholder (still clickable to retry) and continue.
+      if (e.needsPlan) { setStatus('clip-viral-status', e.message + ' — upgrade to continue', 'err'); return }
+    }
+  }
+  setStatus('clip-viral-status', 'Previews ready — play any clip, then customize & download', 'ok')
+  setTimeout(() => { const s = document.getElementById('clip-viral-status'); if (s) s.style.display = 'none' }, 4000)
+}
+
+// Fallback: if a clip's pre-render failed, clicking its placeholder retries.
 window.cvPreviewOne = async (i) => {
   const clip = cvClips[i]
   if (!clip || !clipSourceUrl) return
-  const item = document.getElementById(`cv-item-${i}`)
-  const thumb = item?.querySelector('.cv-thumb')
-  if (!thumb) return // already previewed/rendered
-  thumb.style.pointerEvents = 'none'
-  // Loading overlay while the preview clip is cut server-side.
-  const loader = document.createElement('div')
-  loader.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(0,0,0,.6);z-index:3;font-size:.6rem;color:#fff;text-align:center;padding:6px'
-  loader.innerHTML = '<div class="spinner"></div><span>Loading preview…</span>'
-  thumb.appendChild(loader)
+  if (cvSettings[i].rawUrl) { cvSetCardVideo(i, cvSettings[i].rawUrl, true); return }
+  cvCardLoader(i, true)
   setStatus('clip-viral-status', `Loading preview for clip ${i + 1}…`, 'loading')
   try {
     const res = await fetch(api.download.clipUrl(clipSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
@@ -2892,15 +2940,11 @@ window.cvPreviewOne = async (i) => {
       const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
     }
     const url = URL.createObjectURL(await res.blob())
-    const v = document.createElement('video')
-    v.src = url; v.controls = true; v.muted = true; v.autoplay = true; v.playsInline = true
-    v.className = 'clip-card-video'
-    thumb.replaceWith(v)
-    v.play?.().catch(() => {}) // autoplay the preview (muted so browsers allow it)
+    cvSettings[i].rawUrl = url
+    cvSetCardVideo(i, url, true)
     document.getElementById('clip-viral-status').style.display = 'none'
   } catch (e) {
-    loader.remove()
-    thumb.style.pointerEvents = ''
+    cvCardLoader(i, false)
     setStatus('clip-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
   }
 }
@@ -2911,6 +2955,19 @@ window.cvDownloadOne = async (idx, opts = {}) => {
   const s = cvSettings[idx] || { format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }
   const item = document.getElementById(`cv-item-${idx}`)
   const renderBtn = document.getElementById(`cv-render-${idx}`)
+
+  // Fast path: untouched clip (original framing, no captions) that we already
+  // pre-rendered — just download the cached blob, no second server cut.
+  const isRaw = s.format === 'original' && (s.crop === 'fit' || !s.crop) && !s.captionsOn
+  if (isRaw && s.rawUrl) {
+    const dl = document.createElement('a')
+    dl.href = s.rawUrl; dl.download = `viral_clip_${idx + 1}.mp4`
+    document.body.appendChild(dl); dl.click(); dl.remove()
+    setStatus('clip-viral-status', `Clip ${idx + 1} downloaded!`, 'ok')
+    setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 3000)
+    return s.rawUrl
+  }
+
   if (renderBtn) renderBtn.disabled = true
   setStatus('clip-viral-status', `Rendering clip ${idx + 1}${s.captionsOn ? ' with captions' : ''}…`, 'loading')
   try {
@@ -2925,13 +2982,8 @@ window.cvDownloadOne = async (idx, opts = {}) => {
       ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: s.style, position: s.pos })
       : URL.createObjectURL(blob)
 
-    // Swap the placeholder thumbnail for the rendered video (preview on the left).
-    const thumb = item?.querySelector('.cv-thumb')
-    if (thumb) {
-      const v = document.createElement('video')
-      v.src = outUrl; v.controls = true; v.className = 'clip-card-video'
-      thumb.replaceWith(v)
-    }
+    // Show the rendered (reframed/captioned) result in the card.
+    cvSetCardVideo(idx, outUrl, true)
     // Turn the render button into a re-download link.
     if (renderBtn) {
       const a = document.createElement('a')
