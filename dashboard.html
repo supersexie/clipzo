@@ -2417,6 +2417,7 @@ async function pollReframeJob() {
     document.getElementById('rf-options').style.opacity = '1'
     document.getElementById('rf-options').style.pointerEvents = ''
     document.getElementById('rf-viral-section').style.display = ''
+    document.querySelectorAll('[id^="rf-clip-render-"]').forEach((b) => { b.disabled = false })
     setStatus('rf-status', 'Video loaded — pick a format and render, or find viral moments below.', 'ok')
     setTimeout(() => { const s = document.getElementById('rf-status'); if (s) s.style.display = 'none' }, 3000)
   } catch (e) {
@@ -2443,166 +2444,6 @@ window.renderReframe = async () => {
     setTimeout(() => { const s = document.getElementById('rf-status'); if (s) s.style.display = 'none' }, 3000)
   } catch (e) {
     setStatus('rf-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
-  } finally {
-    btn.disabled = false
-  }
-}
-
-// ── AI REFRAME — Find Viral Moments (per-clip aspect/layout) ──────────────────
-let rfViralJobId = null   // AssemblyAI/Claude transcript job (separate from rfJobId, the download+tracking job)
-let rfViralGenre = 'auto'
-let rfClips = []
-let rfClipSettings = []   // [{ aspect, layout, fitCrop, lastSig, lastUrl }]
-
-;(function initRfGenres() {
-  const row = document.getElementById('rf-viral-genres')
-  if (!row) return
-  row.innerHTML = CV_GENRES.map(([k, ic, l]) =>
-    `<button class="cv-genre-btn${k === 'auto' ? ' active' : ''}" data-genre="${k}" onclick="setRfViralGenre('${k}',this)">${ic} ${l}</button>`
-  ).join('')
-})()
-
-window.setRfViralGenre = (g, btn) => {
-  rfViralGenre = g
-  document.querySelectorAll('#rf-viral-genres .cv-genre-btn').forEach((b) => b.classList.remove('active'))
-  btn?.classList.add('active')
-}
-
-window.rfFindViral = async () => {
-  const url = document.getElementById('rf-url').value.trim()
-  if (!url) return
-  const btn = document.getElementById('rf-viral-btn')
-  btn.disabled = true
-  rfClips = []
-  document.getElementById('rf-viral-results').style.display = 'none'
-  setStatus('rf-viral-status', 'Analyzing speech for viral moments — this may take a minute...', 'loading')
-  try {
-    const { jobId } = await api.download.analyze(url)
-    rfViralJobId = jobId
-    rfPollViral()
-  } catch (e) {
-    setStatus('rf-viral-status', e.message, 'err')
-    btn.disabled = false
-  }
-}
-
-function rfPollViral() {
-  const count = parseInt(document.getElementById('rf-viral-count').value) || 5
-  setTimeout(async () => {
-    try {
-      const result = await api.autoclip.poll(rfViralJobId, count, rfViralGenre)
-      if (result.status === 'completed') {
-        document.getElementById('rf-viral-btn').disabled = false
-        rfRenderViralResults(result)
-        document.getElementById('rf-viral-status').style.display = 'none'
-      } else if (result.status === 'error') {
-        document.getElementById('rf-viral-btn').disabled = false
-        setStatus('rf-viral-status', result.error || 'Analysis failed', 'err')
-      } else {
-        setStatus('rf-viral-status', `Analyzing for viral moments... (${result.status})`, 'loading')
-        rfPollViral()
-      }
-    } catch (e) {
-      document.getElementById('rf-viral-btn').disabled = false
-      setStatus('rf-viral-status', e.message, 'err')
-    }
-  }, 3000)
-}
-
-function rfRenderViralResults(result) {
-  rfClips = result.clips || []
-  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', lastSig: null, lastUrl: null }))
-  document.getElementById('rf-viral-results').style.display = ''
-  const list = document.getElementById('rf-viral-list')
-  if (!rfClips.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No viral moments detected. Try a longer video with more speech.</div>'
-    return
-  }
-  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
-  list.innerHTML = rfClips.map((clip, i) => {
-    const dur = clip.duration || (clip.end - clip.start)
-    return `<div id="rf-clip-${i}" class="clip-card">
-      <div class="clip-card-info" style="flex:1">
-        <div class="clip-card-title">#${i+1} Viral Moment</div>
-        <div class="clip-card-meta">
-          <span class="clip-card-score">🔥 ${clip.rank}/100</span>
-          <span>· ${Math.round(dur)}s</span>
-          <span class="cv-time-edit">
-            · <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'start',-1)">−</button>
-            <span id="rf-clip-start-${i}">${fmt(clip.start)}</span>
-            <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'start',1)">+</button>
-            – <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'end',-1)">−</button>
-            <span id="rf-clip-end-${i}">${fmt(clip.end)}</span>
-            <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'end',1)">+</button>
-          </span>
-        </div>
-        <div class="clip-card-desc">"${clip.text}"</div>
-        <div class="cv-ctrl-label">Aspect ratio</div>
-        <div class="cv-mini-row" id="rf-clip-aspect-row-${i}">
-          ${['9:16','1:1','16:9','4:5'].map(a => `<button class="cv-mini-btn ${a==='9:16'?'active':''}" onclick="rfClipSetAspect(${i},'${a}',this)">${a}</button>`).join('')}
-        </div>
-        <div class="cv-ctrl-label">Layout</div>
-        <div class="cv-mini-row" id="rf-clip-layout-row-${i}">
-          <button class="cv-mini-btn active" onclick="rfClipSetLayout(${i},'fill',this)">Fill</button>
-          <button class="cv-mini-btn" onclick="rfClipSetLayout(${i},'fit',this)">Fit</button>
-        </div>
-        <div class="clip-card-actions" style="margin-top:10px">
-          <button class="btn btn-primary btn-sm" id="rf-clip-render-${i}" onclick="rfClipRender(${i})">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Render &amp; Download
-          </button>
-        </div>
-        <div id="rf-clip-result-${i}" style="display:none;margin-top:10px">
-          <video controls style="width:100%;max-width:220px;border-radius:8px;background:#000;display:block"></video>
-        </div>
-      </div>
-    </div>`
-  }).join('')
-}
-
-window.rfClipAdjustTime = (i, field, delta) => {
-  const clip = rfClips[i]
-  if (!clip) return
-  const next = clip[field] + delta
-  if (field === 'start' && (next < 0 || next >= clip.end)) return
-  if (field === 'end' && (next <= clip.start)) return
-  clip[field] = next
-  document.getElementById(`rf-clip-${field}-${i}`).textContent = `${Math.floor(next/60)}:${String(Math.floor(next%60)).padStart(2,'0')}`
-  rfClipSettings[i].lastSig = null // invalidate cache — times changed
-}
-
-window.rfClipSetAspect = (i, a, btn) => {
-  rfClipSettings[i].aspect = a
-  document.querySelectorAll(`#rf-clip-aspect-row-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
-  btn.classList.add('active')
-}
-window.rfClipSetLayout = (i, l, btn) => {
-  rfClipSettings[i].layout = l
-  document.querySelectorAll(`#rf-clip-layout-row-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
-  btn.classList.add('active')
-}
-
-window.rfClipRender = async (i) => {
-  if (!rfJobId) return setStatus('rf-viral-status', 'The video is still loading — wait for "Video loaded" above.', 'err')
-  const s = rfClipSettings[i]
-  const clip = rfClips[i]
-  const sig = `${s.aspect}|${s.layout}|${clip.start}|${clip.end}`
-  const btn = document.getElementById(`rf-clip-render-${i}`)
-  const result = document.getElementById(`rf-clip-result-${i}`)
-  btn.disabled = true
-  try {
-    const blobUrl = sig === s.lastSig && s.lastUrl ? s.lastUrl : await api.reframe.render(rfJobId, {
-      aspect: s.aspect, layout: s.layout, fitCrop: s.fitCrop, start: clip.start, end: clip.end,
-    })
-    s.lastSig = sig
-    s.lastUrl = blobUrl
-    const video = result.querySelector('video')
-    video.src = blobUrl
-    result.style.display = ''
-    const a = document.createElement('a'); a.href = blobUrl; a.download = `viral-clip-${i+1}.mp4`
-    document.body.appendChild(a); a.click(); document.body.removeChild(a)
-  } catch (e) {
-    setStatus('rf-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
   } finally {
     btn.disabled = false
   }
@@ -3110,6 +2951,169 @@ window.setCvGenre = (g, btn) => {
   cvGenre = g
   document.querySelectorAll('#clip-viral-genres .cv-genre-btn').forEach((b) => b.classList.remove('active'))
   btn?.classList.add('active')
+}
+
+// ── AI REFRAME — Find Viral Moments (per-clip aspect/layout) ──────────────────
+let rfViralJobId = null
+let rfViralGenre = 'auto'
+let rfClips = []
+let rfClipSettings = []
+
+;(function initRfGenres() {
+  const row = document.getElementById('rf-viral-genres')
+  if (!row) return
+  row.innerHTML = CV_GENRES.map(([k, ic, l]) =>
+    `<button class="cv-genre-btn${k === 'auto' ? ' active' : ''}" data-genre="${k}" onclick="setRfViralGenre('${k}',this)">${ic} ${l}</button>`
+  ).join('')
+})()
+
+window.setRfViralGenre = (g, btn) => {
+  rfViralGenre = g
+  document.querySelectorAll('#rf-viral-genres .cv-genre-btn').forEach((b) => b.classList.remove('active'))
+  btn?.classList.add('active')
+}
+
+window.rfFindViral = async () => {
+  const url = document.getElementById('rf-url').value.trim()
+  if (!url) return
+  const btn = document.getElementById('rf-viral-btn')
+  btn.disabled = true
+  rfClips = []
+  document.getElementById('rf-viral-results').style.display = 'none'
+  setStatus('rf-viral-status', 'Analyzing speech for viral moments — this may take a minute...', 'loading')
+  try {
+    const { jobId } = await api.download.analyze(url)
+    rfViralJobId = jobId
+    rfPollViral()
+  } catch (e) {
+    setStatus('rf-viral-status', e.message, 'err')
+    btn.disabled = false
+  }
+}
+
+function rfPollViral() {
+  const count = parseInt(document.getElementById('rf-viral-count').value) || 5
+  setTimeout(async () => {
+    try {
+      const result = await api.autoclip.poll(rfViralJobId, count, rfViralGenre)
+      if (result.status === 'completed') {
+        document.getElementById('rf-viral-btn').disabled = false
+        rfRenderViralResults(result)
+        document.getElementById('rf-viral-status').style.display = 'none'
+      } else if (result.status === 'error') {
+        document.getElementById('rf-viral-btn').disabled = false
+        setStatus('rf-viral-status', result.error || 'Analysis failed', 'err')
+      } else {
+        setStatus('rf-viral-status', `Analyzing for viral moments... (${result.status})`, 'loading')
+        rfPollViral()
+      }
+    } catch (e) {
+      document.getElementById('rf-viral-btn').disabled = false
+      setStatus('rf-viral-status', e.message, 'err')
+    }
+  }, 3000)
+}
+
+function rfRenderViralResults(result) {
+  rfClips = result.clips || []
+  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', lastSig: null, lastUrl: null }))
+  document.getElementById('rf-viral-results').style.display = ''
+  const list = document.getElementById('rf-viral-list')
+  if (!rfClips.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:12px">No viral moments detected. Try a longer video with more speech.</div>'
+    return
+  }
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  list.innerHTML = rfClips.map((clip, i) => {
+    const dur = clip.duration || (clip.end - clip.start)
+    return `<div id="rf-clip-${i}" class="clip-card">
+      <div class="clip-card-info" style="flex:1">
+        <div class="clip-card-title">#${i+1} Viral Moment</div>
+        <div class="clip-card-meta">
+          <span class="clip-card-score">🔥 ${clip.rank}/100</span>
+          <span>· ${Math.round(dur)}s</span>
+          <span class="cv-time-edit">
+            · <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'start',-1)">−</button>
+            <span id="rf-clip-start-${i}">${fmt(clip.start)}</span>
+            <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'start',1)">+</button>
+            – <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'end',-1)">−</button>
+            <span id="rf-clip-end-${i}">${fmt(clip.end)}</span>
+            <button class="cv-time-btn" onclick="rfClipAdjustTime(${i},'end',1)">+</button>
+          </span>
+        </div>
+        <div class="clip-card-desc">"${clip.text}"</div>
+        <div class="cv-ctrl-label">Aspect ratio</div>
+        <div class="cv-mini-row" id="rf-clip-aspect-row-${i}">
+          ${['9:16','1:1','16:9','4:5'].map(a => `<button class="cv-mini-btn ${a==='9:16'?'active':''}" onclick="rfClipSetAspect(${i},'${a}',this)">${a}</button>`).join('')}
+        </div>
+        <div class="cv-ctrl-label">Layout</div>
+        <div class="cv-mini-row" id="rf-clip-layout-row-${i}">
+          <button class="cv-mini-btn active" onclick="rfClipSetLayout(${i},'fill',this)">Fill</button>
+          <button class="cv-mini-btn" onclick="rfClipSetLayout(${i},'fit',this)">Fit</button>
+        </div>
+        <div class="clip-card-actions" style="margin-top:10px">
+          <button class="btn btn-primary btn-sm" id="rf-clip-render-${i}" onclick="rfClipRender(${i})" ${rfJobId ? '' : 'disabled'}>
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Render &amp; Download
+          </button>
+        </div>
+        <div id="rf-clip-result-${i}" style="display:none;margin-top:10px">
+          <video controls style="width:100%;max-width:220px;border-radius:8px;background:#000;display:block"></video>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+window.rfClipAdjustTime = (i, field, delta) => {
+  const clip = rfClips[i]
+  if (!clip) return
+  const next = clip[field] + delta
+  if (field === 'start' && (next < 0 || next >= clip.end)) return
+  if (field === 'end' && (next <= clip.start)) return
+  clip[field] = next
+  document.getElementById(`rf-clip-${field}-${i}`).textContent = `${Math.floor(next/60)}:${String(Math.floor(next%60)).padStart(2,'0')}`
+  rfClipSettings[i].lastSig = null // invalidate cache — times changed
+}
+
+window.rfClipSetAspect = (i, a, btn) => {
+  rfClipSettings[i].aspect = a
+  document.querySelectorAll(`#rf-clip-aspect-row-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+window.rfClipSetLayout = (i, l, btn) => {
+  rfClipSettings[i].layout = l
+  document.querySelectorAll(`#rf-clip-layout-row-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+
+window.rfClipRender = async (i) => {
+  // Guard: per-clip render must only run once viral clips are loaded AND the
+  // underlying reframe analysis job is ready (rfJobId is set once analysis completes).
+  if (!rfClips.length || !rfClips[i]) return
+  if (!rfJobId) return setStatus('rf-viral-status', 'The video is still loading — wait for "Video loaded" above.', 'err')
+  const s = rfClipSettings[i]
+  const clip = rfClips[i]
+  const sig = `${s.aspect}|${s.layout}|${clip.start}|${clip.end}`
+  const btn = document.getElementById(`rf-clip-render-${i}`)
+  const result = document.getElementById(`rf-clip-result-${i}`)
+  btn.disabled = true
+  try {
+    const blobUrl = sig === s.lastSig && s.lastUrl ? s.lastUrl : await api.reframe.render(rfJobId, {
+      aspect: s.aspect, layout: s.layout, fitCrop: s.fitCrop, start: clip.start, end: clip.end,
+    })
+    s.lastSig = sig
+    s.lastUrl = blobUrl
+    const video = result.querySelector('video')
+    video.src = blobUrl
+    result.style.display = ''
+    const a = document.createElement('a'); a.href = blobUrl; a.download = `viral-clip-${i+1}.mp4`
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+  } catch (e) {
+    setStatus('rf-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
+  } finally {
+    btn.disabled = false
+  }
 }
 
 window.clipFindViral = async () => {

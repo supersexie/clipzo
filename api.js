@@ -124,7 +124,7 @@ export const api = {
       const res = await fetch(BASE + `/api/reframe/${jobId}/render`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aspect: opts.aspect, layout: opts.layout, fitCrop: opts.fitCrop }),
+        body: JSON.stringify({ aspect: opts.aspect, layout: opts.layout, fitCrop: opts.fitCrop, start: opts.start, end: opts.end }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
