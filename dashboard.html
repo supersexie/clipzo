@@ -2827,7 +2827,7 @@ function vrEditorHtml(c, i) {
           </select>
           <input type="color" value="#ffffff" style="width:28px;height:28px;border:none;border-radius:7px;background:none;cursor:pointer" onchange="vrCards[${i}]._clipColor=this.value"/>
         </div>
-        <input type="text" placeholder="Enter video title..." value="${c.clipTitle || ''}" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px" oninput="vrCards[${i}].clipTitle=this.value;vrSyncStage()"/>
+        <input id="vr-ctitle-${i}" type="text" placeholder="Enter video title..." value="${c.clipTitle || ''}" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px" oninput="vrCards[${i}].clipTitle=this.value;vrSyncStage()"/>
       </div>
       <div id="vr-tabp-${i}-number" class="vr-tab-panel">
         <p style="color:var(--muted);font-size:.78rem">Number appearance customisation coming soon.</p>
@@ -3102,13 +3102,18 @@ window.vrGenerate = async () => {
         url = result.url
       }
       const c = vrCards[i]
+      // Read the title straight from the DOM (oninput doesn't always populate the
+      // model — same reason vrSubmitLink reads the link input directly).
+      const titleEl = document.getElementById(`vr-ctitle-${i}`)
+      const clipTitle = (titleEl?.value ?? c.clipTitle ?? '').trim()
+      c.clipTitle = clipTitle
       resolved.push({
         url,
         rank:      i + 1, // 1-based rank (card order); drives the number column
         start:     c.start || 0,
         end:       c.end || 0,
         volume:    c.volume ?? 100,
-        clipTitle: c.clipTitle || '',
+        clipTitle,
       })
     }
 
