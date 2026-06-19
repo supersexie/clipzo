@@ -3197,19 +3197,42 @@ window.cvPreviewOne = async (i) => {
   }
 }
 
+// A signature that captures every setting that would change the output. If
+// it matches what we last rendered, the click is just a redownload; if not,
+// the cached blob is stale and we need a fresh render.
+function cvSettingsSig(s) {
+  return JSON.stringify({
+    f: s.format, c: s.crop, cap: s.captionsOn,
+    st: s.captionsOn ? s.style : null,
+    pos: s.captionsOn ? s.pos : null,
+    cu: s.captionsOn ? (s.custom || null) : null,
+  })
+}
+
 window.cvDownloadOne = async (idx, opts = {}) => {
   const clip = cvClips[idx]
   if (!clip || !clipSourceUrl) return
   const s = cvSettings[idx] || { format: 'original', crop: 'fit', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 } }
-  const item = document.getElementById(`cv-item-${idx}`)
   const renderBtn = document.getElementById(`cv-render-${idx}`)
 
-  // Fast path: untouched clip (original framing, no captions) that we already
-  // pre-rendered — just download the cached blob, no second server cut.
+  const sig = cvSettingsSig(s)
+  const dlName = `viral_clip_${idx + 1}${s.captionsOn ? '_captioned' : ''}.mp4`
+
+  // Fast path 1: settings match what we already rendered — just redownload the cached blob.
+  if (s.lastSig === sig && s.lastUrl) {
+    const dl = document.createElement('a')
+    dl.href = s.lastUrl; dl.download = dlName
+    document.body.appendChild(dl); dl.click(); dl.remove()
+    setStatus('clip-viral-status', `Clip ${idx + 1} downloaded!`, 'ok')
+    setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 3000)
+    return s.lastUrl
+  }
+  // Fast path 2: untouched clip (original framing, no captions) we pre-rendered for preview.
   const isRaw = s.format === 'original' && (s.crop === 'fit' || !s.crop) && !s.captionsOn
   if (isRaw && s.rawUrl) {
+    s.lastSig = sig; s.lastUrl = s.rawUrl
     const dl = document.createElement('a')
-    dl.href = s.rawUrl; dl.download = `viral_clip_${idx + 1}.mp4`
+    dl.href = s.rawUrl; dl.download = dlName
     document.body.appendChild(dl); dl.click(); dl.remove()
     setStatus('clip-viral-status', `Clip ${idx + 1} downloaded!`, 'ok')
     setTimeout(() => { document.getElementById('clip-viral-status').style.display = 'none' }, 3000)
@@ -3230,20 +3253,18 @@ window.cvDownloadOne = async (idx, opts = {}) => {
       ? await captionizeBlob(blob, `viral_clip_${idx + 1}`, { statusId: 'clip-viral-status', style: s.style, position: s.pos, custom: s.custom })
       : URL.createObjectURL(blob)
 
+    // Cache the result against the settings sig — a future click with the
+    // SAME settings will reuse this URL; a click after changing crop/format/
+    // captions/style/stroke will re-enter the render path here.
+    s.lastSig = sig; s.lastUrl = outUrl
     // Show the rendered (reframed/captioned) result in the card.
     cvSetCardVideo(idx, outUrl, true)
-    // Turn the render button into a re-download link.
-    if (renderBtn) {
-      const a = document.createElement('a')
-      a.href = outUrl; a.download = `viral_clip_${idx + 1}${s.captionsOn ? '_captioned' : ''}.mp4`
-      a.className = 'btn btn-primary btn-sm'; a.style.display = 'inline-flex'
-      a.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download'
-      renderBtn.replaceWith(a)
-    }
+    // Keep the button as a button (so it re-renders on next click) — just re-enable it.
+    if (renderBtn) renderBtn.disabled = false
     // Trigger the download now (unless batching — Download All handles its own).
     if (!opts.noAutoDownload) {
       const dl = document.createElement('a')
-      dl.href = outUrl; dl.download = `viral_clip_${idx + 1}${s.captionsOn ? '_captioned' : ''}.mp4`
+      dl.href = outUrl; dl.download = dlName
       document.body.appendChild(dl); dl.click(); dl.remove()
     }
     setStatus('clip-viral-status', `Clip ${idx + 1} ready!`, 'ok')
