@@ -208,6 +208,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-card-title{font-size:.9rem;font-weight:700;line-height:1.25}
 .clip-card-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}
 .clip-card-score{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:var(--a2)}
+.cv-genre-row{display:flex;flex-wrap:wrap;gap:6px;max-height:48px;overflow:hidden;transition:max-height .2s}
+.cv-genre-row.expanded{max-height:600px}
+.cv-genre-btn{border:1.5px solid var(--border);background:var(--surface);color:#fff;border-radius:7px;padding:6px 12px;font-size:.74rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s}
+.cv-genre-btn:hover{border-color:rgba(168,85,247,.5)}
+.cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-time-edit{display:inline-flex;align-items:center;gap:4px}
 .cv-time-btn{background:var(--surface);border:1px solid var(--border);color:#fff;border-radius:4px;width:18px;height:18px;font-size:.78rem;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .cv-time-btn:hover{border-color:var(--a2);color:var(--a2)}
@@ -778,6 +783,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               </button>
             </div>
             <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">AI analyzes the video's speech and finds the most engaging/viral-worthy segments. Choose how many clips you want.</p>
+            <div style="margin-bottom:14px">
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">For best results, choose the genre that fits your content</div>
+              <div class="cv-genre-row" id="clip-viral-genres"></div>
+              <button class="btn btn-ghost btn-sm" id="clip-viral-genres-toggle" style="margin-top:8px;font-size:.72rem" onclick="toggleViralGenres()">Show more ▾</button>
+            </div>
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
               <label style="font-size:.78rem;white-space:nowrap">Number of clips</label>
               <input type="range" id="clip-viral-count" min="1" max="10" value="5" style="flex:1" oninput="document.getElementById('clip-viral-count-val').textContent=this.value"/>
@@ -2910,6 +2920,44 @@ window.openClipInEditor = async (frameMode) => {
 let cvJobId = null
 let cvPollTimer = null
 let cvClips = []
+let cvGenre = 'auto' // selected content genre — steers the Claude scoring prompt
+
+// Genre chips for "Find Viral Moments" — keyed values match the backend's
+// GENRE_HINTS map in autoclip.js. Each click swaps which scoring criteria
+// Claude uses to rank moments (sports look for big plays, podcasts look for
+// hot takes, etc.). 'auto' lets the AI guess.
+const CV_GENRES = [
+  ['auto', '🤖', 'Let AI detect'],
+  ['podcast', '🎙️', 'Podcast'], ['lifestyle', '🌿', 'Lifestyle'], ['vlog', '🎬', 'Vlog'], ['travel', '✈️', 'Travel'],
+  ['food', '🍔', 'Food & Cooking'], ['beauty', '💄', 'Beauty & Fashion'], ['fitness', '🏋️', 'Fitness'], ['sports', '🏅', 'Sports'],
+  ['basketball', '🏀', 'Basketball'], ['soccer', '⚽', 'Soccer'], ['football', '🏈', 'American football'], ['marketing', '📈', 'Marketing & Webinar'],
+  ['talking', '🗣️', 'Talking head & Speech'], ['motivational', '💪', 'Motivational speech'], ['commentary', '💬', 'Commentary'],
+  ['interview', '🎤', 'Interview'], ['entertainment', '🎭', 'Entertainment'], ['movies', '🎞️', 'Movies'], ['drama', '🎭', 'Drama shows'],
+  ['reality', '📺', 'Reality & Talk shows'], ['news', '📰', 'News'], ['educational', '📚', 'Informative & Educational'],
+  ['product', '📦', 'Product reviews'], ['history', '🏛️', 'History'], ['science', '🔬', 'Science & Tech'], ['music', '🎵', 'Music'], ['gaming', '🎮', 'Gaming'],
+  ['other', '🔄', 'Other'],
+]
+
+// Build the genre chips on first paint and bind the click handler.
+;(function initCvGenres() {
+  const row = document.getElementById('clip-viral-genres')
+  if (!row) return
+  row.innerHTML = CV_GENRES.map(([k, ic, l]) =>
+    `<button class="cv-genre-btn${k === 'auto' ? ' active' : ''}" data-genre="${k}" onclick="setCvGenre('${k}',this)">${ic} ${l}</button>`
+  ).join('')
+})()
+
+window.setCvGenre = (g, btn) => {
+  cvGenre = g
+  document.querySelectorAll('#clip-viral-genres .cv-genre-btn').forEach((b) => b.classList.remove('active'))
+  btn?.classList.add('active')
+}
+window.toggleViralGenres = () => {
+  const row = document.getElementById('clip-viral-genres')
+  const btn = document.getElementById('clip-viral-genres-toggle')
+  const expanded = row.classList.toggle('expanded')
+  if (btn) btn.textContent = expanded ? 'Show less ▴' : 'Show more ▾'
+}
 
 window.clipFindViral = async () => {
   if (!clipSourceUrl) return
@@ -2933,7 +2981,7 @@ function cvPollViral() {
   const count = parseInt(document.getElementById('clip-viral-count').value) || 5
   cvPollTimer = setTimeout(async () => {
     try {
-      const result = await api.autoclip.poll(cvJobId, count)
+      const result = await api.autoclip.poll(cvJobId, count, cvGenre)
       if (result.status === 'completed') {
         document.getElementById('clip-viral-btn').disabled = false
         cvRenderResults(result)

@@ -89,7 +89,7 @@ export const api = {
   },
   autoclip: {
     start: (file_url) => req('POST', '/api/autoclip', { file_url }),
-    poll:  (jobId, count) => req('GET',  `/api/autoclip/${jobId}?count=${count || 5}`),
+    poll:  (jobId, count, genre) => req('GET',  `/api/autoclip/${jobId}?count=${count || 5}${genre ? `&genre=${encodeURIComponent(genre)}` : ''}`),
   },
   caption: {
     // Burn captions onto the video. Returns an object URL for a video blob.
