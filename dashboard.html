@@ -240,8 +240,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cap-swatch.active{border-color:var(--a2);box-shadow:0 0 0 2px rgba(168,85,247,.35)}
 .cap-case-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--muted);font-size:.72rem;font-weight:600;padding:6px 12px;cursor:pointer}
 .cap-case-btn.active{border-color:var(--a2);color:#fff}
-.cap-font-row{display:flex;flex-wrap:wrap;gap:6px}
-.cap-font-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:#fff;font-size:.78rem;padding:7px 12px;cursor:pointer;transition:border-color .15s}
+.cap-font-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.cap-font-row::-webkit-scrollbar{height:6px}
+.cap-font-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.cap-font-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:#fff;font-size:.78rem;padding:7px 12px;cursor:pointer;transition:border-color .15s;flex-shrink:0;white-space:nowrap}
 .cap-font-btn:hover{border-color:rgba(168,85,247,.5)}
 .cap-font-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-fmt-preview{margin-top:8px}
