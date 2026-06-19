@@ -240,6 +240,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cap-swatch.active{border-color:var(--a2);box-shadow:0 0 0 2px rgba(168,85,247,.35)}
 .cap-case-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--muted);font-size:.72rem;font-weight:600;padding:6px 12px;cursor:pointer}
 .cap-case-btn.active{border-color:var(--a2);color:#fff}
+.cap-styles-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .cap-font-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .cap-font-row::-webkit-scrollbar{height:6px}
 .cap-font-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -450,8 +451,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           </div>
           <div class="result-box" style="margin-top:10px">
             <div class="result-label">🔥 Burn captions into video</div>
-            <p style="font-size:.72rem;color:var(--muted);margin:4px 0 10px">Render the captions directly onto your video — pick a style.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <p style="font-size:.72rem;color:var(--muted);margin:4px 0 10px">Render the captions directly onto your video — open Captions to pick a style and tweak fonts.</p>
+            <div id="cap-settings-slot"></div>
+            <div id="cap-styles-row" class="cap-styles-row" style="display:none;margin-bottom:12px">
               <button class="cap-style-btn active" data-style="karaoke" onclick="setCapStyle('karaoke',this)">🟢 Viral Green</button>
               <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setCapStyle('karaoke_yellow',this)">🟡 Viral Yellow</button>
               <button class="cap-style-btn" data-style="clean" onclick="setCapStyle('clean',this)">⬜ Clean</button>
@@ -466,7 +468,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <button class="cap-style-btn" data-style="badge" onclick="setCapStyle('badge',this)">🏷️ Badge</button>
               <button class="cap-style-btn" data-style="headline" onclick="setCapStyle('headline',this)">📰 Headline</button>
             </div>
-            <div id="cap-settings-slot"></div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="cap-burn-btn" onclick="burnCaptions()">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l2 7h7l-6 4 2 7-5-4-5 4 2-7-6-4h7z"/></svg>
@@ -670,23 +671,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               🔥 Add auto-captions to this clip
             </label>
             <div id="clip-caption-section" style="display:none;margin-top:14px">
-              <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Caption style</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="clip-cap-styles">
-                <button class="cap-style-btn active" data-style="karaoke" onclick="setClipCaptionStyle('karaoke',this)">🟢 Viral Green</button>
-                <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setClipCaptionStyle('karaoke_yellow',this)">🟡 Viral Yellow</button>
-                <button class="cap-style-btn" data-style="clean" onclick="setClipCaptionStyle('clean',this)">⬜ Clean</button>
-                <button class="cap-style-btn" data-style="boxed" onclick="setClipCaptionStyle('boxed',this)">▪️ Box</button>
-                <button class="cap-style-btn" data-style="bangers" onclick="setClipCaptionStyle('bangers',this)">💥 Comic</button>
-                <button class="cap-style-btn" data-style="random" onclick="setClipCaptionStyle('random',this)">🌈 Random Color</button>
-                <button class="cap-style-btn" data-style="rounded" onclick="setClipCaptionStyle('rounded',this)">🔵 Rounded</button>
-                <button class="cap-style-btn" data-style="meme" onclick="setClipCaptionStyle('meme',this)">😂 Meme</button>
-                <button class="cap-style-btn" data-style="neon" onclick="setClipCaptionStyle('neon',this)">💖 Neon</button>
-                <button class="cap-style-btn" data-style="script" onclick="setClipCaptionStyle('script',this)">✍️ Script</button>
-                <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
-                <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
-                <button class="cap-style-btn" data-style="headline" onclick="setClipCaptionStyle('headline',this)">📰 Headline</button>
-              </div>
               <div id="clip-cap-settings-slot"></div>
+              <div id="clip-cap-styles-row" style="display:none;margin-top:10px">
+                <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">Caption style</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px" id="clip-cap-styles">
+                  <button class="cap-style-btn active" data-style="karaoke" onclick="setClipCaptionStyle('karaoke',this)">🟢 Viral Green</button>
+                  <button class="cap-style-btn" data-style="karaoke_yellow" onclick="setClipCaptionStyle('karaoke_yellow',this)">🟡 Viral Yellow</button>
+                  <button class="cap-style-btn" data-style="clean" onclick="setClipCaptionStyle('clean',this)">⬜ Clean</button>
+                  <button class="cap-style-btn" data-style="boxed" onclick="setClipCaptionStyle('boxed',this)">▪️ Box</button>
+                  <button class="cap-style-btn" data-style="bangers" onclick="setClipCaptionStyle('bangers',this)">💥 Comic</button>
+                  <button class="cap-style-btn" data-style="random" onclick="setClipCaptionStyle('random',this)">🌈 Random Color</button>
+                  <button class="cap-style-btn" data-style="rounded" onclick="setClipCaptionStyle('rounded',this)">🔵 Rounded</button>
+                  <button class="cap-style-btn" data-style="meme" onclick="setClipCaptionStyle('meme',this)">😂 Meme</button>
+                  <button class="cap-style-btn" data-style="neon" onclick="setClipCaptionStyle('neon',this)">💖 Neon</button>
+                  <button class="cap-style-btn" data-style="script" onclick="setClipCaptionStyle('script',this)">✍️ Script</button>
+                  <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
+                  <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
+                  <button class="cap-style-btn" data-style="headline" onclick="setClipCaptionStyle('headline',this)">📰 Headline</button>
+                </div>
+              </div>
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;margin-top:10px">Position — drag the caption where you want it</div>
               <div id="clip-cap-pad" class="cap-pad">
                 <div id="clip-cap-chip" class="cap-chip">Captions</div>
@@ -2499,7 +2502,7 @@ const CAP_FONTS = [
 ]
 function capSettingsHTML(idPrefix) {
   return `<div class="cap-settings">
-    <button type="button" class="cap-settings-toggle" onclick="toggleCapSettings('${idPrefix}',this)">⚙️ Font &amp; stroke settings</button>
+    <button type="button" class="cap-settings-toggle" onclick="toggleCapSettings('${idPrefix}',this)">🎨 Captions</button>
     <div class="cap-settings-body" id="${idPrefix}-settings-body" style="display:none">
       <div class="cap-set-row">
         <label>Font</label>
@@ -2540,6 +2543,10 @@ window.toggleCapSettings = (prefix, btn) => {
   if (!body) return
   const open = body.style.display === 'none'
   body.style.display = open ? '' : 'none'
+  // Also toggle the style-preset row that sits in the same logical section so
+  // styles + fonts/size/stroke open and close together as one "Captions" group.
+  const stylesRow = document.getElementById(`${prefix}-styles-row`)
+  if (stylesRow) stylesRow.style.display = open ? '' : 'none'
   btn?.classList.toggle('active', open)
 }
 // Only a control the user has actually touched should override the style
@@ -3011,10 +3018,12 @@ function cvRenderResults(result) {
         </div>
         <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleCvItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
         <div id="cv-cap-sec-${i}" style="display:none;margin-top:6px">
-          <div class="cv-mini-row" style="margin-bottom:8px">
-            ${CV_STYLES.map(([k, l], j) => `<button class="cap-style-btn cv-mini-btn ${j === 0 ? 'active' : ''}" data-style="${k}" onclick="setCvItemStyle(${i},'${k}',this)">${l}</button>`).join('')}
-          </div>
           <div id="cv-cap-settings-slot-${i}"></div>
+          <div id="cv-cap-${i}-styles-row" style="display:none;margin-top:8px">
+            <div class="cv-mini-row" style="margin-bottom:0">
+              ${CV_STYLES.map(([k, l], j) => `<button class="cap-style-btn cv-mini-btn ${j === 0 ? 'active' : ''}" data-style="${k}" onclick="setCvItemStyle(${i},'${k}',this)">${l}</button>`).join('')}
+            </div>
+          </div>
           <div style="font-size:.66rem;color:var(--muted);margin-bottom:4px;margin-top:8px">Drag the caption where you want it</div>
           <div class="cap-pad" id="cv-pad-${i}" style="width:110px"><div class="cap-chip" id="cv-chip-${i}">Captions</div></div>
         </div>
