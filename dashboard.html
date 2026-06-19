@@ -774,22 +774,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div class="clip-right" id="clip-right-col" style="display:none">
           <!-- Viral Moments (URL mode only) -->
           <div id="clip-viral-section" style="display:none;padding:20px;background:var(--card);border-radius:12px;border:1px solid var(--border)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">
               <h4 style="margin:0;font-size:.95rem">Find Viral Moments</h4>
-              <button class="btn btn-primary btn-sm" id="clip-viral-btn" onclick="clipFindViral()">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                Find Viral Moments
-              </button>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <label for="clip-viral-count" style="font-size:.74rem;color:var(--muted);white-space:nowrap">Clips:</label>
+                <input type="number" id="clip-viral-count" min="1" max="15" value="5" style="width:56px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:.85rem;font-weight:700;padding:6px 8px;text-align:center" oninput="clampClipCount(this)"/>
+                <button class="btn btn-primary btn-sm" id="clip-viral-btn" onclick="clipFindViral()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Find Viral Moments
+                </button>
+              </div>
             </div>
-            <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">AI analyzes the video's speech and finds the most engaging/viral-worthy segments. Choose how many clips you want.</p>
+            <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px">AI analyzes the video's speech and finds the most engaging/viral-worthy segments (1-15 clips).</p>
             <div style="margin-bottom:14px">
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">For best results, choose the genre that fits your content</div>
               <div class="cv-genre-row" id="clip-viral-genres"></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-              <label style="font-size:.78rem;white-space:nowrap">Number of clips</label>
-              <input type="range" id="clip-viral-count" min="1" max="10" value="5" style="flex:1" oninput="document.getElementById('clip-viral-count-val').textContent=this.value"/>
-              <span id="clip-viral-count-val" style="font-weight:600;font-size:.9rem;min-width:20px;text-align:center">5</span>
             </div>
             <div class="status" id="clip-viral-status" style="display:none;margin-bottom:10px"></div>
             <div id="clip-viral-results" style="display:none">
@@ -2959,6 +2958,15 @@ const CV_GENRES = [
     `<button class="cv-genre-btn${k === 'auto' ? ' active' : ''}" data-genre="${k}" onclick="setCvGenre('${k}',this)">${ic} ${l}</button>`
   ).join('')
 })()
+
+// Clamp the Clips number input to 1-15 so the user can't push past the limit
+// (also prevents an empty/NaN value from breaking the analyze request).
+window.clampClipCount = (el) => {
+  let n = parseInt(el.value, 10)
+  if (!Number.isFinite(n)) n = 5
+  n = Math.min(15, Math.max(1, n))
+  if (String(n) !== el.value) el.value = String(n)
+}
 
 window.setCvGenre = (g, btn) => {
   cvGenre = g
