@@ -2560,19 +2560,23 @@ function readCapCustom(prefix) {
 // and (when this instance has a position-pad chip) refresh the live preview.
 window.onCapCustomChange = (prefix) => {
   const custom = readCapCustom(prefix)
-  let chipId = null
+  let chipId = null, style = null
   if (prefix === 'cap') {
     capCustom = custom // standalone Captions panel has no position-pad chip
   } else if (prefix === 'clip-cap') {
     clipCaptionCustom = custom
     chipId = 'clip-cap-chip'
+    style = clipCaptionStyle
   } else {
     const m = /^cv-cap-(\d+)$/.exec(prefix)
-    if (m) { cvSettings[Number(m[1])].custom = custom; chipId = `cv-chip-${m[1]}` }
+    if (m) {
+      cvSettings[Number(m[1])].custom = custom
+      chipId = `cv-chip-${m[1]}`
+      style = cvSettings[Number(m[1])].style
+    }
   }
   const chip = chipId && document.getElementById(chipId)
-  if (chip && custom.font) chip.style.fontFamily = `'${custom.font}',sans-serif`
-  if (chip && typeof custom.upper === 'boolean') chip.style.textTransform = custom.upper ? 'uppercase' : 'none'
+  if (chip) applyCustomPreview(chip, style, custom)
 }
 // The CAPS/Normal toggle only matters for TikTok Sans (Headline style) right
 // now — hide it for fonts whose style already locks capitalization.
@@ -2656,6 +2660,25 @@ function applyChipStyle(chip, style) {
     ).join('')
   } else if (chip.querySelector('span')) {
     chip.textContent = chip.textContent // strip any leftover per-letter spans
+  }
+}
+
+// Layer the user's font/size/stroke/case overrides on top of the chosen
+// style's baseline chip preview, so dragging the sliders reflects live.
+function applyCustomPreview(chip, style, custom) {
+  if (!chip) return
+  applyChipStyle(chip, style)
+  if (custom.font) chip.style.fontFamily = `'${custom.font}',sans-serif`
+  if (typeof custom.upper === 'boolean') chip.style.textTransform = custom.upper ? 'uppercase' : 'none'
+  if (Number.isFinite(custom.sizePct)) {
+    chip.style.fontSize = (0.6 + (custom.sizePct / 100) * 0.8) + 'rem'
+  }
+  if (custom.outline === 'none') {
+    chip.style.textShadow = 'none'
+  } else if (custom.outline || Number.isFinite(custom.outlineWidthPct)) {
+    const oc = custom.outline || (CAP_STYLE_PREVIEW[style]?.outline || '#000')
+    const w = Number.isFinite(custom.outlineWidthPct) ? (custom.outlineWidthPct / 100) * 3 : 1.5
+    chip.style.textShadow = `-${w}px -${w}px 0 ${oc},${w}px -${w}px 0 ${oc},-${w}px ${w}px 0 ${oc},${w}px ${w}px 0 ${oc}`
   }
 }
 
