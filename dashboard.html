@@ -1063,11 +1063,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div class="rf-chip-row" id="rf-layout-row">
               <button class="rf-chip active" data-layout="fill" onclick="setRfLayout('fill',this)">⛶ Fill</button>
               <button class="rf-chip" data-layout="fit" onclick="setRfLayout('fit',this)">▣ Fit</button>
-              <button class="rf-chip soon" data-layout="split" title="Coming soon — needs multi-subject tracking">▤ Split</button>
-              <button class="rf-chip soon" data-layout="screenshare" title="Coming soon — needs multi-subject tracking">🖥 ScreenShare</button>
-              <button class="rf-chip soon" data-layout="gameplay" title="Coming soon — needs multi-subject tracking">🎮 Gameplay</button>
-              <button class="rf-chip soon" data-layout="three" title="Coming soon — needs multi-subject tracking">⊞ Three</button>
-              <button class="rf-chip soon" data-layout="four" title="Coming soon — needs multi-subject tracking">⊟ Four</button>
+              <button class="rf-chip" data-layout="split" onclick="setRfLayout('split',this)">▤ Split</button>
+              <button class="rf-chip" data-layout="screenshare" onclick="setRfLayout('screenshare',this)">🖥 ScreenShare</button>
+              <button class="rf-chip" data-layout="gameplay" onclick="setRfLayout('gameplay',this)">🎮 Gameplay</button>
+              <button class="rf-chip" data-layout="three" onclick="setRfLayout('three',this)">⊞ Three</button>
+              <button class="rf-chip" data-layout="four" onclick="setRfLayout('four',this)">⊟ Four</button>
             </div>
           </div>
 
@@ -3062,11 +3062,11 @@ function rfRenderViralResults(result) {
         <div class="rf-chip-row" id="rf-clip-layout-row-${i}" style="margin-bottom:2px">
           <button class="rf-chip active" data-layout="fill" onclick="rfClipSetLayout(${i},'fill',this)">⛶ Fill</button>
           <button class="rf-chip" data-layout="fit" onclick="rfClipSetLayout(${i},'fit',this)">▣ Fit</button>
-          <button class="rf-chip soon" data-layout="split" title="Coming soon — needs multi-subject tracking">▤ Split</button>
-          <button class="rf-chip soon" data-layout="screenshare" title="Coming soon — needs multi-subject tracking">🖥 ScreenShare</button>
-          <button class="rf-chip soon" data-layout="gameplay" title="Coming soon — needs multi-subject tracking">🎮 Gameplay</button>
-          <button class="rf-chip soon" data-layout="three" title="Coming soon — needs multi-subject tracking">⊞ Three</button>
-          <button class="rf-chip soon" data-layout="four" title="Coming soon — needs multi-subject tracking">⊟ Four</button>
+          <button class="rf-chip" data-layout="split" onclick="rfClipSetLayout(${i},'split',this)">▤ Split</button>
+          <button class="rf-chip" data-layout="screenshare" onclick="rfClipSetLayout(${i},'screenshare',this)">🖥 ScreenShare</button>
+          <button class="rf-chip" data-layout="gameplay" onclick="rfClipSetLayout(${i},'gameplay',this)">🎮 Gameplay</button>
+          <button class="rf-chip" data-layout="three" onclick="rfClipSetLayout(${i},'three',this)">⊞ Three</button>
+          <button class="rf-chip" data-layout="four" onclick="rfClipSetLayout(${i},'four',this)">⊟ Four</button>
         </div>
         <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleRfItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
         <div id="rf-cap-sec-${i}" style="display:none;margin-top:6px">
