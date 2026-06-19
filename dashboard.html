@@ -208,6 +208,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-card-title{font-size:.9rem;font-weight:700;line-height:1.25}
 .clip-card-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}
 .clip-card-score{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:var(--a2)}
+.cv-time-edit{display:inline-flex;align-items:center;gap:4px}
+.cv-time-btn{background:var(--surface);border:1px solid var(--border);color:#fff;border-radius:4px;width:18px;height:18px;font-size:.78rem;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.cv-time-btn:hover{border-color:var(--a2);color:var(--a2)}
 .clip-card-desc{font-size:.74rem;color:var(--muted);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
 .clip-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
 @media(max-width:560px){.clip-card-video{width:104px}}
@@ -3005,8 +3008,17 @@ function cvRenderResults(result) {
         <div class="clip-card-title">#${i+1} Viral Moment</div>
         <div class="clip-card-meta">
           <span class="clip-card-score">🔥 ${clip.rank}/100</span>
-          <span>· ${Math.round(dur)}s</span>
-          <span>· ${fmt(clip.start)}–${fmt(clip.end)}</span>
+          <span>· <span id="cv-dur-${i}">${Math.round(dur)}</span>s</span>
+          <span class="cv-time-edit">
+            ·
+            <button class="cv-time-btn" onclick="cvAdjustTime(${i},'start',-1)" title="Trim 1s off the start">−</button>
+            <span id="cv-start-${i}">${fmt(clip.start)}</span>
+            <button class="cv-time-btn" onclick="cvAdjustTime(${i},'start',1)" title="Add 1s before the start">+</button>
+            –
+            <button class="cv-time-btn" onclick="cvAdjustTime(${i},'end',-1)" title="Trim 1s off the end">−</button>
+            <span id="cv-end-${i}">${fmt(clip.end)}</span>
+            <button class="cv-time-btn" onclick="cvAdjustTime(${i},'end',1)" title="Add 1s past the end">+</button>
+          </span>
         </div>
         <div class="clip-card-desc">"${clip.text}"</div>
         <div class="cv-ctrl-label">Format</div>
@@ -3168,6 +3180,35 @@ window.cvClosePreview = () => {
 
 // Instant preview: for YouTube sources, embed the player at the exact moment
 // (no server render). For other sources, cut the clip once and play it.
+// Nudge a clip's start or end timestamp by ±N seconds. Updates the in-memory
+// clip, the visible mm:ss text, the duration display, and clears any cached
+// pre-render / cached download blob so the next preview & download re-cut
+// the clip with the new bounds. Enforces start>=0 and end>start+1.
+window.cvAdjustTime = (i, field, delta) => {
+  const clip = cvClips[i]
+  if (!clip) return
+  let start = clip.start, end = clip.end
+  if (field === 'start') start = Math.max(0, start + delta)
+  else end = end + delta
+  if (end - start < 1) {
+    // Keep at least a 1-second window — push the other side instead of clamping.
+    if (field === 'start') start = end - 1
+    else end = start + 1
+    if (start < 0) { start = 0; end = Math.max(1, end) }
+  }
+  clip.start = Math.round(start * 100) / 100
+  clip.end = Math.round(end * 100) / 100
+  clip.duration = Math.round((end - start) * 10) / 10
+  const fmt = (s) => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  const ss = document.getElementById(`cv-start-${i}`); if (ss) ss.textContent = fmt(clip.start)
+  const se = document.getElementById(`cv-end-${i}`); if (se) se.textContent = fmt(clip.end)
+  const sd = document.getElementById(`cv-dur-${i}`); if (sd) sd.textContent = String(Math.round(clip.duration))
+  // Invalidate every cached render for this clip — the bounds have changed so
+  // any previously rendered/preview blob is stale.
+  const s = cvSettings[i]
+  if (s) { s.lastSig = null; s.lastUrl = null; s.rawUrl = null }
+}
+
 window.cvPreviewOne = async (i) => {
   const clip = cvClips[i]
   if (!clip || !clipSourceUrl) return
