@@ -1244,10 +1244,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div id="vr-cards"></div>
 
         <div style="margin-top:18px">
-          <button class="btn btn-primary" style="width:100%;opacity:.5;cursor:not-allowed" disabled title="Generating the final video isn't wired up yet">
+          <button class="btn btn-primary" id="vr-generate-btn" style="width:100%" onclick="vrGenerate()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Generate Ranking Video — coming soon
+            Generate Ranking Video
           </button>
+          <div id="vr-generate-status" style="display:none;margin-top:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span id="vr-status-step" style="font-size:.78rem;color:var(--muted)"></span>
+              <span id="vr-status-pct"  style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
+            <div style="background:var(--surface);border-radius:999px;height:6px;overflow:hidden">
+              <div id="vr-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));width:0%;transition:width .3s;border-radius:999px"></div>
+            </div>
+            <button id="vr-download-btn" class="btn btn-primary" style="display:none;width:100%;margin-top:12px">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Ranking Video
+            </button>
+          </div>
         </div>
       </div>
       </div><!-- /.vr-left -->
@@ -2808,6 +2821,116 @@ window.vrSyncFromHex = () => {
   if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
     document.getElementById('vr-bg-color').value = hex
     vrSyncStage()
+  }
+}
+
+window.vrGenerate = async () => {
+  // Validate cards
+  if (vrCards.length < 2) {
+    alert('Add at least 2 videos before generating.')
+    return
+  }
+  for (let i = 0; i < vrCards.length; i++) {
+    if (!vrCards[i].link?.trim() && !vrCards[i].file) {
+      alert(`Video Rank ${i + 1} is empty — add a link or upload a file first.`)
+      return
+    }
+  }
+
+  const btn       = document.getElementById('vr-generate-btn')
+  const statusEl  = document.getElementById('vr-generate-status')
+  const stepEl    = document.getElementById('vr-status-step')
+  const pctEl     = document.getElementById('vr-status-pct')
+  const bar       = document.getElementById('vr-progress-bar')
+  const dlBtn     = document.getElementById('vr-download-btn')
+
+  const setStep = (text, pct) => {
+    stepEl.textContent = text
+    pctEl.textContent  = pct + '%'
+    bar.style.width    = pct + '%'
+    bar.style.background = 'linear-gradient(90deg,var(--a1),var(--a2))'
+  }
+
+  btn.disabled        = true
+  statusEl.style.display = 'block'
+  dlBtn.style.display    = 'none'
+  setStep('Starting…', 2)
+
+  try {
+    // 1. Upload any local file cards to get storage URLs
+    const resolved = []
+    for (let i = 0; i < vrCards.length; i++) {
+      let url = vrCards[i].link?.trim() || ''
+      if (!url && vrCards[i].file) {
+        setStep(`Uploading clip ${i + 1} of ${vrCards.length}…`, 5 + Math.round((i / vrCards.length) * 15))
+        const fd = new FormData()
+        fd.append('file', vrCards[i].file)
+        const result = await window._api.upload.file(fd)
+        url = result.url
+      }
+      resolved.push({ url })
+    }
+
+    // 2. Playback order: default = reverse (build-up to rank 1 last), custom = as-is
+    const customOrder   = document.getElementById('vr-custom-order').checked
+    const orderedVideos = customOrder ? resolved : [...resolved].reverse()
+
+    // 3. Collect title + settings from the form
+    const title = {
+      text:        document.getElementById('vr-title-text').value.trim(),
+      font:        document.getElementById('vr-title-font').value,
+      size:        document.getElementById('vr-title-size').value,
+      color:       document.getElementById('vr-title-color').value,
+      strokeColor: document.getElementById('vr-stroke-color').value,
+      strokeWidth: parseInt(document.getElementById('vr-stroke-width').value) || 0,
+    }
+    const settings = {
+      bgColor:    document.getElementById('vr-bg-color').value,
+      heightPct:  parseInt(document.getElementById('vr-height').value) || 80,
+      caption:    document.getElementById('vr-enable-caption').checked,
+    }
+
+    // 4. Kick off the backend job
+    setStep('Starting job…', 22)
+    const { jobId } = await window._api.ranking.start({ videos: orderedVideos, title, settings })
+
+    // 5. Poll until done
+    await new Promise((resolve, reject) => {
+      const tick = setInterval(async () => {
+        try {
+          const { status, step, progress, error } = await window._api.ranking.poll(jobId)
+          if (status === 'error') { clearInterval(tick); reject(new Error(error || 'Processing failed')); return }
+          setStep(step || 'Processing…', Math.max(22, progress || 0))
+          if (status === 'done') { clearInterval(tick); resolve() }
+        } catch (e) { clearInterval(tick); reject(e) }
+      }, 2500)
+    })
+
+    // 6. Ready — wire download button
+    setStep('Ready!', 100)
+    dlBtn.style.display = 'block'
+    dlBtn.onclick = async () => {
+      dlBtn.disabled = true
+      dlBtn.querySelector('svg + *') // just reference; update textContent directly
+      const orig = dlBtn.innerHTML
+      dlBtn.textContent = 'Preparing download…'
+      try {
+        const objectUrl = await window._api.ranking.download(jobId)
+        const a = document.createElement('a')
+        a.href = objectUrl; a.download = 'ranking-video.mp4'; a.click()
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+      } catch (e) {
+        alert('Download failed: ' + e.message)
+      } finally {
+        dlBtn.innerHTML  = orig
+        dlBtn.disabled   = false
+      }
+    }
+  } catch (err) {
+    setStep('Error: ' + err.message, 0)
+    bar.style.background = '#ef4444'
+  } finally {
+    btn.disabled = false
   }
 }
 

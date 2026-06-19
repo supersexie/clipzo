@@ -136,6 +136,22 @@ export const api = {
       return URL.createObjectURL(await res.blob())
     },
   },
+  ranking: {
+    start: (body) => req('POST', '/api/ranking', body),
+    poll:  (jobId) => req('GET', `/api/ranking/${jobId}`),
+    download: async (jobId) => {
+      const res = await fetch(BASE + `/api/ranking/${jobId}/download`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const err = new Error(data.message || data.error || 'Download failed')
+        err.status = res.status
+        throw err
+      }
+      return URL.createObjectURL(await res.blob())
+    },
+  },
   billing: {
     // tier: 'starter'|'creator'|'business', interval: 'monthly'|'yearly'
     checkoutUrl: (tier, interval) => WHOP_CHECKOUT[`${tier}_${interval}`] || WHOP_CHECKOUT.creator_monthly,
