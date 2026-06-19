@@ -2713,7 +2713,18 @@ function vrTimelineTicks(dur) {
   return ticks.join('')
 }
 
+// Pull any live values out of the current card inputs into the model before we
+// rebuild the DOM, so edits (esp. the title) aren't wiped by a re-render. The
+// oninput handlers don't always fire, so this is the source of truth.
+function vrCaptureCardInputs() {
+  vrCards.forEach((c, i) => {
+    const t = document.getElementById(`vr-ctitle-${i}`)
+    if (t) c.clipTitle = t.value
+  })
+}
+
 function vrRenderCards() {
+  vrCaptureCardInputs()
   const wrap = document.getElementById('vr-cards')
   wrap.innerHTML = vrCards.map((c, i) => {
     const hasVideo = !!c.streamUrl
