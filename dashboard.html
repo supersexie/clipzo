@@ -2871,8 +2871,10 @@ window.vrClearVideo = (i) => {
 }
 
 window.vrSubmitLink = async (i) => {
-  const link = vrCards[i].link?.trim()
+  const input = document.querySelector(`#vr-card-body-${i} .vr-link-row input[type=text]`)
+  const link = (input?.value || vrCards[i].link || '').trim()
   if (!link) return
+  vrCards[i].link = link
   const btn = document.getElementById(`vr-submit-btn-${i}`)
   const statusEl = document.getElementById(`vr-link-status-${i}`)
   btn.disabled = true
