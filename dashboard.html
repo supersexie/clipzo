@@ -219,6 +219,33 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .rf-chip.soon::after{content:"Soon";font-size:.55rem;font-weight:700;color:var(--a2);margin-left:6px;padding:2px 5px;border:1px solid var(--a2);border-radius:3px;letter-spacing:.05em}
 .cv-genre-btn{border:1.5px solid var(--border);background:var(--surface);color:#fff;border-radius:7px;padding:6px 12px;font-size:.74rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s}
 .cv-genre-btn:hover{border-color:rgba(168,85,247,.5)}
+
+/* Video Ranking tool */
+.vr-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.78rem;color:var(--ink);user-select:none}
+.vr-toggle input{display:none}
+.vr-toggle .sw{width:34px;height:20px;border-radius:10px;background:var(--surface);border:1.5px solid var(--border);position:relative;transition:background .15s,border-color .15s;flex-shrink:0}
+.vr-toggle .sw::after{content:"";position:absolute;top:1px;left:1px;width:15px;height:15px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.vr-toggle input:checked + .sw{background:rgba(168,85,247,.25);border-color:var(--a2)}
+.vr-toggle input:checked + .sw::after{transform:translateX(14px);background:var(--a2)}
+.vr-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.vr-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:16px}
+.vr-section h4{margin:0 0 14px;font-size:.92rem}
+.vr-mini-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;display:block}
+.vr-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:14px;overflow:hidden}
+.vr-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
+.vr-card-head .title{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:8px}
+.vr-card-actions{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.vr-card-actions button{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;display:flex}
+.vr-card-actions button:hover{color:var(--a2)}
+.vr-card-body{padding:0 16px 16px}
+.vr-link-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 6px}
+.vr-link-row .platforms{display:flex;gap:6px;padding:0 4px;font-size:1rem}
+.vr-link-row input{flex:1;background:none;border:none;color:var(--ink);font-size:.82rem;padding:11px 4px}
+.vr-link-row input:focus{outline:none}
+.vr-link-row button{background:var(--a1);border:none;color:#fff;border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:5px}
+.vr-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.7rem;margin:14px 0}
+.vr-or::before,.vr-or::after{content:"";flex:1;height:1px;background:var(--border)}
+.vr-count-input{width:64px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:#fff;font-size:.85rem;font-weight:700;padding:7px 8px;text-align:center}
 .cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-time-edit{display:inline-flex;align-items:center;gap:4px}
 .cv-time-btn{background:var(--surface);border:1px solid var(--border);color:#fff;border-radius:4px;width:18px;height:18px;font-size:.78rem;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
@@ -352,6 +379,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="nav-item" data-panel="downloader" onclick="switchPanel('downloader',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Video Downloader
+    </button>
+    <button class="nav-item" data-panel="ranking" onclick="switchPanel('ranking',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4"/><path d="M5 8h3v9H5z"/><path d="M10.5 4h3v13h-3z"/><path d="M16 11h3v6h-3z"/></svg>
+      Video Ranking
     </button>
     <button class="nav-item" data-panel="files" onclick="switchPanel('files',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
@@ -1126,6 +1157,90 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
 
+    <!-- VIDEO RANKING -->
+    <div class="panel" id="panel-ranking">
+      <div class="tool-card">
+        <h3>Video Ranking</h3>
+        <p>Pick how many videos you want to rank, add each one by link or upload, then style the countdown title. (Generating the final ranking video is coming soon — this builds your ranking list.)</p>
+
+        <div class="vr-row" style="margin-top:14px">
+          <div>
+            <label class="vr-mini-label" style="margin-bottom:4px">How many videos?</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="number" id="vr-count" class="vr-count-input" min="2" max="15" value="3" oninput="clampVrCount(this)"/>
+              <button class="btn btn-ghost btn-sm" onclick="vrSetCount()">Update</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="vr-section">
+          <h4>Video Ranking Title</h4>
+          <div class="vr-row" style="margin-bottom:10px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="vr-title-font" class="vr-count-input" style="width:auto;padding:7px 10px" onchange="vrRenderTitlePreview()">
+                <option>Archivo Black</option>
+                <option>Montserrat</option>
+                <option>Anton</option>
+                <option>Bangers</option>
+                <option>Luckiest Guy</option>
+              </select>
+              <select id="vr-title-size" class="vr-count-input" style="width:auto;padding:7px 10px" onchange="vrRenderTitlePreview()">
+                <option>20px</option><option>24px</option><option selected>28px</option><option>32px</option><option>40px</option>
+              </select>
+              <button class="rf-chip" id="vr-bold-btn" onclick="vrToggleStyle('bold',this)" style="padding:6px 10px"><b>B</b></button>
+              <button class="rf-chip" id="vr-italic-btn" onclick="vrToggleStyle('italic',this)" style="padding:6px 10px"><i>I</i></button>
+              <input type="color" id="vr-title-color" value="#ffffff" style="width:32px;height:32px;border:none;border-radius:7px;background:none;cursor:pointer" onchange="vrRenderTitlePreview()"/>
+            </div>
+            <label class="vr-toggle"><input type="checkbox" id="vr-drag-title"/><span class="sw"></span>Drag Title</label>
+          </div>
+          <input type="text" id="vr-title-text" value="Biggest of all time" placeholder="Enter your ranking title..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-bottom:14px" oninput="vrRenderTitlePreview()"/>
+          <div id="vr-title-preview" style="background:var(--surface);border:1px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;font-weight:800;color:#fff;font-size:1.4rem;margin-bottom:14px"></div>
+          <label class="vr-mini-label">Title Stroke</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="color" id="vr-stroke-color" value="#000000" style="width:28px;height:28px;border:none;border-radius:50%;background:none;cursor:pointer"/>
+            <input type="range" id="vr-stroke-width" min="0" max="10" value="2" style="flex:1;accent-color:var(--a2)"/>
+          </div>
+        </div>
+
+        <div class="vr-section">
+          <h4>General Setting</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <label class="vr-mini-label">Video height</label>
+              <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
+                <input type="number" id="vr-height" value="80" min="20" max="100" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0"/>
+                <span style="color:var(--muted);font-size:.8rem">%</span>
+              </div>
+            </div>
+            <div>
+              <label class="vr-mini-label">Background</label>
+              <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
+                <input type="color" id="vr-bg-color" value="#2b2a2a" style="width:22px;height:22px;border:none;border-radius:50%;background:none;cursor:pointer"/>
+                <input type="text" id="vr-bg-hex" value="#2B2A2A" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0"/>
+              </div>
+            </div>
+          </div>
+          <label class="vr-toggle" style="margin-top:16px"><input type="checkbox" id="vr-enable-caption"/><span class="sw"></span>Enable Caption</label>
+        </div>
+
+        <div class="vr-section">
+          <div class="vr-row" style="margin-bottom:0">
+            <h4 style="margin:0">Playback Order</h4>
+            <label class="vr-toggle"><input type="checkbox" id="vr-custom-order"/><span class="sw"></span>Custom Playback Order</label>
+          </div>
+        </div>
+
+        <div id="vr-cards"></div>
+
+        <div style="margin-top:18px">
+          <button class="btn btn-primary" style="width:100%;opacity:.5;cursor:not-allowed" disabled title="Generating the final video isn't wired up yet">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate Ranking Video — coming soon
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- FILES -->
     <div class="panel" id="panel-files">
       <div class="tool-card">
@@ -1244,7 +1359,7 @@ function populateUser() {
 }
 
 // ── PANELS ───────────────────────────────────────────────────────────────────
-const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', reframe:'AI Reframe', downloader:'Video Downloader', files:'My Files' }
+const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', reframe:'AI Reframe', downloader:'Video Downloader', files:'My Files', ranking:'Video Ranking' }
 window.switchPanel = (id, btn, opts = {}) => {
   if (!titles[id]) id = 'home'
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
@@ -2489,6 +2604,139 @@ window.downloadVideo = () => {
   a.click()
   document.body.removeChild(a)
 }
+
+// ── VIDEO RANKING (UI scaffold — list-building only, no render pipeline yet) ──
+let vrCards = [] // [{ link, file }]
+
+function clampVrCount(input) {
+  let v = parseInt(input.value) || 2
+  v = Math.min(15, Math.max(2, v))
+  input.value = v
+}
+
+window.vrSetCount = () => {
+  const input = document.getElementById('vr-count')
+  clampVrCount(input)
+  const n = parseInt(input.value)
+  while (vrCards.length < n) vrCards.push({ link: '', file: null })
+  vrCards.length = n
+  vrRenderCards()
+}
+
+function vrRenderCards() {
+  const wrap = document.getElementById('vr-cards')
+  wrap.innerHTML = vrCards.map((c, i) => `
+    <div class="vr-card" id="vr-card-${i}">
+      <div class="vr-card-head" onclick="vrToggleCard(${i})">
+        <div class="title">
+          <svg id="vr-chevron-${i}" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .15s"><polyline points="18 15 12 9 6 15"/></svg>
+          Video Rank ${i + 1}
+        </div>
+        <div class="vr-card-actions" onclick="event.stopPropagation()">
+          <button onclick="vrRemoveCard(${i})" title="Remove">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+          <button onclick="vrMoveCard(${i},-1)" title="Move up"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+          <button onclick="vrMoveCard(${i},1)" title="Move down"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></button>
+        </div>
+      </div>
+      <div class="vr-card-body" id="vr-card-body-${i}">
+        <label class="vr-mini-label">Video Link</label>
+        <div class="vr-link-row">
+          <div class="platforms">📺 🎵 📷</div>
+          <input type="text" placeholder="TikTok, Instagram, or YouTube video link" value="${c.link || ''}" oninput="vrCards[${i}].link=this.value"/>
+          <button onclick="vrSubmitLink(${i})">→</button>
+        </div>
+        <div class="vr-or">OR</div>
+        <label class="vr-mini-label">Upload Video</label>
+        <div class="upload-zone" id="vr-upload-${i}" style="padding:26px"
+             onclick="document.getElementById('vr-file-${i}').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="vrHandleDrop(event,${i})">
+          <div class="uz-icon">☁️</div>
+          <p>${c.file ? `<strong>${c.file.name}</strong>` : '<strong>Choose a clip</strong> or drag and drop it here'}</p>
+          <p style="margin-top:4px;font-size:.72rem">MP4 format, up to 500MB</p>
+        </div>
+        <input type="file" id="vr-file-${i}" accept="video/mp4" style="display:none" onchange="vrHandleFile(event,${i})"/>
+      </div>
+    </div>
+  `).join('')
+}
+
+window.vrToggleCard = (i) => {
+  const body = document.getElementById(`vr-card-body-${i}`)
+  const chev = document.getElementById(`vr-chevron-${i}`)
+  const collapsed = body.style.display === 'none'
+  body.style.display = collapsed ? '' : 'none'
+  chev.style.transform = collapsed ? '' : 'rotate(180deg)'
+}
+
+window.vrRemoveCard = (i) => {
+  vrCards.splice(i, 1)
+  document.getElementById('vr-count').value = vrCards.length
+  vrRenderCards()
+}
+
+window.vrMoveCard = (i, dir) => {
+  const j = i + dir
+  if (j < 0 || j >= vrCards.length) return
+  ;[vrCards[i], vrCards[j]] = [vrCards[j], vrCards[i]]
+  vrRenderCards()
+}
+
+window.vrSubmitLink = (i) => {
+  // Backend wiring for fetching/validating the link comes with the render
+  // pipeline — for now this just flashes the row to confirm it was captured.
+  const row = document.querySelectorAll(`#vr-card-body-${i} .vr-link-row`)[0]
+  if (row) { row.style.borderColor = 'var(--a2)'; setTimeout(() => row.style.borderColor = '', 600) }
+}
+
+window.vrHandleFile = (e, i) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  vrCards[i].file = file
+  vrRenderCards()
+}
+
+window.vrHandleDrop = (e, i) => {
+  e.preventDefault()
+  e.currentTarget.classList.remove('drag')
+  const file = e.dataTransfer.files?.[0]
+  if (!file) return
+  vrCards[i].file = file
+  vrRenderCards()
+}
+
+window.vrToggleStyle = (which, btn) => {
+  btn.classList.toggle('active')
+  vrRenderTitlePreview()
+}
+
+window.vrRenderTitlePreview = () => {
+  const text = document.getElementById('vr-title-text').value || ''
+  const font = document.getElementById('vr-title-font').value
+  const size = document.getElementById('vr-title-size').value
+  const color = document.getElementById('vr-title-color').value
+  const bold = document.getElementById('vr-bold-btn').classList.contains('active')
+  const italic = document.getElementById('vr-italic-btn').classList.contains('active')
+  const preview = document.getElementById('vr-title-preview')
+  preview.textContent = text
+  preview.style.fontFamily = font
+  preview.style.fontSize = size
+  preview.style.color = color
+  preview.style.fontWeight = bold ? '900' : '800'
+  preview.style.fontStyle = italic ? 'italic' : 'normal'
+}
+
+;(function initVrPanel() {
+  // Bold is the screenshot's default state — pre-activate it and render once
+  // so the preview box isn't blank before the user touches any control.
+  const boldBtn = document.getElementById('vr-bold-btn')
+  if (boldBtn) boldBtn.classList.add('active')
+  window.vrSetCount?.()
+  window.vrRenderTitlePreview?.()
+})()
 
 let clipFormat = 'original'  // 'original'|'blur'|'black'|'white'
 let clipCropRatio = 'fit'    // 'fit'|'16:9'|'4:3'|'1:1'|'3:4'
