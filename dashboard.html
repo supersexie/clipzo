@@ -1128,6 +1128,7 @@ async function checkAuth() {
   loadUsage()
   loadVoices()
   loadFiles()
+  restorePanelFromHash() // keep refresh / back / forward on the same panel
 }
 
 function showModal() { document.getElementById('auth-modal').classList.remove('hidden') }
@@ -1190,14 +1191,28 @@ function populateUser() {
 
 // ── PANELS ───────────────────────────────────────────────────────────────────
 const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', autoclip:'AI Auto Clipper', downloader:'Video Downloader', files:'My Files' }
-window.switchPanel = (id, btn) => {
+window.switchPanel = (id, btn, opts = {}) => {
+  if (!titles[id]) id = 'home'
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
   document.getElementById('panel-'+id).classList.add('active')
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'))
   if (btn) btn.classList.add('active')
   else document.querySelector(`[data-panel="${id}"]`)?.classList.add('active')
   document.getElementById('topbar-title').textContent = titles[id]
+  // Persist the current panel in the URL hash so refresh / back / forward keep
+  // you on the same screen instead of dumping you back to Overview.
+  if (!opts.silent && location.hash !== '#' + id) {
+    history.replaceState(null, '', '#' + id)
+  }
 }
+
+// Restore the panel from the URL hash (e.g. clipzo.pro/dashboard.html#clipper)
+// on initial load and on browser back/forward.
+function restorePanelFromHash() {
+  const id = (location.hash || '').replace(/^#/, '')
+  switchPanel(titles[id] ? id : 'home', null, { silent: true })
+}
+window.addEventListener('hashchange', restorePanelFromHash)
 
 // ── USAGE ────────────────────────────────────────────────────────────────────
 async function loadUsage() {
