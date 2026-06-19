@@ -258,6 +258,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .vr-preview-title{position:absolute;top:14px;left:8px;right:8px;text-align:center;font-weight:800;color:#fff;font-size:1.05rem;line-height:1.25;word-break:break-word;z-index:2}
 .vr-preview-cc{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.04em;display:none;z-index:2}
 .vr-preview-bar{display:flex;align-items:center;gap:10px;color:var(--muted);margin-top:10px;padding:0 2px}
+.vr-editor{background:var(--surface);border-radius:10px;padding:16px;margin-top:14px}
+.vr-editor video{width:100%;max-height:320px;border-radius:10px;background:#000;display:block;margin:0 auto 14px}
+.vr-trim-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.vr-trim-pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:.78rem;font-weight:600}
+.vr-trim-pill .dot{width:8px;height:8px;border-radius:50%}
+.vr-trim-pill input{width:48px;background:none;border:none;color:#fff;font-size:.78rem;font-weight:600;text-align:center}
+.vr-trim-pill input:focus{outline:none}
+.vr-vol-row{display:flex;align-items:center;gap:8px;margin-left:auto}
+.vr-vol-row svg{flex-shrink:0}
+.vr-vol-row input[type=range]{width:100px;accent-color:var(--a2)}
+.vr-timeline{position:relative;height:36px;background:var(--card);border-radius:6px;margin-bottom:16px;cursor:pointer;overflow:hidden}
+.vr-timeline-fill{position:absolute;top:0;bottom:0;background:rgba(168,85,247,.15);border-left:3px solid #22c55e;border-right:3px solid #ef4444;pointer-events:none}
+.vr-timeline-ticks{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;padding:0 4px;font-size:.58rem;color:var(--muted)}
+.vr-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.vr-tab{background:none;border:none;color:var(--muted);font-size:.76rem;font-weight:600;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+.vr-tab:hover{color:#fff}
+.vr-tab.active{color:#fff;border-bottom-color:var(--a2)}
+.vr-tab-panel{display:none}
+.vr-tab-panel.active{display:block}
+.vr-editor-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:32px;color:var(--muted);font-size:.82rem}
 .cv-time-edit{display:inline-flex;align-items:center;gap:4px}
 .cv-time-btn{background:var(--surface);border:1px solid var(--border);color:#fff;border-radius:4px;width:18px;height:18px;font-size:.78rem;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .cv-time-btn:hover{border-color:var(--a2);color:var(--a2)}
@@ -2651,8 +2671,12 @@ window.downloadVideo = () => {
   document.body.removeChild(a)
 }
 
-// ── VIDEO RANKING (UI scaffold — list-building only, no render pipeline yet) ──
-let vrCards = [] // [{ link, file }]
+// ── VIDEO RANKING ───────────────────────────────────────────────────────────
+let vrCards = [] // [{ link, file, streamUrl, duration, start, end, volume, clipTitle, loaded }]
+
+function vrNewCard() {
+  return { link: '', file: null, streamUrl: null, duration: 0, start: 0, end: 0, volume: 100, clipTitle: '', loaded: false }
+}
 
 function clampVrCount(input) {
   let v = parseInt(input.value) || 2
@@ -2664,15 +2688,31 @@ window.vrSetCount = () => {
   const input = document.getElementById('vr-count')
   clampVrCount(input)
   const n = parseInt(input.value)
-  while (vrCards.length < n) vrCards.push({ link: '', file: null })
+  while (vrCards.length < n) vrCards.push(vrNewCard())
   vrCards.length = n
   vrRenderCards()
   window.vrSyncStage?.()
 }
 
+function vrFmtTime(s) {
+  const m = Math.floor(s / 60)
+  const sec = (s % 60).toFixed(1)
+  return `${m}:${sec.padStart(4, '0')}`
+}
+
+function vrTimelineTicks(dur) {
+  if (dur <= 0) return ''
+  const step = dur <= 10 ? 1 : dur <= 30 ? 2 : dur <= 120 ? 10 : 30
+  const ticks = []
+  for (let t = 0; t <= dur; t += step) ticks.push(`<span>${t.toFixed(1)}s</span>`)
+  return ticks.join('')
+}
+
 function vrRenderCards() {
   const wrap = document.getElementById('vr-cards')
-  wrap.innerHTML = vrCards.map((c, i) => `
+  wrap.innerHTML = vrCards.map((c, i) => {
+    const hasVideo = !!c.streamUrl
+    return `
     <div class="vr-card" id="vr-card-${i}">
       <div class="vr-card-head" onclick="vrToggleCard(${i})">
         <div class="title">
@@ -2680,36 +2720,126 @@ function vrRenderCards() {
           Video Rank ${i + 1}
         </div>
         <div class="vr-card-actions" onclick="event.stopPropagation()">
-          <button onclick="vrRemoveCard(${i})" title="Remove">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          </button>
+          ${hasVideo ? `<button onclick="vrClearVideo(${i})" title="Change video"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.68-9.72L1 10"/></svg></button>` : ''}
+          <button onclick="vrRemoveCard(${i})" title="Remove"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
           <button onclick="vrMoveCard(${i},-1)" title="Move up"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
           <button onclick="vrMoveCard(${i},1)" title="Move down"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></button>
         </div>
       </div>
       <div class="vr-card-body" id="vr-card-body-${i}">
-        <label class="vr-mini-label">Video Link</label>
-        <div class="vr-link-row">
-          <div class="platforms">📺 🎵 📷</div>
-          <input type="text" placeholder="TikTok, Instagram, or YouTube video link" value="${c.link || ''}" oninput="vrCards[${i}].link=this.value"/>
-          <button onclick="vrSubmitLink(${i})">→</button>
-        </div>
-        <div class="vr-or">OR</div>
-        <label class="vr-mini-label">Upload Video</label>
-        <div class="upload-zone" id="vr-upload-${i}" style="padding:26px"
-             onclick="document.getElementById('vr-file-${i}').click()"
-             ondragover="event.preventDefault();this.classList.add('drag')"
-             ondragleave="this.classList.remove('drag')"
-             ondrop="vrHandleDrop(event,${i})">
-          <div class="uz-icon">☁️</div>
-          <p>${c.file ? `<strong>${c.file.name}</strong>` : '<strong>Choose a clip</strong> or drag and drop it here'}</p>
-          <p style="margin-top:4px;font-size:.72rem">MP4 format, up to 500MB</p>
-        </div>
-        <input type="file" id="vr-file-${i}" accept="video/mp4" style="display:none" onchange="vrHandleFile(event,${i})"/>
+        ${hasVideo ? vrEditorHtml(c, i) : vrInputHtml(c, i)}
       </div>
-    </div>
-  `).join('')
+    </div>`
+  }).join('')
+
+  // Attach loadedmetadata listeners for any videos that just rendered
+  vrCards.forEach((c, i) => {
+    if (c.streamUrl) {
+      const vid = document.getElementById(`vr-vid-${i}`)
+      if (vid && !c.loaded) {
+        vid.addEventListener('loadedmetadata', () => {
+          if (!c.duration) {
+            c.duration = vid.duration
+            c.end = vid.duration
+            document.getElementById(`vr-end-${i}`).value = vid.duration.toFixed(1)
+            const fill = document.getElementById(`vr-tl-fill-${i}`)
+            if (fill) { fill.style.left = '0%'; fill.style.right = '0%' }
+            const ticks = document.getElementById(`vr-tl-ticks-${i}`)
+            if (ticks) ticks.innerHTML = vrTimelineTicks(vid.duration)
+          }
+          c.loaded = true
+        })
+      }
+    }
+  })
   window.vrSyncStage?.()
+}
+
+function vrInputHtml(c, i) {
+  return `
+    <div id="vr-input-area-${i}">
+      <label class="vr-mini-label">Video Link</label>
+      <div class="vr-link-row">
+        <div class="platforms">📺 🎵 📷</div>
+        <input type="text" placeholder="TikTok, Instagram, or YouTube video link" value="${c.link || ''}" oninput="vrCards[${i}].link=this.value"/>
+        <button onclick="vrSubmitLink(${i})" id="vr-submit-btn-${i}">→</button>
+      </div>
+      <div id="vr-link-status-${i}" style="display:none;margin-top:8px" class="status"></div>
+      <div class="vr-or">OR</div>
+      <label class="vr-mini-label">Upload Video</label>
+      <div class="upload-zone" id="vr-upload-${i}" style="padding:26px"
+           onclick="document.getElementById('vr-file-${i}').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="vrHandleDrop(event,${i})">
+        <div class="uz-icon">☁️</div>
+        <p><strong>Choose a clip</strong> or drag and drop it here</p>
+        <p style="margin-top:4px;font-size:.72rem">MP4 format, up to 500MB</p>
+      </div>
+      <input type="file" id="vr-file-${i}" accept="video/mp4" style="display:none" onchange="vrHandleFile(event,${i})"/>
+    </div>`
+}
+
+function vrEditorHtml(c, i) {
+  const startPct = c.duration > 0 ? ((c.start / c.duration) * 100).toFixed(2) : '0'
+  const endPct   = c.duration > 0 ? (100 - (c.end / c.duration) * 100).toFixed(2) : '0'
+  return `
+    <div class="vr-editor">
+      <video id="vr-vid-${i}" controls src="${c.streamUrl}" preload="metadata" style="width:100%;max-height:320px;border-radius:10px;background:#000;display:block;margin:0 auto 14px"></video>
+
+      <div class="vr-trim-row">
+        <div class="vr-trim-pill"><span class="dot" style="background:#22c55e"></span>Start at <input id="vr-start-${i}" type="text" value="${c.start.toFixed(1)}" onchange="vrSetTrim(${i},'start',this.value)"/>s</div>
+        <div class="vr-trim-pill"><span class="dot" style="background:#ef4444"></span>End at <input id="vr-end-${i}" type="text" value="${c.end.toFixed(1)}" onchange="vrSetTrim(${i},'end',this.value)"/>s</div>
+        <div class="vr-vol-row">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+          Volume
+          <input type="range" min="0" max="100" value="${c.volume}" oninput="vrCards[${i}].volume=parseInt(this.value)"/>
+        </div>
+      </div>
+
+      <div class="vr-timeline" onclick="vrSeek(event,${i})">
+        <div class="vr-timeline-fill" id="vr-tl-fill-${i}" style="left:${startPct}%;right:${endPct}%"></div>
+        <div class="vr-timeline-ticks" id="vr-tl-ticks-${i}">${vrTimelineTicks(c.duration)}</div>
+      </div>
+
+      <div class="vr-tabs">
+        <button class="vr-tab active" onclick="vrSwitchTab(${i},'title',this)">Video Title</button>
+        <button class="vr-tab" onclick="vrSwitchTab(${i},'number',this)">Number Appearance</button>
+        <button class="vr-tab" onclick="vrSwitchTab(${i},'size',this)">Size &amp; Position</button>
+        <button class="vr-tab" onclick="vrSwitchTab(${i},'voiceover',this)">Voiceover</button>
+        <button class="vr-tab" onclick="vrSwitchTab(${i},'transition',this)">Animation &amp; Transition</button>
+        <button class="vr-tab" onclick="vrSwitchTab(${i},'sound',this)">Sound Effect</button>
+      </div>
+
+      <div id="vr-tabp-${i}-title" class="vr-tab-panel active">
+        <label class="vr-mini-label">Video Title</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <select class="vr-count-input" style="width:auto;padding:7px 10px" onchange="vrCards[${i}]._clipFont=this.value">
+            <option>Archivo Black</option><option>Montserrat</option><option>Anton</option><option>Bangers</option><option>Luckiest Guy</option>
+          </select>
+          <select class="vr-count-input" style="width:auto;padding:7px 10px" onchange="vrCards[${i}]._clipSize=this.value">
+            <option>16px</option><option selected>20px</option><option>24px</option><option>28px</option>
+          </select>
+          <input type="color" value="#ffffff" style="width:28px;height:28px;border:none;border-radius:7px;background:none;cursor:pointer" onchange="vrCards[${i}]._clipColor=this.value"/>
+        </div>
+        <input type="text" placeholder="Enter video title..." value="${c.clipTitle || ''}" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px" oninput="vrCards[${i}].clipTitle=this.value"/>
+      </div>
+      <div id="vr-tabp-${i}-number" class="vr-tab-panel">
+        <p style="color:var(--muted);font-size:.78rem">Number appearance customisation coming soon.</p>
+      </div>
+      <div id="vr-tabp-${i}-size" class="vr-tab-panel">
+        <p style="color:var(--muted);font-size:.78rem">Size &amp; position customisation coming soon.</p>
+      </div>
+      <div id="vr-tabp-${i}-voiceover" class="vr-tab-panel">
+        <p style="color:var(--muted);font-size:.78rem">Per-clip voiceover coming soon.</p>
+      </div>
+      <div id="vr-tabp-${i}-transition" class="vr-tab-panel">
+        <p style="color:var(--muted);font-size:.78rem">Animation &amp; transition effects coming soon.</p>
+      </div>
+      <div id="vr-tabp-${i}-sound" class="vr-tab-panel">
+        <p style="color:var(--muted);font-size:.78rem">Sound effects coming soon.</p>
+      </div>
+    </div>`
 }
 
 window.vrToggleCard = (i) => {
@@ -2721,6 +2851,7 @@ window.vrToggleCard = (i) => {
 }
 
 window.vrRemoveCard = (i) => {
+  if (vrCards[i].streamUrl?.startsWith('blob:')) URL.revokeObjectURL(vrCards[i].streamUrl)
   vrCards.splice(i, 1)
   document.getElementById('vr-count').value = vrCards.length
   vrRenderCards()
@@ -2733,17 +2864,53 @@ window.vrMoveCard = (i, dir) => {
   vrRenderCards()
 }
 
-window.vrSubmitLink = (i) => {
-  // Backend wiring for fetching/validating the link comes with the render
-  // pipeline — for now this just flashes the row to confirm it was captured.
-  const row = document.querySelectorAll(`#vr-card-body-${i} .vr-link-row`)[0]
-  if (row) { row.style.borderColor = 'var(--a2)'; setTimeout(() => row.style.borderColor = '', 600) }
+window.vrClearVideo = (i) => {
+  if (vrCards[i].streamUrl?.startsWith('blob:')) URL.revokeObjectURL(vrCards[i].streamUrl)
+  Object.assign(vrCards[i], vrNewCard())
+  vrRenderCards()
+}
+
+window.vrSubmitLink = async (i) => {
+  const link = vrCards[i].link?.trim()
+  if (!link) return
+  const btn = document.getElementById(`vr-submit-btn-${i}`)
+  const statusEl = document.getElementById(`vr-link-status-${i}`)
+  btn.disabled = true
+  btn.textContent = '…'
+  statusEl.style.display = 'block'
+  statusEl.className = 'status loading'
+  statusEl.textContent = 'Fetching video info…'
+  try {
+    const info = await api.download.info(link)
+    const streamUrl = api.download.streamUrl(link)
+    Object.assign(vrCards[i], {
+      streamUrl,
+      duration: info.duration || 0,
+      start: 0,
+      end: info.duration || 0,
+      loaded: false,
+    })
+    vrRenderCards()
+  } catch (e) {
+    statusEl.className = 'status err'
+    statusEl.textContent = e.message || 'Failed to fetch video'
+    btn.disabled = false
+    btn.textContent = '→'
+  }
 }
 
 window.vrHandleFile = (e, i) => {
   const file = e.target.files?.[0]
   if (!file) return
-  vrCards[i].file = file
+  const objectUrl = URL.createObjectURL(file)
+  Object.assign(vrCards[i], {
+    file,
+    streamUrl: objectUrl,
+    duration: 0,
+    start: 0,
+    end: 0,
+    loaded: false,
+  })
   vrRenderCards()
 }
 
@@ -2752,8 +2919,45 @@ window.vrHandleDrop = (e, i) => {
   e.currentTarget.classList.remove('drag')
   const file = e.dataTransfer.files?.[0]
   if (!file) return
-  vrCards[i].file = file
+  const objectUrl = URL.createObjectURL(file)
+  Object.assign(vrCards[i], {
+    file,
+    streamUrl: objectUrl,
+    duration: 0,
+    start: 0,
+    end: 0,
+    loaded: false,
+  })
   vrRenderCards()
+}
+
+window.vrSetTrim = (i, which, val) => {
+  const v = Math.max(0, parseFloat(val) || 0)
+  const c = vrCards[i]
+  if (which === 'start') { c.start = Math.min(v, c.end - 0.5) }
+  else { c.end = c.duration > 0 ? Math.min(v, c.duration) : v; if (c.end <= c.start) c.end = c.start + 0.5 }
+  const fill = document.getElementById(`vr-tl-fill-${i}`)
+  if (fill && c.duration > 0) {
+    fill.style.left  = ((c.start / c.duration) * 100).toFixed(2) + '%'
+    fill.style.right  = (100 - (c.end / c.duration) * 100).toFixed(2) + '%'
+  }
+}
+
+window.vrSeek = (e, i) => {
+  const vid = document.getElementById(`vr-vid-${i}`)
+  const rect = e.currentTarget.getBoundingClientRect()
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  if (vid && vrCards[i].duration > 0) vid.currentTime = pct * vrCards[i].duration
+}
+
+window.vrSwitchTab = (i, tab, btn) => {
+  const tabs = ['title','number','size','voiceover','transition','sound']
+  tabs.forEach(t => {
+    const panel = document.getElementById(`vr-tabp-${i}-${t}`)
+    if (panel) panel.classList.toggle('active', t === tab)
+  })
+  btn.closest('.vr-tabs').querySelectorAll('.vr-tab').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
 }
 
 function vrStrokeShadow(color, width) {
@@ -2825,13 +3029,12 @@ window.vrSyncFromHex = () => {
 }
 
 window.vrGenerate = async () => {
-  // Validate cards
   if (vrCards.length < 2) {
     alert('Add at least 2 videos before generating.')
     return
   }
   for (let i = 0; i < vrCards.length; i++) {
-    if (!vrCards[i].link?.trim() && !vrCards[i].file) {
+    if (!vrCards[i].streamUrl && !vrCards[i].link?.trim() && !vrCards[i].file) {
       alert(`Video Rank ${i + 1} is empty — add a link or upload a file first.`)
       return
     }
@@ -2868,7 +3071,14 @@ window.vrGenerate = async () => {
         const result = await window._api.upload.file(fd)
         url = result.url
       }
-      resolved.push({ url })
+      const c = vrCards[i]
+      resolved.push({
+        url,
+        start:     c.start || 0,
+        end:       c.end || 0,
+        volume:    c.volume ?? 100,
+        clipTitle: c.clipTitle || '',
+      })
     }
 
     // 2. Playback order: default = reverse (build-up to rank 1 last), custom = as-is
