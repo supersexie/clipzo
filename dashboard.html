@@ -1099,15 +1099,24 @@ async function checkAuth() {
   if (!getToken()) { showModal(); return }
   try {
     currentUser = await api.user.me()
-    hideModal()
-    populateUser()
-    loadUsage()
-    loadVoices()
-    loadFiles()
   } catch {
-    clearSession()
-    showModal()
+    // Access token is likely expired (Supabase JWTs last ~1h). Try the
+    // refresh_token before giving up — without this, every hard-refresh past
+    // the 1h mark dumps the user back at the sign-in modal.
+    const rt = localStorage.getItem('clipzo_refresh')
+    if (!rt) { clearSession(); showModal(); return }
+    try {
+      const { session } = await api.auth.refresh(rt)
+      if (!session?.access_token) throw new Error('refresh returned no session')
+      setSession(session)
+      currentUser = await api.user.me()
+    } catch { clearSession(); showModal(); return }
   }
+  hideModal()
+  populateUser()
+  loadUsage()
+  loadVoices()
+  loadFiles()
 }
 
 function showModal() { document.getElementById('auth-modal').classList.remove('hidden') }

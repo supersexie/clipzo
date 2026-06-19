@@ -46,9 +46,10 @@ const WHOP_CHECKOUT = {
 
 export const api = {
   auth: {
-    signup: (email, password, name) => req('POST', '/api/auth/signup', { email, password, name }),
-    login:  (email, password)       => req('POST', '/api/auth/login',  { email, password }),
-    logout: ()                      => req('POST', '/api/auth/logout'),
+    signup:  (email, password, name) => req('POST', '/api/auth/signup',  { email, password, name }),
+    login:   (email, password)       => req('POST', '/api/auth/login',   { email, password }),
+    logout:  ()                      => req('POST', '/api/auth/logout'),
+    refresh: (refresh_token)         => req('POST', '/api/auth/refresh', { refresh_token }),
   },
   user: {
     me:    () => req('GET', '/api/user/me'),
