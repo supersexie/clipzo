@@ -622,6 +622,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <a id="tts-dl" class="btn btn-ghost btn-sm" style="margin-top:10px;display:inline-flex" download="voiceover.mp3">⬇ Download MP3</a>
         </div>
       </div>
+
+      <!-- Voice Library -->
+      <div class="tool-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <h3 style="margin-bottom:0">Voice Library</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadVoiceLibrary()" style="font-size:.72rem">↻ Refresh</button>
+        </div>
+        <p>Your saved voiceovers. Play, download, or delete any time.</p>
+        <div id="voice-library" style="display:flex;flex-direction:column;gap:10px">
+          <div style="color:var(--muted);font-size:.8rem;padding:8px">Loading library...</div>
+        </div>
+      </div>
     </div>
 
     <!-- IMAGE GEN -->
@@ -1443,6 +1455,7 @@ window.switchPanel = (id, btn, opts = {}) => {
   if (btn) btn.classList.add('active')
   else document.querySelector(`[data-panel="${id}"]`)?.classList.add('active')
   document.getElementById('topbar-title').textContent = titles[id]
+  if (id === 'voiceover') loadVoiceLibrary()
   // Persist the current panel in the URL hash so refresh / back / forward keep
   // you on the same screen instead of dumping you back to Overview.
   if (!opts.silent && location.hash !== '#' + id) {
@@ -1518,8 +1531,55 @@ window.generateVoiceover = async () => {
     res.style.display = ''
     setStatus('tts-status','Done!','ok')
     loadUsage()
+    loadVoiceLibrary()
   } catch(e) { setStatus('tts-status', e.message, 'err') }
   finally { btn.disabled = false }
+}
+
+// ── VOICE LIBRARY ───────────────────────────────────────────────────────────
+async function loadVoiceLibrary() {
+  const container = document.getElementById('voice-library')
+  if (!container) return
+  try {
+    const items = await api.tts.library()
+    if (!items.length) {
+      container.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px">No voiceovers yet. Generate one above!</div>'
+      return
+    }
+    container.innerHTML = items.map(item => {
+      const date = new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      const snippet = (item.text || '').length > 80 ? item.text.slice(0, 80) + '…' : (item.text || 'Untitled')
+      return `<div class="result-box" style="padding:12px" data-lib-id="${item.id}">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;margin-bottom:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${snippet}</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:2px">${date}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <a href="${item.audio_url}" download="voiceover.mp3" class="btn btn-ghost btn-sm" style="font-size:.68rem;padding:4px 8px">⬇</a>
+            <button class="btn btn-ghost btn-sm" style="font-size:.68rem;padding:4px 8px;color:var(--err)" onclick="deleteVoiceItem('${item.id}')">✕</button>
+          </div>
+        </div>
+        <audio controls style="width:100%;height:32px" preload="none" src="${item.audio_url}"></audio>
+      </div>`
+    }).join('')
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--err);font-size:.8rem;padding:8px">Failed to load library</div>'
+  }
+}
+
+window.deleteVoiceItem = async (id) => {
+  try {
+    await api.tts.deleteVo(id)
+    const el = document.querySelector(`[data-lib-id="${id}"]`)
+    if (el) el.remove()
+    const container = document.getElementById('voice-library')
+    if (container && !container.children.length) {
+      container.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px">No voiceovers yet. Generate one above!</div>'
+    }
+  } catch (e) {
+    alert('Failed to delete voiceover')
+  }
 }
 
 // ── CAPTIONS ─────────────────────────────────────────────────────────────────

@@ -63,6 +63,8 @@ export const api = {
   tts: {
     voices:   ()      => req('GET',  '/api/tts/voices'),
     generate: (body)  => req('POST', '/api/tts/generate', body),
+    library:  ()      => req('GET',  '/api/tts/library'),
+    deleteVo: (id)    => req('DELETE', `/api/tts/library/${id}`),
   },
   generate: {
     image: (body) => req('POST', '/api/generate/image', body),
