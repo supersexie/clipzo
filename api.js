@@ -116,11 +116,11 @@ export const api = {
     // Reframe a video to 9:16 around the AI-detected main subject. Returns an
     // object URL for the resulting mp4 blob (or throws with err.needsPlan if
     // the user is gated by the paid-only check).
-    run: async (url) => {
+    run: async (url, opts = {}) => {
       const res = await fetch(BASE + '/api/reframe', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, aspect: opts.aspect, layout: opts.layout, fitCrop: opts.fitCrop }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

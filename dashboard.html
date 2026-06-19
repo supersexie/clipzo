@@ -209,6 +209,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-card-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}
 .clip-card-score{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:var(--a2)}
 .cv-genre-row{display:flex;flex-wrap:wrap;gap:6px}
+.rf-section{margin-top:16px}
+.rf-section-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px}
+.rf-chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.rf-chip{border:1.5px solid var(--border);background:var(--surface);color:#fff;border-radius:8px;padding:8px 14px;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s}
+.rf-chip:hover:not(.soon){border-color:rgba(168,85,247,.5)}
+.rf-chip.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
+.rf-chip.soon{opacity:.45;cursor:not-allowed;position:relative}
+.rf-chip.soon::after{content:"Soon";font-size:.55rem;font-weight:700;color:var(--a2);margin-left:6px;padding:2px 5px;border:1px solid var(--a2);border-radius:3px;letter-spacing:.05em}
 .cv-genre-btn{border:1.5px solid var(--border);background:var(--surface);color:#fff;border-radius:7px;padding:6px 12px;font-size:.74rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s}
 .cv-genre-btn:hover{border-color:rgba(168,85,247,.5)}
 .cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
@@ -1001,17 +1009,52 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <div class="panel" id="panel-reframe">
       <div class="tool-card">
         <h3>AI Reframe</h3>
-        <p>Auto-fit any landscape video into 9:16 (TikTok / Reels / Shorts) by detecting the main subject and centering the crop around them. One click — no manual reframing.</p>
+        <p>Auto-fit any landscape video into a vertical / square format by detecting the main subject and centering the crop around them. One click — no manual reframing.</p>
+
         <div class="field" style="margin-top:14px">
           <label>Video URL (YouTube, TikTok, Instagram, X, Reddit) or paste any direct video link</label>
-          <div style="display:flex;gap:8px">
-            <input type="text" id="rf-url" placeholder="https://..." style="flex:1"/>
-            <button class="btn btn-primary" id="rf-btn" onclick="runReframe()">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-              Reframe to 9:16
-            </button>
+          <input type="text" id="rf-url" placeholder="https://..." style="width:100%"/>
+        </div>
+
+        <div class="rf-section">
+          <div class="rf-section-label">Aspect ratio</div>
+          <div class="rf-chip-row" id="rf-aspect-row">
+            <button class="rf-chip active" data-aspect="9:16" onclick="setRfAspect('9:16',this)">📱 9:16</button>
+            <button class="rf-chip" data-aspect="1:1" onclick="setRfAspect('1:1',this)">⬛ 1:1</button>
+            <button class="rf-chip" data-aspect="16:9" onclick="setRfAspect('16:9',this)">🖥 16:9</button>
+            <button class="rf-chip" data-aspect="4:5" onclick="setRfAspect('4:5',this)">📷 4:5</button>
           </div>
         </div>
+
+        <div class="rf-section">
+          <div class="rf-section-label">Applicable auto layout</div>
+          <div class="rf-chip-row" id="rf-layout-row">
+            <button class="rf-chip active" data-layout="fill" onclick="setRfLayout('fill',this)">⛶ Fill</button>
+            <button class="rf-chip" data-layout="fit" onclick="setRfLayout('fit',this)">▣ Fit</button>
+            <button class="rf-chip soon" data-layout="split" title="Coming soon — needs multi-subject tracking">▤ Split</button>
+            <button class="rf-chip soon" data-layout="screenshare" title="Coming soon — needs multi-subject tracking">🖥 ScreenShare</button>
+            <button class="rf-chip soon" data-layout="gameplay" title="Coming soon — needs multi-subject tracking">🎮 Gameplay</button>
+            <button class="rf-chip soon" data-layout="three" title="Coming soon — needs multi-subject tracking">⊞ Three</button>
+            <button class="rf-chip soon" data-layout="four" title="Coming soon — needs multi-subject tracking">⊟ Four</button>
+          </div>
+        </div>
+
+        <div class="rf-section" id="rf-fitcrop-section" style="display:none">
+          <div class="rf-section-label">Fit layout crop aspect ratio</div>
+          <div class="rf-chip-row" id="rf-fitcrop-row">
+            <button class="rf-chip active" data-fitcrop="original" onclick="setRfFitCrop('original',this)">Original ratio</button>
+            <button class="rf-chip" data-fitcrop="4:3" onclick="setRfFitCrop('4:3',this)">4:3</button>
+            <button class="rf-chip" data-fitcrop="1:1" onclick="setRfFitCrop('1:1',this)">1:1</button>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn btn-primary" id="rf-btn" onclick="runReframe()" style="width:100%">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            Reframe video in 1 click
+          </button>
+        </div>
+
         <p style="font-size:.7rem;color:var(--muted);margin-top:8px">Best for talking-head / podcast / interview content. Sampling and ffmpeg encoding take ~30-60s depending on video length.</p>
         <div class="status" id="rf-status" style="display:none;margin-top:14px"></div>
         <div id="rf-result" style="display:none;margin-top:20px">
@@ -2271,6 +2314,29 @@ window.edExport = async () => {
 
 
 // ── AI REFRAME ────────────────────────────────────────────────────────────────
+let rfAspect = '9:16'
+let rfLayout = 'fill'
+let rfFitCrop = 'original'
+
+window.setRfAspect = (a, btn) => {
+  rfAspect = a
+  document.querySelectorAll('#rf-aspect-row .rf-chip').forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+window.setRfLayout = (l, btn) => {
+  rfLayout = l
+  document.querySelectorAll('#rf-layout-row .rf-chip').forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+  // The Fit-crop sub-section only makes sense for the Fit layout — hide it
+  // otherwise so the panel stays clean.
+  document.getElementById('rf-fitcrop-section').style.display = l === 'fit' ? '' : 'none'
+}
+window.setRfFitCrop = (c, btn) => {
+  rfFitCrop = c
+  document.querySelectorAll('#rf-fitcrop-row .rf-chip').forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+
 window.runReframe = async () => {
   const url = document.getElementById('rf-url').value.trim()
   if (!url) return setStatus('rf-status', 'Paste a video URL first', 'err')
@@ -2280,7 +2346,7 @@ window.runReframe = async () => {
   btn.disabled = true
   setStatus('rf-status', 'Downloading & analyzing the subject — this can take 30-60s…', 'loading')
   try {
-    const blobUrl = await api.reframe.run(url)
+    const blobUrl = await api.reframe.run(url, { aspect: rfAspect, layout: rfLayout, fitCrop: rfFitCrop })
     document.getElementById('rf-preview').src = blobUrl
     document.getElementById('rf-download').href = blobUrl
     result.style.display = ''
