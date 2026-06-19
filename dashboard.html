@@ -240,6 +240,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cap-swatch.active{border-color:var(--a2);box-shadow:0 0 0 2px rgba(168,85,247,.35)}
 .cap-case-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--muted);font-size:.72rem;font-weight:600;padding:6px 12px;cursor:pointer}
 .cap-case-btn.active{border-color:var(--a2);color:#fff}
+.cap-font-row{display:flex;flex-wrap:wrap;gap:6px}
+.cap-font-btn{border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:#fff;font-size:.78rem;padding:7px 12px;cursor:pointer;transition:border-color .15s}
+.cap-font-btn:hover{border-color:rgba(168,85,247,.5)}
+.cap-font-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .cv-fmt-preview{margin-top:8px}
 .fmtp{position:relative;border-radius:5px;overflow:hidden;background:#000;border:1px solid var(--border)}
 .fmtp-wide{width:90px;aspect-ratio:16/9}
@@ -2497,9 +2501,10 @@ function capSettingsHTML(idPrefix) {
     <div class="cap-settings-body" id="${idPrefix}-settings-body" style="display:none">
       <div class="cap-set-row">
         <label>Font</label>
-        <select id="${idPrefix}-font" onchange="onCapFontChange('${idPrefix}')">
-          ${CAP_FONTS.map(([v, l]) => `<option value="${v}" style="font-family:'${l}',sans-serif">${l}</option>`).join('')}
-        </select>
+        <input type="hidden" id="${idPrefix}-font" value=""/>
+        <div class="cap-font-row" id="${idPrefix}-font-row">
+          ${CAP_FONTS.map(([v, l]) => `<button type="button" class="cap-font-btn${v === '' ? ' active' : ''}" data-font="${v}" style="font-family:'${l}',sans-serif" onclick="setCapFont('${idPrefix}','${v}',this)">${l}</button>`).join('')}
+        </div>
       </div>
       <div class="cap-set-row">
         <label>Font Size</label>
@@ -2586,6 +2591,13 @@ window.onCapFontChange = (prefix) => {
   const caseRow = document.getElementById(`${prefix}-case-row`)
   if (caseRow) caseRow.style.display = fontEl?.value === 'TikTok Sans 18pt' ? '' : 'none'
   onCapCustomChange(prefix)
+}
+window.setCapFont = (prefix, font, btn) => {
+  document.querySelectorAll(`#${prefix}-font-row .cap-font-btn`).forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+  const hidden = document.getElementById(`${prefix}-font`)
+  if (hidden) hidden.value = font
+  onCapFontChange(prefix)
 }
 window.onCapSizeInput = (prefix) => {
   const el = document.getElementById(`${prefix}-size`)
