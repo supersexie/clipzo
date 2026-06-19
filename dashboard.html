@@ -1200,8 +1200,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <select id="vr-title-size" class="vr-count-input" style="width:auto;padding:7px 10px" onchange="vrRenderTitlePreview()">
                 <option>20px</option><option>24px</option><option selected>28px</option><option>32px</option><option>40px</option>
               </select>
-              <button class="rf-chip" id="vr-bold-btn" onclick="vrToggleStyle('bold',this)" style="padding:6px 10px"><b>B</b></button>
-              <button class="rf-chip" id="vr-italic-btn" onclick="vrToggleStyle('italic',this)" style="padding:6px 10px"><i>I</i></button>
               <input type="color" id="vr-title-color" value="#ffffff" style="width:32px;height:32px;border:none;border-radius:7px;background:none;cursor:pointer" onchange="vrRenderTitlePreview()"/>
             </div>
             <label class="vr-toggle"><input type="checkbox" id="vr-drag-title"/><span class="sw"></span>Drag Title</label>
@@ -2745,11 +2743,6 @@ window.vrHandleDrop = (e, i) => {
   vrRenderCards()
 }
 
-window.vrToggleStyle = (which, btn) => {
-  btn.classList.toggle('active')
-  vrRenderTitlePreview()
-}
-
 function vrStrokeShadow(color, width) {
   if (!width || width <= 0) return 'none'
   const steps = []
@@ -2766,8 +2759,6 @@ window.vrRenderTitlePreview = () => {
   const font = document.getElementById('vr-title-font').value
   const size = document.getElementById('vr-title-size').value
   const color = document.getElementById('vr-title-color').value
-  const bold = document.getElementById('vr-bold-btn').classList.contains('active')
-  const italic = document.getElementById('vr-italic-btn').classList.contains('active')
   const strokeColor = document.getElementById('vr-stroke-color').value
   const strokeWidth = parseFloat(document.getElementById('vr-stroke-width').value) || 0
 
@@ -2776,8 +2767,7 @@ window.vrRenderTitlePreview = () => {
   preview.style.fontFamily = font
   preview.style.fontSize = size
   preview.style.color = color
-  preview.style.fontWeight = bold ? '900' : '800'
-  preview.style.fontStyle = italic ? 'italic' : 'normal'
+  preview.style.fontWeight = '800'
   preview.style.textShadow = vrStrokeShadow(strokeColor, strokeWidth)
 
   // Mirror everything onto the live preview stage on the right.
@@ -2787,8 +2777,7 @@ window.vrRenderTitlePreview = () => {
     stageTitle.style.fontFamily = font
     stageTitle.style.fontSize = `clamp(.7rem, ${parseFloat(size) / 22}rem, 1.3rem)`
     stageTitle.style.color = color
-    stageTitle.style.fontWeight = bold ? '900' : '800'
-    stageTitle.style.fontStyle = italic ? 'italic' : 'normal'
+    stageTitle.style.fontWeight = '800'
     stageTitle.style.textShadow = vrStrokeShadow(strokeColor, strokeWidth)
   }
 }
@@ -2823,10 +2812,6 @@ window.vrSyncFromHex = () => {
 }
 
 ;(function initVrPanel() {
-  // Bold is the screenshot's default state — pre-activate it and render once
-  // so the preview box isn't blank before the user touches any control.
-  const boldBtn = document.getElementById('vr-bold-btn')
-  if (boldBtn) boldBtn.classList.add('active')
   window.vrSetCount?.()
   window.vrRenderTitlePreview?.()
   window.vrSyncStage?.()
