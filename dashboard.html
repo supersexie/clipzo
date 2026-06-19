@@ -2353,6 +2353,8 @@ let rfJobId = null
 let rfPollTimer = null
 let rfLastSig = null   // last rendered settings signature, so flipping back to an
 let rfLastUrl = null   // already-rendered combo redownloads instantly instead of re-encoding
+let rfSourceUrl = null  // the URL currently loaded — used for thumbnail + clip preview
+let rfSourceThumb = null // source video thumbnail, shown on each viral clip card
 
 function rfSig() { return `${rfAspect}|${rfLayout}|${rfLayout === 'fit' ? rfFitCrop : ''}` }
 
@@ -2382,6 +2384,8 @@ window.startReframeAnalysis = async () => {
   rfJobId = null
   rfLastSig = null
   rfLastUrl = null
+  rfSourceUrl = url
+  rfSourceThumb = null
   document.getElementById('rf-result').style.display = 'none'
   document.getElementById('rf-options').style.display = 'none'
   document.getElementById('rf-options').style.opacity = '.4'
@@ -2389,6 +2393,9 @@ window.startReframeAnalysis = async () => {
   const btn = document.getElementById('rf-analyze-btn')
   btn.disabled = true
   setStatus('rf-status', 'Downloading & tracking the subject — this can take 30-90s…', 'loading')
+  // Fetch the thumbnail in parallel — purely cosmetic for the viral-clip cards,
+  // so a failure here must never block the actual reframe analysis.
+  api.download.info(url).then((info) => { rfSourceThumb = info?.thumbnail || null }).catch(() => {})
   try {
     const { jobId } = await api.reframe.start(url)
     rfJobId = jobId
@@ -3016,7 +3023,7 @@ function rfPollViral() {
 
 function rfRenderViralResults(result) {
   rfClips = result.clips || []
-  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', lastSig: null, lastUrl: null }))
+  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', lastSig: null, lastUrl: null, rawUrl: null }))
   document.getElementById('rf-viral-results').style.display = ''
   const list = document.getElementById('rf-viral-list')
   if (!rfClips.length) {
@@ -3024,9 +3031,15 @@ function rfRenderViralResults(result) {
     return
   }
   const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`
+  const thumbBg = rfSourceThumb ? `background-image:url('${rfSourceThumb}');background-size:cover;background-position:center;` : 'background:var(--card);'
   list.innerHTML = rfClips.map((clip, i) => {
     const dur = clip.duration || (clip.end - clip.start)
     return `<div id="rf-clip-${i}" class="clip-card">
+      <div class="cv-thumb" onclick="rfPreviewOne(${i})" title="Click to preview this clip" style="width:128px;flex-shrink:0;align-self:flex-start;aspect-ratio:9/16;${thumbBg}border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.4)"></div>
+        <div style="position:absolute;top:6px;left:6px;background:var(--a1);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:#f0eeff;z-index:1">${i+1}</div>
+        <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24" style="color:#fff;opacity:.92;position:relative;z-index:1"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      </div>
       <div class="clip-card-info" style="flex:1">
         <div class="clip-card-title">#${i+1} Viral Moment</div>
         <div class="clip-card-meta">
@@ -3046,10 +3059,15 @@ function rfRenderViralResults(result) {
         <div class="cv-mini-row" id="rf-clip-aspect-row-${i}">
           ${['9:16','1:1','16:9','4:5'].map(a => `<button class="cv-mini-btn ${a==='9:16'?'active':''}" onclick="rfClipSetAspect(${i},'${a}',this)">${a}</button>`).join('')}
         </div>
-        <div class="cv-ctrl-label">Layout</div>
-        <div class="cv-mini-row" id="rf-clip-layout-row-${i}">
-          <button class="cv-mini-btn active" onclick="rfClipSetLayout(${i},'fill',this)">Fill</button>
-          <button class="cv-mini-btn" onclick="rfClipSetLayout(${i},'fit',this)">Fit</button>
+        <div class="cv-ctrl-label">Applicable auto layout</div>
+        <div class="rf-chip-row" id="rf-clip-layout-row-${i}" style="margin-bottom:2px">
+          <button class="rf-chip active" data-layout="fill" onclick="rfClipSetLayout(${i},'fill',this)">⛶ Fill</button>
+          <button class="rf-chip" data-layout="fit" onclick="rfClipSetLayout(${i},'fit',this)">▣ Fit</button>
+          <button class="rf-chip soon" data-layout="split" title="Coming soon — needs multi-subject tracking">▤ Split</button>
+          <button class="rf-chip soon" data-layout="screenshare" title="Coming soon — needs multi-subject tracking">🖥 ScreenShare</button>
+          <button class="rf-chip soon" data-layout="gameplay" title="Coming soon — needs multi-subject tracking">🎮 Gameplay</button>
+          <button class="rf-chip soon" data-layout="three" title="Coming soon — needs multi-subject tracking">⊞ Three</button>
+          <button class="rf-chip soon" data-layout="four" title="Coming soon — needs multi-subject tracking">⊟ Four</button>
         </div>
         <div class="clip-card-actions" style="margin-top:10px">
           <button class="btn btn-primary btn-sm" id="rf-clip-render-${i}" onclick="rfClipRender(${i})" ${rfJobId ? '' : 'disabled'}>
@@ -3065,6 +3083,46 @@ function rfRenderViralResults(result) {
   }).join('')
 }
 
+// Click-to-preview on a viral clip's thumbnail — mirrors cvPreviewOne. For
+// YouTube sources it embeds the player at the exact moment (no server render);
+// for everything else it cuts the raw clip once (cached) and plays it.
+window.rfPreviewOne = async (i) => {
+  const clip = rfClips[i]
+  if (!clip || !rfSourceUrl) return
+  const modal = document.getElementById('cv-preview-modal')
+  const body = document.getElementById('cv-preview-body')
+  const vid = ytId(rfSourceUrl)
+
+  if (vid) {
+    const start = Math.max(0, Math.floor(clip.start))
+    const end = Math.ceil(clip.end)
+    body.innerHTML =
+      `<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">` +
+      `<iframe src="https://www.youtube.com/embed/${vid}?start=${start}&end=${end}&autoplay=1&rel=0" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe></div>` +
+      `<p style="text-align:center;color:#aaa;font-size:.74rem;margin-top:10px">Preview of the moment — your rendered clip uses the aspect ratio &amp; layout you pick.</p>`
+    modal.style.display = 'flex'
+    return
+  }
+
+  body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:220px;color:#fff;gap:10px"><div class="spinner"></div> Loading preview…</div>'
+  modal.style.display = 'flex'
+  try {
+    let url = rfClipSettings[i].rawUrl
+    if (!url) {
+      const res = await fetch(api.download.clipUrl(rfSourceUrl, clip.start.toFixed(2), clip.end.toFixed(2)))
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        const er = new Error(e.message || e.error || 'Preview failed'); er.needsPlan = res.status === 402; throw er
+      }
+      url = URL.createObjectURL(await res.blob())
+      rfClipSettings[i].rawUrl = url
+    }
+    body.innerHTML = `<video src="${url}" controls autoplay playsinline style="width:100%;max-height:75vh;border-radius:10px;background:#000"></video>`
+  } catch (e) {
+    body.innerHTML = `<p style="color:#fff;text-align:center;padding:24px">${e.needsPlan ? e.message + ' — upgrade to continue' : e.message}</p>`
+  }
+}
+
 window.rfClipAdjustTime = (i, field, delta) => {
   const clip = rfClips[i]
   if (!clip) return
@@ -3074,6 +3132,7 @@ window.rfClipAdjustTime = (i, field, delta) => {
   clip[field] = next
   document.getElementById(`rf-clip-${field}-${i}`).textContent = `${Math.floor(next/60)}:${String(Math.floor(next%60)).padStart(2,'0')}`
   rfClipSettings[i].lastSig = null // invalidate cache — times changed
+  rfClipSettings[i].rawUrl = null
 }
 
 window.rfClipSetAspect = (i, a, btn) => {
@@ -3083,7 +3142,7 @@ window.rfClipSetAspect = (i, a, btn) => {
 }
 window.rfClipSetLayout = (i, l, btn) => {
   rfClipSettings[i].layout = l
-  document.querySelectorAll(`#rf-clip-layout-row-${i} .cv-mini-btn`).forEach(b => b.classList.remove('active'))
+  document.querySelectorAll(`#rf-clip-layout-row-${i} .rf-chip`).forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
 }
 
