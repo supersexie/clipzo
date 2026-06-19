@@ -113,14 +113,18 @@ export const api = {
     },
   },
   reframe: {
-    // Reframe a video to 9:16 around the AI-detected main subject. Returns an
-    // object URL for the resulting mp4 blob (or throws with err.needsPlan if
-    // the user is gated by the paid-only check).
-    run: async (url, opts = {}) => {
-      const res = await fetch(BASE + '/api/reframe', {
+    // Step 1: kick off download + subject tracking for a URL. Returns { jobId }.
+    start: (url) => req('POST', '/api/reframe', { url }),
+    // Step 2: poll analysis status. Returns { status: 'processing'|'ready'|'error', duration, width, height, error }.
+    poll: (jobId) => req('GET', `/api/reframe/${jobId}`),
+    // Step 3: render with chosen aspect/layout (fast — reuses the cached download
+    // + tracking data). Returns an object URL for the mp4 blob, or throws with
+    // err.needsPlan if the user is gated by the paid-only check.
+    render: async (jobId, opts = {}) => {
+      const res = await fetch(BASE + `/api/reframe/${jobId}/render`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, aspect: opts.aspect, layout: opts.layout, fitCrop: opts.fitCrop }),
+        body: JSON.stringify({ aspect: opts.aspect, layout: opts.layout, fitCrop: opts.fitCrop }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
