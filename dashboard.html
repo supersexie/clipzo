@@ -2503,21 +2503,21 @@ function capSettingsHTML(idPrefix) {
       </div>
       <div class="cap-set-row">
         <label>Font Size</label>
-        <input type="range" min="0" max="100" value="50" id="${idPrefix}-size" oninput="onCapCustomChange('${idPrefix}')"/>
+        <input type="range" min="0" max="100" value="50" id="${idPrefix}-size" data-touched="0" oninput="onCapSizeInput('${idPrefix}')"/>
       </div>
       <div class="cap-set-row">
         <label>Stroke</label>
         <div class="cap-stroke-row">
-          <button type="button" class="cap-swatch active" data-color="#000000" style="background:#000" onclick="setCapStrokeColor('${idPrefix}','#000000',this)" title="Black stroke"></button>
-          <button type="button" class="cap-swatch" data-color="#ffffff" style="background:#fff" onclick="setCapStrokeColor('${idPrefix}','#ffffff',this)" title="White stroke"></button>
-          <input type="range" min="0" max="100" value="50" id="${idPrefix}-stroke-width" oninput="onCapCustomChange('${idPrefix}')"/>
+          <button type="button" class="cap-swatch active" data-color="#000000" data-touched="0" style="background:#000" onclick="setCapStrokeColor('${idPrefix}','#000000',this)" title="Black stroke"></button>
+          <button type="button" class="cap-swatch" data-color="#ffffff" data-touched="0" style="background:#fff" onclick="setCapStrokeColor('${idPrefix}','#ffffff',this)" title="White stroke"></button>
+          <input type="range" min="0" max="100" value="50" id="${idPrefix}-stroke-width" data-touched="0" oninput="onCapStrokeWidthInput('${idPrefix}')"/>
         </div>
       </div>
       <div class="cap-set-row" id="${idPrefix}-case-row" style="display:none">
         <label>Capitalization</label>
         <div class="cap-stroke-row">
-          <button type="button" class="cap-case-btn active" data-upper="0" onclick="setCapCase('${idPrefix}',false,this)">Normal</button>
-          <button type="button" class="cap-case-btn" data-upper="1" onclick="setCapCase('${idPrefix}',true,this)">CAPS</button>
+          <button type="button" class="cap-case-btn active" data-upper="0" data-touched="0" onclick="setCapCase('${idPrefix}',false,this)">Normal</button>
+          <button type="button" class="cap-case-btn" data-upper="1" data-touched="0" onclick="setCapCase('${idPrefix}',true,this)">CAPS</button>
         </div>
       </div>
     </div>
@@ -2535,18 +2535,25 @@ window.toggleCapSettings = (prefix, btn) => {
   body.style.display = open ? '' : 'none'
   btn?.classList.toggle('active', open)
 }
+// Only a control the user has actually touched should override the style
+// preset's tuned defaults — e.g. the Font Size slider sits at 50 visually,
+// but if we always sent that as sizePct it would silently blow up presets
+// like Headline (whose default heightPct is much smaller than the generic
+// 50%-slider value), starving the line-wrap math down to ~1 word per line.
 function readCapCustom(prefix) {
   const fontEl = document.getElementById(`${prefix}-font`)
   const sizeEl = document.getElementById(`${prefix}-size`)
   const strokeWEl = document.getElementById(`${prefix}-stroke-width`)
   const activeSwatch = document.querySelector(`#${prefix}-settings-body .cap-swatch.active`)
   const activeCase = document.querySelector(`#${prefix}-settings-body .cap-case-btn.active`)
+  const caseRow = document.getElementById(`${prefix}-case-row`)
   return {
     font: fontEl?.value || undefined,
-    sizePct: sizeEl ? Number(sizeEl.value) : undefined,
-    outlineWidthPct: strokeWEl ? Number(strokeWEl.value) : undefined,
-    outline: activeSwatch?.dataset.color || '#000000',
-    upper: activeCase ? activeCase.dataset.upper === '1' : undefined,
+    sizePct: sizeEl?.dataset.touched === '1' ? Number(sizeEl.value) : undefined,
+    outlineWidthPct: strokeWEl?.dataset.touched === '1' ? Number(strokeWEl.value) : undefined,
+    outline: activeSwatch?.dataset.touched === '1' ? activeSwatch.dataset.color : undefined,
+    upper: (caseRow && caseRow.style.display !== 'none' && activeCase?.dataset.touched === '1')
+      ? activeCase.dataset.upper === '1' : undefined,
   }
 }
 // Store the freshly-read custom settings into the right place for this prefix,
@@ -2576,14 +2583,26 @@ window.onCapFontChange = (prefix) => {
   if (caseRow) caseRow.style.display = fontEl?.value === 'TikTok Sans 18pt' ? '' : 'none'
   onCapCustomChange(prefix)
 }
+window.onCapSizeInput = (prefix) => {
+  const el = document.getElementById(`${prefix}-size`)
+  if (el) el.dataset.touched = '1'
+  onCapCustomChange(prefix)
+}
+window.onCapStrokeWidthInput = (prefix) => {
+  const el = document.getElementById(`${prefix}-stroke-width`)
+  if (el) el.dataset.touched = '1'
+  onCapCustomChange(prefix)
+}
 window.setCapCase = (prefix, upper, btn) => {
   document.querySelectorAll(`#${prefix}-settings-body .cap-case-btn`).forEach((b) => b.classList.remove('active'))
   btn.classList.add('active')
+  btn.dataset.touched = '1'
   onCapCustomChange(prefix)
 }
 window.setCapStrokeColor = (prefix, color, btn) => {
   document.querySelectorAll(`#${prefix}-settings-body .cap-swatch`).forEach((b) => b.classList.remove('active'))
   btn.classList.add('active')
+  btn.dataset.touched = '1'
   onCapCustomChange(prefix)
 }
 
