@@ -112,6 +112,26 @@ export const api = {
       return URL.createObjectURL(await res.blob())
     },
   },
+  reframe: {
+    // Reframe a video to 9:16 around the AI-detected main subject. Returns an
+    // object URL for the resulting mp4 blob (or throws with err.needsPlan if
+    // the user is gated by the paid-only check).
+    run: async (url) => {
+      const res = await fetch(BASE + '/api/reframe', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const err = new Error(data.message || data.error || 'Reframe failed')
+        err.status = res.status
+        err.needsPlan = res.status === 402
+        throw err
+      }
+      return URL.createObjectURL(await res.blob())
+    },
+  },
   billing: {
     // tier: 'starter'|'creator'|'business', interval: 'monthly'|'yearly'
     checkoutUrl: (tier, interval) => WHOP_CHECKOUT[`${tier}_${interval}`] || WHOP_CHECKOUT.creator_monthly,

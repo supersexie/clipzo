@@ -337,6 +337,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l4 2-4 2V8z"/></svg>
       Video Editor
     </button>
+    <button class="nav-item" data-panel="reframe" onclick="switchPanel('reframe',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      AI Reframe
+    </button>
     <button class="nav-item" data-panel="downloader" onclick="switchPanel('downloader',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Video Downloader
@@ -401,6 +405,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div class="shortcut-icon">🎞️</div>
           <div class="shortcut-name">Video Editor</div>
           <div class="shortcut-desc">Multi-track timeline editor</div>
+        </div>
+        <div class="shortcut" onclick="switchPanel('reframe',null)">
+          <div class="shortcut-icon">🪟</div>
+          <div class="shortcut-name">AI Reframe</div>
+          <div class="shortcut-desc">Auto-fit to 9:16 around the subject</div>
         </div>
         <div class="shortcut" onclick="switchPanel('downloader',null)">
           <div class="shortcut-icon">⬇️</div>
@@ -988,6 +997,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
 
+    <!-- AI REFRAME -->
+    <div class="panel" id="panel-reframe">
+      <div class="tool-card">
+        <h3>AI Reframe</h3>
+        <p>Auto-fit any landscape video into 9:16 (TikTok / Reels / Shorts) by detecting the main subject and centering the crop around them. One click — no manual reframing.</p>
+        <div class="field" style="margin-top:14px">
+          <label>Video URL (YouTube, TikTok, Instagram, X, Reddit) or paste any direct video link</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="rf-url" placeholder="https://..." style="flex:1"/>
+            <button class="btn btn-primary" id="rf-btn" onclick="runReframe()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              Reframe to 9:16
+            </button>
+          </div>
+        </div>
+        <p style="font-size:.7rem;color:var(--muted);margin-top:8px">Best for talking-head / podcast / interview content. Sampling and ffmpeg encoding take ~30-60s depending on video length.</p>
+        <div class="status" id="rf-status" style="display:none;margin-top:14px"></div>
+        <div id="rf-result" style="display:none;margin-top:20px">
+          <video id="rf-preview" controls style="width:100%;max-width:360px;border-radius:10px;background:#000;display:block;margin:0 auto"></video>
+          <div style="display:flex;justify-content:center;margin-top:12px">
+            <a id="rf-download" class="btn btn-primary" download="reframed.mp4">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download MP4
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- VIDEO DOWNLOADER -->
     <div class="panel" id="panel-downloader">
       <div class="tool-card">
@@ -1136,7 +1174,7 @@ function populateUser() {
 }
 
 // ── PANELS ───────────────────────────────────────────────────────────────────
-const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', downloader:'Video Downloader', files:'My Files' }
+const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', reframe:'AI Reframe', downloader:'Video Downloader', files:'My Files' }
 window.switchPanel = (id, btn, opts = {}) => {
   if (!titles[id]) id = 'home'
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
@@ -2231,6 +2269,29 @@ window.edExport = async () => {
   btn.disabled = false
 }
 
+
+// ── AI REFRAME ────────────────────────────────────────────────────────────────
+window.runReframe = async () => {
+  const url = document.getElementById('rf-url').value.trim()
+  if (!url) return setStatus('rf-status', 'Paste a video URL first', 'err')
+  const btn = document.getElementById('rf-btn')
+  const result = document.getElementById('rf-result')
+  result.style.display = 'none'
+  btn.disabled = true
+  setStatus('rf-status', 'Downloading & analyzing the subject — this can take 30-60s…', 'loading')
+  try {
+    const blobUrl = await api.reframe.run(url)
+    document.getElementById('rf-preview').src = blobUrl
+    document.getElementById('rf-download').href = blobUrl
+    result.style.display = ''
+    setStatus('rf-status', 'Reframed!', 'ok')
+    setTimeout(() => { document.getElementById('rf-status').style.display = 'none' }, 3000)
+  } catch (e) {
+    setStatus('rf-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
+  } finally {
+    btn.disabled = false
+  }
+}
 
 // ── VIDEO DOWNLOADER ──────────────────────────────────────────────────────────
 let dlInfo = null
