@@ -467,6 +467,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               <button class="cap-style-btn" data-style="alternate" onclick="setCapStyle('alternate',this)">🔁 Alternate</button>
               <button class="cap-style-btn" data-style="badge" onclick="setCapStyle('badge',this)">🏷️ Badge</button>
               <button class="cap-style-btn" data-style="headline" onclick="setCapStyle('headline',this)">📰 Headline</button>
+              <button class="cap-style-btn" data-style="font_anton" onclick="setCapStyle('font_anton',this)">Aa Anton</button>
+              <button class="cap-style-btn" data-style="font_bangers" onclick="setCapStyle('font_bangers',this)">Aa Bangers</button>
+              <button class="cap-style-btn" data-style="font_montserrat" onclick="setCapStyle('font_montserrat',this)">Aa Montserrat</button>
+              <button class="cap-style-btn" data-style="font_baloo" onclick="setCapStyle('font_baloo',this)">Aa Baloo</button>
+              <button class="cap-style-btn" data-style="font_marker" onclick="setCapStyle('font_marker',this)">Aa Marker</button>
+              <button class="cap-style-btn" data-style="font_luckiest" onclick="setCapStyle('font_luckiest',this)">Aa Luckiest</button>
+              <button class="cap-style-btn" data-style="font_tiktok" onclick="setCapStyle('font_tiktok',this)">Aa TikTok</button>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="cap-burn-btn" onclick="burnCaptions()">
@@ -688,6 +695,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                   <button class="cap-style-btn" data-style="alternate" onclick="setClipCaptionStyle('alternate',this)">🔁 Alternate</button>
                   <button class="cap-style-btn" data-style="badge" onclick="setClipCaptionStyle('badge',this)">🏷️ Badge</button>
                   <button class="cap-style-btn" data-style="headline" onclick="setClipCaptionStyle('headline',this)">📰 Headline</button>
+                  <button class="cap-style-btn" data-style="font_anton" onclick="setClipCaptionStyle('font_anton',this)">Aa Anton</button>
+                  <button class="cap-style-btn" data-style="font_bangers" onclick="setClipCaptionStyle('font_bangers',this)">Aa Bangers</button>
+                  <button class="cap-style-btn" data-style="font_montserrat" onclick="setClipCaptionStyle('font_montserrat',this)">Aa Montserrat</button>
+                  <button class="cap-style-btn" data-style="font_baloo" onclick="setClipCaptionStyle('font_baloo',this)">Aa Baloo</button>
+                  <button class="cap-style-btn" data-style="font_marker" onclick="setClipCaptionStyle('font_marker',this)">Aa Marker</button>
+                  <button class="cap-style-btn" data-style="font_luckiest" onclick="setClipCaptionStyle('font_luckiest',this)">Aa Luckiest</button>
+                  <button class="cap-style-btn" data-style="font_tiktok" onclick="setClipCaptionStyle('font_tiktok',this)">Aa TikTok</button>
                 </div>
               </div>
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;margin-top:10px">Position — drag the caption where you want it</div>
@@ -2630,6 +2644,13 @@ const CAP_STYLE_PREVIEW = {
   alternate:      { font: "'Anton',sans-serif",         color: '#16ff5d', upper: true,  box: false, multi: ['#16ff5d', '#ffffff'] },
   badge:          { font: "'Baloo 2',sans-serif",       color: '#ffffff', upper: false, box: true, bg: '#7c3aed', weight: 800 },
   headline:       { font: "'TikTok Sans 18pt',sans-serif", color: '#000000', upper: false, box: true, bg: '#ffffff', radius: '12px', weight: 700 },
+  font_anton:      { font: "'Anton',sans-serif",            color: '#ffffff', upper: false, box: false },
+  font_bangers:    { font: "'Bangers',cursive",             color: '#ffffff', upper: false, box: false },
+  font_montserrat: { font: "'Montserrat',sans-serif",       color: '#ffffff', upper: false, box: false, weight: 700 },
+  font_baloo:      { font: "'Baloo 2',sans-serif",          color: '#ffffff', upper: false, box: false, weight: 800 },
+  font_marker:     { font: "'Permanent Marker',cursive",    color: '#ffffff', upper: false, box: false },
+  font_luckiest:   { font: "'Luckiest Guy',cursive",        color: '#ffffff', upper: false, box: false },
+  font_tiktok:     { font: "'TikTok Sans 18pt',sans-serif", color: '#ffffff', upper: false, box: false, weight: 700 },
 }
 function applyChipStyle(chip, style) {
   if (!chip) return
@@ -2925,6 +2946,7 @@ const CV_FMTS = [['original', '16:9'], ['blur', '9:16 Blur'], ['black', '9:16 Bl
 const CV_STYLES = [
   ['karaoke', '🟢 Green'], ['karaoke_yellow', '🟡 Yellow'], ['clean', '⬜ Clean'], ['boxed', '▪️ Box'], ['bangers', '💥 Comic'],
   ['random', '🌈 Random'], ['rounded', '🔵 Rounded'], ['meme', '😂 Meme'], ['neon', '💖 Neon'], ['script', '✍️ Script'], ['alternate', '🔁 Alt'], ['badge', '🏷️ Badge'], ['headline', '📰 Headline'],
+  ['font_anton', 'Aa Anton'], ['font_bangers', 'Aa Bangers'], ['font_montserrat', 'Aa Mont'], ['font_baloo', 'Aa Baloo'], ['font_marker', 'Aa Marker'], ['font_luckiest', 'Aa Lucky'], ['font_tiktok', 'Aa TikTok'],
 ]
 
 // A small visual mockup of what a chosen output format looks like. Uses the
