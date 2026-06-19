@@ -208,8 +208,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .clip-card-title{font-size:.9rem;font-weight:700;line-height:1.25}
 .clip-card-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}
 .clip-card-score{display:inline-flex;align-items:center;gap:4px;font-weight:800;color:var(--a2)}
-.cv-genre-row{display:flex;flex-wrap:wrap;gap:6px;max-height:48px;overflow:hidden;transition:max-height .2s}
-.cv-genre-row.expanded{max-height:600px}
+.cv-genre-row{display:flex;flex-wrap:wrap;gap:6px}
 .cv-genre-btn{border:1.5px solid var(--border);background:var(--surface);color:#fff;border-radius:7px;padding:6px 12px;font-size:.74rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s}
 .cv-genre-btn:hover{border-color:rgba(168,85,247,.5)}
 .cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
@@ -786,7 +785,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div style="margin-bottom:14px">
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px">For best results, choose the genre that fits your content</div>
               <div class="cv-genre-row" id="clip-viral-genres"></div>
-              <button class="btn btn-ghost btn-sm" id="clip-viral-genres-toggle" style="margin-top:8px;font-size:.72rem" onclick="toggleViralGenres()">Show more ▾</button>
             </div>
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
               <label style="font-size:.78rem;white-space:nowrap">Number of clips</label>
@@ -2951,12 +2949,6 @@ window.setCvGenre = (g, btn) => {
   cvGenre = g
   document.querySelectorAll('#clip-viral-genres .cv-genre-btn').forEach((b) => b.classList.remove('active'))
   btn?.classList.add('active')
-}
-window.toggleViralGenres = () => {
-  const row = document.getElementById('clip-viral-genres')
-  const btn = document.getElementById('clip-viral-genres-toggle')
-  const expanded = row.classList.toggle('expanded')
-  if (btn) btn.textContent = expanded ? 'Show less ▴' : 'Show more ▾'
 }
 
 window.clipFindViral = async () => {
