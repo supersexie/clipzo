@@ -258,6 +258,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .vr-preview-title{position:absolute;top:14px;left:8px;right:8px;text-align:center;font-weight:800;color:#fff;font-size:1.05rem;line-height:1.25;word-break:break-word;z-index:2}
 .vr-preview-cc{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.04em;display:none;z-index:2}
 .vr-preview-bar{display:flex;align-items:center;gap:10px;color:var(--muted);margin-top:10px;padding:0 2px}
+#vr-stage-inner{position:absolute;inset:0;display:flex;flex-direction:column;z-index:1}
+.vr-stage-item{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}
+.vr-stage-item video{width:100%;height:100%;object-fit:cover}
+.vr-stage-item .vr-stage-empty{color:rgba(255,255,255,.3);font-size:.6rem;text-align:center}
+.vr-stage-rank{position:absolute;left:4px;top:50%;transform:translateY(-50%);font-weight:900;font-size:1.1rem;color:#ef4444;z-index:3;text-shadow:0 0 4px rgba(0,0,0,.8),-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.vr-stage-clip-title{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:.45rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);z-index:3;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vr-editor{background:var(--surface);border-radius:10px;padding:16px;margin-top:14px}
 .vr-editor video{width:100%;max-height:320px;border-radius:10px;background:#000;display:block;margin:0 auto 14px}
 .vr-trim-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
@@ -1289,9 +1295,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="vr-preview-card">
           <div class="vr-preview-head">Preview</div>
           <div class="vr-preview-stage" id="vr-stage">
-            <div class="vr-preview-clip" id="vr-stage-clip">
-              <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 9l5-3v12l-5-3"/></svg>
-            </div>
+            <div id="vr-stage-inner"></div>
             <div class="vr-preview-title" id="vr-stage-title"></div>
             <div class="vr-preview-cc" id="vr-stage-cc">CC</div>
           </div>
@@ -2822,7 +2826,7 @@ function vrEditorHtml(c, i) {
           </select>
           <input type="color" value="#ffffff" style="width:28px;height:28px;border:none;border-radius:7px;background:none;cursor:pointer" onchange="vrCards[${i}]._clipColor=this.value"/>
         </div>
-        <input type="text" placeholder="Enter video title..." value="${c.clipTitle || ''}" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px" oninput="vrCards[${i}].clipTitle=this.value"/>
+        <input type="text" placeholder="Enter video title..." value="${c.clipTitle || ''}" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px" oninput="vrCards[${i}].clipTitle=this.value;vrSyncStage()"/>
       </div>
       <div id="vr-tabp-${i}-number" class="vr-tab-panel">
         <p style="color:var(--muted);font-size:.78rem">Number appearance customisation coming soon.</p>
@@ -3003,23 +3007,41 @@ window.vrRenderTitlePreview = () => {
 
 window.vrSyncStage = () => {
   const stage = document.getElementById('vr-stage')
-  const clip = document.getElementById('vr-stage-clip')
+  const inner = document.getElementById('vr-stage-inner')
   const cc = document.getElementById('vr-stage-cc')
   const time = document.getElementById('vr-stage-time')
-  if (!stage) return
+  if (!stage || !inner) return
 
   const bgColor = document.getElementById('vr-bg-color').value
   document.getElementById('vr-bg-hex').value = bgColor.toUpperCase()
   stage.style.background = bgColor
 
   const heightPct = Math.min(100, Math.max(20, parseFloat(document.getElementById('vr-height').value) || 80))
-  clip.style.height = heightPct + '%'
-  clip.style.top = ((100 - heightPct) / 2) + '%'
-
   cc.style.display = document.getElementById('vr-enable-caption').checked ? 'block' : 'none'
 
   const n = vrCards.length || 1
-  time.textContent = `0:00 / 0:0${Math.min(9, n)}`
+  let totalDur = 0
+  vrCards.forEach(c => { if (c.duration) totalDur += (c.end || c.duration) - (c.start || 0) })
+  const mins = Math.floor(totalDur / 60)
+  const secs = Math.floor(totalDur % 60)
+  time.textContent = `0:00 / ${mins}:${String(secs).padStart(2, '0')}`
+
+  const topPad = (100 - heightPct) / 2
+  inner.style.paddingTop = topPad + '%'
+  inner.style.paddingBottom = topPad + '%'
+
+  inner.innerHTML = vrCards.map((c, i) => {
+    if (c.streamUrl) {
+      return `<div class="vr-stage-item">
+        <video src="${c.streamUrl}" muted preload="metadata"></video>
+        <span class="vr-stage-rank">${i + 1}.</span>
+        ${c.clipTitle ? `<span class="vr-stage-clip-title">${c.clipTitle}</span>` : ''}
+      </div>`
+    }
+    return `<div class="vr-stage-item">
+      <div class="vr-stage-empty">${i + 1}</div>
+    </div>`
+  }).join('')
 }
 
 window.vrSyncFromHex = () => {
