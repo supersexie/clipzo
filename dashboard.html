@@ -2505,13 +2505,6 @@ function capSettingsHTML(idPrefix) {
     <button type="button" class="cap-settings-toggle" onclick="toggleCapSettings('${idPrefix}',this)">🎨 Captions</button>
     <div class="cap-settings-body" id="${idPrefix}-settings-body" style="display:none">
       <div class="cap-set-row">
-        <label>Font</label>
-        <input type="hidden" id="${idPrefix}-font" value=""/>
-        <div class="cap-font-row" id="${idPrefix}-font-row">
-          ${CAP_FONTS.map(([v, l]) => `<button type="button" class="cap-font-btn${v === '' ? ' active' : ''}" data-font="${v}" style="font-family:'${l}',sans-serif" onclick="setCapFont('${idPrefix}','${v}',this)">${l}</button>`).join('')}
-        </div>
-      </div>
-      <div class="cap-set-row">
         <label>Font Size</label>
         <input type="range" min="0" max="100" value="50" id="${idPrefix}-size" data-touched="0" oninput="onCapSizeInput('${idPrefix}')"/>
       </div>
@@ -2523,7 +2516,7 @@ function capSettingsHTML(idPrefix) {
           <input type="range" min="0" max="100" value="50" id="${idPrefix}-stroke-width" data-touched="0" oninput="onCapStrokeWidthInput('${idPrefix}')"/>
         </div>
       </div>
-      <div class="cap-set-row" id="${idPrefix}-case-row" style="display:none">
+      <div class="cap-set-row" id="${idPrefix}-case-row">
         <label>Capitalization</label>
         <div class="cap-stroke-row">
           <button type="button" class="cap-case-btn active" data-upper="0" data-touched="0" onclick="setCapCase('${idPrefix}',false,this)">Normal</button>
@@ -2555,19 +2548,15 @@ window.toggleCapSettings = (prefix, btn) => {
 // like Headline (whose default heightPct is much smaller than the generic
 // 50%-slider value), starving the line-wrap math down to ~1 word per line.
 function readCapCustom(prefix) {
-  const fontEl = document.getElementById(`${prefix}-font`)
   const sizeEl = document.getElementById(`${prefix}-size`)
   const strokeWEl = document.getElementById(`${prefix}-stroke-width`)
   const activeSwatch = document.querySelector(`#${prefix}-settings-body .cap-swatch.active`)
   const activeCase = document.querySelector(`#${prefix}-settings-body .cap-case-btn.active`)
-  const caseRow = document.getElementById(`${prefix}-case-row`)
   return {
-    font: fontEl?.value || undefined,
     sizePct: sizeEl?.dataset.touched === '1' ? Number(sizeEl.value) : undefined,
     outlineWidthPct: strokeWEl?.dataset.touched === '1' ? Number(strokeWEl.value) : undefined,
     outline: activeSwatch?.dataset.touched === '1' ? activeSwatch.dataset.color : undefined,
-    upper: (caseRow && caseRow.style.display !== 'none' && activeCase?.dataset.touched === '1')
-      ? activeCase.dataset.upper === '1' : undefined,
+    upper: activeCase?.dataset.touched === '1' ? activeCase.dataset.upper === '1' : undefined,
   }
 }
 // Store the freshly-read custom settings into the right place for this prefix,
@@ -2591,22 +2580,6 @@ window.onCapCustomChange = (prefix) => {
   }
   const chip = chipId && document.getElementById(chipId)
   if (chip) applyCustomPreview(chip, style, custom)
-}
-// The CAPS/Normal toggle only matters for TikTok Sans (Headline style) right
-// now — hide it for fonts whose style already locks capitalization.
-window.onCapFontChange = (prefix) => {
-  const fontEl = document.getElementById(`${prefix}-font`)
-  if (fontEl) fontEl.style.fontFamily = fontEl.value ? `'${fontEl.value}',sans-serif` : ''
-  const caseRow = document.getElementById(`${prefix}-case-row`)
-  if (caseRow) caseRow.style.display = fontEl?.value === 'TikTok Sans 18pt' ? '' : 'none'
-  onCapCustomChange(prefix)
-}
-window.setCapFont = (prefix, font, btn) => {
-  document.querySelectorAll(`#${prefix}-font-row .cap-font-btn`).forEach((b) => b.classList.remove('active'))
-  btn.classList.add('active')
-  const hidden = document.getElementById(`${prefix}-font`)
-  if (hidden) hidden.value = font
-  onCapFontChange(prefix)
 }
 window.onCapSizeInput = (prefix) => {
   const el = document.getElementById(`${prefix}-size`)
