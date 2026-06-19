@@ -1086,7 +1086,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               Render & Download
             </button>
           </div>
-          <p style="font-size:.7rem;color:var(--muted);margin-top:8px">Fill layout dynamically tracks the subject as they move. Switching aspect/layout re-renders fast — the download and subject tracking only happen once.</p>
         </div>
 
         <div id="rf-result" style="display:none;margin-top:20px">
@@ -3023,7 +3022,7 @@ function rfPollViral() {
 
 function rfRenderViralResults(result) {
   rfClips = result.clips || []
-  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', lastSig: null, lastUrl: null, rawUrl: null }))
+  rfClipSettings = rfClips.map(() => ({ aspect: '9:16', layout: 'fill', fitCrop: 'original', captionsOn: false, style: 'karaoke', pos: { x: 0.5, y: 0.72 }, custom: null, lastSig: null, lastUrl: null, rawUrl: null }))
   document.getElementById('rf-viral-results').style.display = ''
   const list = document.getElementById('rf-viral-list')
   if (!rfClips.length) {
@@ -3069,6 +3068,16 @@ function rfRenderViralResults(result) {
           <button class="rf-chip soon" data-layout="three" title="Coming soon — needs multi-subject tracking">⊞ Three</button>
           <button class="rf-chip soon" data-layout="four" title="Coming soon — needs multi-subject tracking">⊟ Four</button>
         </div>
+        <label class="cv-cap-toggle"><input type="checkbox" onchange="toggleRfItemCaptions(${i},this.checked)"/> 🔥 Add captions</label>
+        <div id="rf-cap-sec-${i}" style="display:none;margin-top:6px">
+          <div id="rf-cap-${i}-styles-row">
+            <div class="cv-mini-row" style="margin-bottom:0">
+              ${CV_STYLES.map(([k, l], j) => `<button class="cap-style-btn cv-mini-btn ${j === 0 ? 'active' : ''}" data-style="${k}" onclick="setRfItemStyle(${i},'${k}',this)">${l}</button>`).join('')}
+            </div>
+          </div>
+          <div style="font-size:.66rem;color:var(--muted);margin-bottom:4px;margin-top:8px">Drag the caption where you want it</div>
+          <div class="cap-pad" id="rf-pad-${i}" style="width:110px"><div class="cap-chip" id="rf-cap-chip-${i}">Captions</div></div>
+        </div>
         <div class="clip-card-actions" style="margin-top:10px">
           <button class="btn btn-primary btn-sm" id="rf-clip-render-${i}" onclick="rfClipRender(${i})" ${rfJobId ? '' : 'disabled'}>
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -3081,6 +3090,11 @@ function rfRenderViralResults(result) {
       </div>
     </div>`
   }).join('')
+  // Wire each card's caption position pad + default chip font.
+  rfClips.forEach((_, i) => {
+    initRfItemPad(i)
+    applyChipStyle(document.getElementById(`rf-cap-chip-${i}`), rfClipSettings[i].style)
+  })
 }
 
 // Click-to-preview on a viral clip's thumbnail — mirrors cvPreviewOne. For
@@ -3146,6 +3160,45 @@ window.rfClipSetLayout = (i, l, btn) => {
   btn.classList.add('active')
 }
 
+window.toggleRfItemCaptions = (i, on) => {
+  rfClipSettings[i].captionsOn = on
+  document.getElementById(`rf-cap-sec-${i}`).style.display = on ? '' : 'none'
+}
+window.setRfItemStyle = (i, s, btn) => {
+  rfClipSettings[i].style = s
+  document.querySelectorAll(`#rf-cap-sec-${i} .cap-style-btn`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  applyChipStyle(document.getElementById(`rf-cap-chip-${i}`), s)
+}
+// Drag-to-place pad for one card's caption chip — mirrors initCvItemPad.
+function initRfItemPad(i) {
+  const pad = document.getElementById(`rf-pad-${i}`)
+  const chip = document.getElementById(`rf-cap-chip-${i}`)
+  if (!pad || !chip) return
+  let dragging = false
+  const place = (cx, cy) => {
+    const r = pad.getBoundingClientRect()
+    const x = Math.min(0.98, Math.max(0.02, (cx - r.left) / r.width))
+    const y = Math.min(0.98, Math.max(0.02, (cy - r.top) / r.height))
+    rfClipSettings[i].pos = { x, y }
+    chip.style.left = x * 100 + '%'
+    chip.style.top = y * 100 + '%'
+  }
+  chip.addEventListener('pointerdown', (e) => { dragging = true; chip.setPointerCapture?.(e.pointerId); e.preventDefault() })
+  chip.addEventListener('pointermove', (e) => { if (dragging) place(e.clientX, e.clientY) })
+  chip.addEventListener('pointerup', () => { dragging = false })
+  pad.addEventListener('pointerdown', (e) => { if (e.target !== chip) place(e.clientX, e.clientY) })
+}
+
+function rfClipSettingsSig(s, clip) {
+  return JSON.stringify({
+    a: s.aspect, l: s.layout, st: clip.start, en: clip.end, cap: s.captionsOn,
+    cst: s.captionsOn ? s.style : null,
+    pos: s.captionsOn ? s.pos : null,
+    cu: s.captionsOn ? (s.custom || null) : null,
+  })
+}
+
 window.rfClipRender = async (i) => {
   // Guard: per-clip render must only run once viral clips are loaded AND the
   // underlying reframe analysis job is ready (rfJobId is set once analysis completes).
@@ -3153,20 +3206,35 @@ window.rfClipRender = async (i) => {
   if (!rfJobId) return setStatus('rf-viral-status', 'The video is still loading — wait for "Video loaded" above.', 'err')
   const s = rfClipSettings[i]
   const clip = rfClips[i]
-  const sig = `${s.aspect}|${s.layout}|${clip.start}|${clip.end}`
+  const sig = rfClipSettingsSig(s, clip)
   const btn = document.getElementById(`rf-clip-render-${i}`)
   const result = document.getElementById(`rf-clip-result-${i}`)
   btn.disabled = true
   try {
-    const blobUrl = sig === s.lastSig && s.lastUrl ? s.lastUrl : await api.reframe.render(rfJobId, {
-      aspect: s.aspect, layout: s.layout, fitCrop: s.fitCrop, start: clip.start, end: clip.end,
-    })
+    let blobUrl
+    if (sig === s.lastSig && s.lastUrl) {
+      blobUrl = s.lastUrl
+    } else {
+      const rawUrl = await api.reframe.render(rfJobId, {
+        aspect: s.aspect, layout: s.layout, fitCrop: s.fitCrop, start: clip.start, end: clip.end,
+      })
+      if (s.captionsOn) {
+        setStatus('rf-viral-status', `Adding captions to clip ${i + 1}…`, 'loading')
+        const rawBlob = await (await fetch(rawUrl)).blob()
+        blobUrl = await captionizeBlob(rawBlob, `viral_clip_${i + 1}`, {
+          statusId: 'rf-viral-status', style: s.style, position: s.pos, custom: s.custom,
+        })
+        document.getElementById('rf-viral-status').style.display = 'none'
+      } else {
+        blobUrl = rawUrl
+      }
+    }
     s.lastSig = sig
     s.lastUrl = blobUrl
     const video = result.querySelector('video')
     video.src = blobUrl
     result.style.display = ''
-    const a = document.createElement('a'); a.href = blobUrl; a.download = `viral-clip-${i+1}.mp4`
+    const a = document.createElement('a'); a.href = blobUrl; a.download = `viral-clip-${i+1}${s.captionsOn ? '_captioned' : ''}.mp4`
     document.body.appendChild(a); a.click(); document.body.removeChild(a)
   } catch (e) {
     setStatus('rf-viral-status', e.needsPlan ? e.message + ' — upgrade to continue' : e.message, 'err')
