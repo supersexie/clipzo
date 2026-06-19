@@ -249,9 +249,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
 .vr-layout{display:flex;gap:24px;align-items:flex-start}
 .vr-left{flex:1;min-width:0}
-.vr-right{width:280px;flex-shrink:0;position:sticky;top:0;align-self:stretch}
-@media(max-width:900px){.vr-layout{flex-direction:column}.vr-right{position:static;width:100%}}
-.vr-preview-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;overflow:hidden}
+.vr-right{width:280px;flex-shrink:0;align-self:stretch}
+@media(max-width:900px){.vr-layout{flex-direction:column}.vr-right{width:100%}.vr-preview-card{position:static}}
+/* The card sticks (pins in place while the controls scroll) inside the
+   full-height .vr-right column, which acts as the scroll track. */
+.vr-preview-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;overflow:hidden;position:sticky;top:28px}
 .vr-preview-head{font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:10px}
 .vr-preview-stage{position:relative;width:100%;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:#2b2a2a;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .vr-preview-clip{position:absolute;left:0;right:0;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);transition:height .15s,top .15s}
