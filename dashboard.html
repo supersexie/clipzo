@@ -247,6 +247,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .vr-or::before,.vr-or::after{content:"";flex:1;height:1px;background:var(--border)}
 .vr-count-input{width:64px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:#fff;font-size:.85rem;font-weight:700;padding:7px 8px;text-align:center}
 .cv-genre-btn.active{border-color:var(--a2);background:rgba(168,85,247,.12)}
+.vr-layout{display:flex;gap:24px;align-items:flex-start}
+.vr-left{flex:1;min-width:0}
+.vr-right{width:280px;flex-shrink:0;position:sticky;top:20px}
+@media(max-width:900px){.vr-layout{flex-direction:column}.vr-right{width:100%;position:static}}
+.vr-preview-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;overflow:hidden}
+.vr-preview-head{font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:10px}
+.vr-preview-stage{position:relative;width:100%;aspect-ratio:9/16;border-radius:10px;overflow:hidden;background:#2b2a2a;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.vr-preview-clip{position:absolute;left:0;right:0;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);transition:height .15s,top .15s}
+.vr-preview-title{position:absolute;top:14px;left:8px;right:8px;text-align:center;font-weight:800;color:#fff;font-size:1.05rem;line-height:1.25;word-break:break-word;z-index:2}
+.vr-preview-cc{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.04em;display:none;z-index:2}
+.vr-preview-bar{display:flex;align-items:center;gap:10px;color:var(--muted);margin-top:10px;padding:0 2px}
 .cv-time-edit{display:inline-flex;align-items:center;gap:4px}
 .cv-time-btn{background:var(--surface);border:1px solid var(--border);color:#fff;border-radius:4px;width:18px;height:18px;font-size:.78rem;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .cv-time-btn:hover{border-color:var(--a2);color:var(--a2)}
@@ -1159,6 +1170,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
     <!-- VIDEO RANKING -->
     <div class="panel" id="panel-ranking">
+      <div class="vr-layout">
+      <div class="vr-left">
       <div class="tool-card">
         <h3>Video Ranking</h3>
         <p>Pick how many videos you want to rank, add each one by link or upload, then style the countdown title. (Generating the final ranking video is coming soon — this builds your ranking list.)</p>
@@ -1197,8 +1210,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div id="vr-title-preview" style="background:var(--surface);border:1px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;font-weight:800;color:#fff;font-size:1.4rem;margin-bottom:14px"></div>
           <label class="vr-mini-label">Title Stroke</label>
           <div style="display:flex;align-items:center;gap:10px">
-            <input type="color" id="vr-stroke-color" value="#000000" style="width:28px;height:28px;border:none;border-radius:50%;background:none;cursor:pointer"/>
-            <input type="range" id="vr-stroke-width" min="0" max="10" value="2" style="flex:1;accent-color:var(--a2)"/>
+            <input type="color" id="vr-stroke-color" value="#000000" style="width:28px;height:28px;border:none;border-radius:50%;background:none;cursor:pointer" oninput="vrRenderTitlePreview()"/>
+            <input type="range" id="vr-stroke-width" min="0" max="10" value="2" style="flex:1;accent-color:var(--a2)" oninput="vrRenderTitlePreview()"/>
           </div>
         </div>
 
@@ -1208,19 +1221,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div>
               <label class="vr-mini-label">Video height</label>
               <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
-                <input type="number" id="vr-height" value="80" min="20" max="100" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0"/>
+                <input type="number" id="vr-height" value="80" min="20" max="100" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0" oninput="vrSyncStage()"/>
                 <span style="color:var(--muted);font-size:.8rem">%</span>
               </div>
             </div>
             <div>
               <label class="vr-mini-label">Background</label>
               <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
-                <input type="color" id="vr-bg-color" value="#2b2a2a" style="width:22px;height:22px;border:none;border-radius:50%;background:none;cursor:pointer"/>
-                <input type="text" id="vr-bg-hex" value="#2B2A2A" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0"/>
+                <input type="color" id="vr-bg-color" value="#2b2a2a" style="width:22px;height:22px;border:none;border-radius:50%;background:none;cursor:pointer" oninput="vrSyncStage()"/>
+                <input type="text" id="vr-bg-hex" value="#2B2A2A" style="flex:1;background:none;border:none;color:#fff;font-size:.85rem;padding:11px 0" oninput="vrSyncFromHex()"/>
               </div>
             </div>
           </div>
-          <label class="vr-toggle" style="margin-top:16px"><input type="checkbox" id="vr-enable-caption"/><span class="sw"></span>Enable Caption</label>
+          <label class="vr-toggle" style="margin-top:16px"><input type="checkbox" id="vr-enable-caption" onchange="vrSyncStage()"/><span class="sw"></span>Enable Caption</label>
         </div>
 
         <div class="vr-section">
@@ -1239,6 +1252,28 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           </button>
         </div>
       </div>
+      </div><!-- /.vr-left -->
+
+      <div class="vr-right">
+        <div class="vr-preview-card">
+          <div class="vr-preview-head">Preview</div>
+          <div class="vr-preview-stage" id="vr-stage">
+            <div class="vr-preview-clip" id="vr-stage-clip">
+              <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 9l5-3v12l-5-3"/></svg>
+            </div>
+            <div class="vr-preview-title" id="vr-stage-title"></div>
+            <div class="vr-preview-cc" id="vr-stage-cc">CC</div>
+          </div>
+          <div class="vr-preview-bar">
+            <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+            <span id="vr-stage-time" style="font-size:.68rem">0:00 / 0:00</span>
+            <span style="flex:1"></span>
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3m11 0h3a2 2 0 002-2v-3"/></svg>
+          </div>
+        </div>
+      </div>
+      </div><!-- /.vr-layout -->
     </div>
 
     <!-- FILES -->
@@ -2621,6 +2656,7 @@ window.vrSetCount = () => {
   while (vrCards.length < n) vrCards.push({ link: '', file: null })
   vrCards.length = n
   vrRenderCards()
+  window.vrSyncStage?.()
 }
 
 function vrRenderCards() {
@@ -2662,6 +2698,7 @@ function vrRenderCards() {
       </div>
     </div>
   `).join('')
+  window.vrSyncStage?.()
 }
 
 window.vrToggleCard = (i) => {
@@ -2713,6 +2750,17 @@ window.vrToggleStyle = (which, btn) => {
   vrRenderTitlePreview()
 }
 
+function vrStrokeShadow(color, width) {
+  if (!width || width <= 0) return 'none'
+  const steps = []
+  const n = 8
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2
+    steps.push(`${(Math.cos(a) * width).toFixed(1)}px ${(Math.sin(a) * width).toFixed(1)}px 0 ${color}`)
+  }
+  return steps.join(',')
+}
+
 window.vrRenderTitlePreview = () => {
   const text = document.getElementById('vr-title-text').value || ''
   const font = document.getElementById('vr-title-font').value
@@ -2720,6 +2768,9 @@ window.vrRenderTitlePreview = () => {
   const color = document.getElementById('vr-title-color').value
   const bold = document.getElementById('vr-bold-btn').classList.contains('active')
   const italic = document.getElementById('vr-italic-btn').classList.contains('active')
+  const strokeColor = document.getElementById('vr-stroke-color').value
+  const strokeWidth = parseFloat(document.getElementById('vr-stroke-width').value) || 0
+
   const preview = document.getElementById('vr-title-preview')
   preview.textContent = text
   preview.style.fontFamily = font
@@ -2727,6 +2778,48 @@ window.vrRenderTitlePreview = () => {
   preview.style.color = color
   preview.style.fontWeight = bold ? '900' : '800'
   preview.style.fontStyle = italic ? 'italic' : 'normal'
+  preview.style.textShadow = vrStrokeShadow(strokeColor, strokeWidth)
+
+  // Mirror everything onto the live preview stage on the right.
+  const stageTitle = document.getElementById('vr-stage-title')
+  if (stageTitle) {
+    stageTitle.textContent = text
+    stageTitle.style.fontFamily = font
+    stageTitle.style.fontSize = `clamp(.7rem, ${parseFloat(size) / 22}rem, 1.3rem)`
+    stageTitle.style.color = color
+    stageTitle.style.fontWeight = bold ? '900' : '800'
+    stageTitle.style.fontStyle = italic ? 'italic' : 'normal'
+    stageTitle.style.textShadow = vrStrokeShadow(strokeColor, strokeWidth)
+  }
+}
+
+window.vrSyncStage = () => {
+  const stage = document.getElementById('vr-stage')
+  const clip = document.getElementById('vr-stage-clip')
+  const cc = document.getElementById('vr-stage-cc')
+  const time = document.getElementById('vr-stage-time')
+  if (!stage) return
+
+  const bgColor = document.getElementById('vr-bg-color').value
+  document.getElementById('vr-bg-hex').value = bgColor.toUpperCase()
+  stage.style.background = bgColor
+
+  const heightPct = Math.min(100, Math.max(20, parseFloat(document.getElementById('vr-height').value) || 80))
+  clip.style.height = heightPct + '%'
+  clip.style.top = ((100 - heightPct) / 2) + '%'
+
+  cc.style.display = document.getElementById('vr-enable-caption').checked ? 'block' : 'none'
+
+  const n = vrCards.length || 1
+  time.textContent = `0:00 / 0:0${Math.min(9, n)}`
+}
+
+window.vrSyncFromHex = () => {
+  const hex = document.getElementById('vr-bg-hex').value.trim()
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    document.getElementById('vr-bg-color').value = hex
+    vrSyncStage()
+  }
 }
 
 ;(function initVrPanel() {
@@ -2736,6 +2829,7 @@ window.vrRenderTitlePreview = () => {
   if (boldBtn) boldBtn.classList.add('active')
   window.vrSetCount?.()
   window.vrRenderTitlePreview?.()
+  window.vrSyncStage?.()
 })()
 
 let clipFormat = 'original'  // 'original'|'blur'|'black'|'white'
