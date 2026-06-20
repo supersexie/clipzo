@@ -4941,34 +4941,49 @@ window.cmPickFile = (url) => {
 }
 
 // Platform URLs (YouTube/TikTok/IG/X/Reddit/FB) can't be played directly by a
-// <video> tag, but the backend will yt-dlp them at generate time. Show a card
-// so the user knows the link was accepted, and pick a sensible default trim
-// length so they can proceed through the wizard.
+// <video> tag, but /api/download/stream proxies them via yt-dlp so the browser
+// can fetch a regular video stream. We point both the source player AND the
+// right-side preview at the proxy URL; the original link stays in cmState
+// because the backend wants to yt-dlp it again at generate time.
 function cmAttachPlatformLink(url) {
   document.getElementById('cm-uploader').style.display = 'none'
   document.getElementById('cm-uploaded').style.display = ''
   const player = document.getElementById('cm-source-player')
-  player.removeAttribute('src')
-  player.load?.()
-  player.style.display = 'none'
+  player.style.display = ''
+  const ph = document.getElementById('cm-platform-card')
+  if (ph) ph.style.display = 'none'
 
-  // Render a placeholder card in the spot the video would have occupied.
-  let placeholder = document.getElementById('cm-platform-card')
-  if (!placeholder) {
-    placeholder = document.createElement('div')
-    placeholder.id = 'cm-platform-card'
-    placeholder.style.cssText = 'width:100%;padding:36px 18px;background:var(--surface);border:1px dashed var(--border);border-radius:12px;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.6'
-    player.parentNode.insertBefore(placeholder, player)
+  // Loading banner over the player while the backend pulls + transcodes.
+  let banner = document.getElementById('cm-source-loading')
+  if (!banner) {
+    banner = document.createElement('div')
+    banner.id = 'cm-source-loading'
+    banner.style.cssText = 'padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:.82rem;text-align:center;margin-bottom:10px'
+    player.parentNode.insertBefore(banner, player)
   }
   const host = (() => { try { return new URL(url).hostname.replace('www.', '') } catch { return 'link' } })()
-  placeholder.innerHTML = `<div style="font-size:1.1rem;color:#fff;font-weight:700;margin-bottom:6px">Link from ${host} loaded</div>
-    <div>In-browser preview isn't available for platform links — the video will be downloaded at generate time.</div>
-    <div style="margin-top:8px;font-size:.75rem;color:#666;word-break:break-all">${url}</div>`
-  placeholder.style.display = ''
+  banner.textContent = `Loading video from ${host}… (this can take 10–30s for long videos)`
+  banner.style.display = ''
 
-  cmState.duration = 60
-  cmState.trim = { start: 0, end: 60 }
-  cmRenderTrim()
+  const proxied = api.download.streamUrl(url)
+  cmState.localPreviewUrl = proxied
+  player.src = proxied
+  player.onloadedmetadata = () => {
+    banner.style.display = 'none'
+    const dur = Number.isFinite(player.duration) ? player.duration : 60
+    cmState.duration = dur
+    cmState.trim = { start: 0, end: dur }
+    cmRenderTrim()
+    cmUpdatePreview()
+  }
+  player.onerror = () => {
+    banner.style.color = '#ff6677'
+    banner.textContent = `Could not load video from ${host}. Will still try at generate time. Trim defaulted to 60s.`
+    cmState.duration = 60
+    cmState.trim = { start: 0, end: 60 }
+    cmRenderTrim()
+    cmUpdatePreview()
+  }
   cmUpdatePreview()
 }
 window.cmReupload = () => {
