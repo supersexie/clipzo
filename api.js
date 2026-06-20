@@ -155,8 +155,10 @@ export const api = {
     },
   },
   commentary: {
-    // body: { file_url, style: 'reaction'|'sports'|'roast'|'explainer', voice_id? }
+    // body: { file_url, trim:{start,end}, script, subtitle:{...}, shape:{aspect,bg}, audio:{...} }
     start: (body) => req('POST', '/api/commentary', body),
+    // body: { topic, tone, length, hook, cta } → { script }
+    script: (body) => req('POST', '/api/commentary/script', body),
     poll:  (jobId) => req('GET', `/api/commentary/${jobId}`),
     download: async (jobId) => {
       const res = await fetch(BASE + `/api/commentary/${jobId}/download`, {

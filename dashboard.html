@@ -236,6 +236,93 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cm-style-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.82rem;font-weight:600;padding:11px 12px;border-radius:9px;cursor:pointer;transition:all .15s;text-align:center}
 .cm-style-btn:hover{border-color:var(--a2);color:#fff}
 .cm-style-btn.active{background:rgba(255,0,51,0.15);border-color:var(--a1);color:#fff}
+
+/* ---- Commentary wizard ---- */
+.cm-wizard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+.cm-stepper{display:flex;align-items:center;gap:10px;margin-bottom:22px;overflow-x:auto;padding-bottom:6px}
+.cm-step-pill{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;font-size:.78rem;font-weight:600;color:var(--muted);background:transparent;border:1px solid transparent;white-space:nowrap;transition:all .15s}
+.cm-step-pill .cm-step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--surface);color:var(--muted);font-size:.7rem;font-weight:800;border:1px solid var(--border)}
+.cm-step-pill.active{color:#fff}
+.cm-step-pill.active .cm-step-num{background:var(--a1);color:#fff;border-color:var(--a1)}
+.cm-step-pill.done .cm-step-num{background:var(--a2);color:#fff;border-color:var(--a2)}
+.cm-step-pill.done .cm-step-num::after{content:'✓';font-size:.75rem}
+.cm-step-pill.done .cm-step-num{font-size:0}
+.cm-step-line{flex:1;height:1px;background:var(--border);min-width:18px}
+
+.cm-layout{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start}
+@media (max-width:1100px){.cm-layout{grid-template-columns:1fr}}
+
+.cm-main{min-width:0}
+.cm-pane{min-height:280px}
+
+.cm-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px}
+.cm-input:focus{outline:none;border-color:var(--a2)}
+.cm-range{width:100%;accent-color:var(--a1)}
+.cm-color{width:28px;height:28px;border:none;border-radius:50%;background:none;cursor:pointer;padding:0}
+
+.cm-drop-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:38px 18px;border:1.5px dashed var(--border);border-radius:14px;cursor:pointer;color:var(--muted);transition:all .15s;background:rgba(255,0,51,0.02)}
+.cm-drop-zone:hover{border-color:var(--a2);color:#fff;background:rgba(255,0,51,0.05)}
+.cm-drop-title{margin-top:10px;font-weight:700;font-size:.95rem;color:#fff}
+.cm-drop-sub{margin-top:4px;font-size:.78rem;color:var(--muted)}
+.cm-or-row{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
+.cm-or-row::before,.cm-or-row::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.cm-source-vid{width:100%;max-height:280px;border-radius:10px;background:#000;object-fit:contain}
+.cm-trim-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:14px}
+.cm-trim-tag{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:.78rem}
+.cm-trim-tag .dot{width:8px;height:8px;border-radius:50%}
+.cm-trim-tag.start .dot{background:#22c55e}
+.cm-trim-tag.end .dot{background:var(--a1)}
+.cm-trim-track{position:relative;height:54px;margin-top:6px}
+.cm-trim-rail{position:absolute;left:0;right:0;top:24px;height:4px;background:var(--border);border-radius:2px}
+.cm-trim-fill{position:absolute;top:24px;height:4px;background:linear-gradient(90deg,#22c55e,var(--a1));border-radius:2px}
+.cm-trim-handle{position:absolute;top:18px;width:14px;height:18px;border-radius:3px;cursor:ew-resize;transform:translateX(-50%)}
+.cm-trim-handle.start{background:#22c55e}
+.cm-trim-handle.end{background:var(--a1)}
+.cm-trim-handle::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:6px solid transparent}
+.cm-trim-handle.start::before{border-top:8px solid #22c55e}
+.cm-trim-handle.end::before{border-top:8px solid var(--a1)}
+.cm-trim-ticks{position:absolute;left:0;right:0;top:36px;display:flex;justify-content:space-between;color:var(--muted);font-size:.65rem;pointer-events:none}
+
+.cm-script-area{width:100%;min-height:220px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:#fff;padding:14px;font-size:.88rem;line-height:1.5;resize:vertical;font-family:inherit}
+.cm-script-area:focus{outline:none;border-color:var(--a2)}
+.cm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cm-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media (max-width:700px){.cm-grid-2,.cm-grid-3{grid-template-columns:1fr}}
+
+.cm-sub-presets{display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;padding-right:6px}
+.cm-sub-preset-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:18px 12px;text-align:center;cursor:pointer;font-weight:800;letter-spacing:.05em;color:#fff;transition:border-color .15s}
+.cm-sub-preset-card:hover{border-color:var(--a2)}
+.cm-sub-preset-card.active{border-color:var(--a1);background:rgba(255,0,51,0.08)}
+
+.cm-shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:520px}
+@media (max-width:700px){.cm-shape-grid{grid-template-columns:repeat(2,1fr)}}
+.cm-shape-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--muted);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s}
+.cm-shape-btn:hover{border-color:var(--a2);color:#fff}
+.cm-shape-btn.active{border-color:var(--a1);color:#fff;background:rgba(255,0,51,0.08)}
+.cm-shape-btn .muted{color:var(--muted);font-weight:500;font-size:.72rem}
+.cm-shape-box{border:1.5px solid currentColor;border-radius:3px;margin-bottom:2px}
+
+.cm-audio-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.cm-audio-grid{grid-template-columns:1fr}}
+.cm-audio-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.cm-audio-head{display:flex;justify-content:space-between;align-items:center}
+.cm-audio-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;width:fit-content}
+.cm-audio-tab{background:none;border:none;color:var(--muted);font-size:.78rem;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer}
+.cm-audio-tab.active{background:var(--a1);color:#fff}
+.cm-divider{height:1px;background:var(--border);margin:16px 0}
+
+.cm-nav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+
+.cm-preview{background:linear-gradient(180deg,#1a1a1a,#0d0d0d);border:1px solid var(--border);border-radius:14px;padding:14px;position:sticky;top:14px}
+.cm-preview-head{font-size:.78rem;color:var(--muted);font-weight:700;text-align:center;margin-bottom:10px;letter-spacing:.08em;text-transform:uppercase}
+.cm-preview-stage{position:relative;aspect-ratio:9/16;background:#000;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#444;font-size:.78rem}
+.cm-preview-stage video{width:100%;height:100%;object-fit:contain}
+.cm-preview-stage[data-aspect="1:1"]{aspect-ratio:1/1}
+.cm-preview-stage[data-aspect="16:9"]{aspect-ratio:16/9}
+.cm-preview-stage[data-aspect="4:5"]{aspect-ratio:4/5}
+.cm-preview-sub{position:absolute;left:8px;right:8px;text-align:center;font-weight:800;letter-spacing:.04em;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;font-size:1.2rem;line-height:1.1;pointer-events:none}
+.cm-preview-bar{display:flex;align-items:center;justify-content:center;padding-top:10px}
 .vr-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:14px;overflow:hidden}
 .vr-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
 .vr-card-head .title{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:8px}
@@ -1337,56 +1424,288 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
     <!-- COMMENTARY -->
     <div class="panel" id="panel-commentary">
-      <div class="tool-card">
-        <h3>Video Commentary</h3>
-        <p>Add an AI commentary track to any video — reaction, sports play-by-play, roast, or explainer.</p>
+      <div class="cm-wizard">
 
-        <label class="vr-mini-label" style="margin-top:14px">Video URL (Supabase, S3, etc. — must be a direct .mp4 link)</label>
-        <input type="text" id="cm-url" placeholder="https://..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px"/>
-
-        <label class="vr-mini-label" style="margin-top:14px">…or pick from My Files</label>
-        <select id="cm-file-picker" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px" onchange="cmPickFile(this.value)">
-          <option value="">— select an uploaded video —</option>
-        </select>
-
-        <label class="vr-mini-label" style="margin-top:14px">Commentary style</label>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px">
-          <button type="button" class="cm-style-btn active" data-style="reaction" onclick="cmPickStyle(this)">🎬 Reaction</button>
-          <button type="button" class="cm-style-btn" data-style="sports" onclick="cmPickStyle(this)">🏀 Sports</button>
-          <button type="button" class="cm-style-btn" data-style="roast" onclick="cmPickStyle(this)">🔥 Roast</button>
-          <button type="button" class="cm-style-btn" data-style="explainer" onclick="cmPickStyle(this)">🎓 Explainer</button>
+        <!-- Stepper -->
+        <div class="cm-stepper">
+          <div class="cm-step-pill" data-step="1"><span class="cm-step-num">1</span> Upload Video</div>
+          <div class="cm-step-line"></div>
+          <div class="cm-step-pill" data-step="2"><span class="cm-step-num">2</span> Script</div>
+          <div class="cm-step-line"></div>
+          <div class="cm-step-pill" data-step="3"><span class="cm-step-num">3</span> Subtitle</div>
+          <div class="cm-step-line"></div>
+          <div class="cm-step-pill" data-step="4"><span class="cm-step-num">4</span> Shape</div>
+          <div class="cm-step-line"></div>
+          <div class="cm-step-pill" data-step="5"><span class="cm-step-num">5</span> Audio</div>
         </div>
 
-        <label class="vr-mini-label" style="margin-top:14px">Voice (optional — default matches the style)</label>
-        <select id="cm-voice" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px">
-          <option value="">— style default —</option>
-        </select>
+        <div class="cm-layout">
+          <!-- LEFT: step content -->
+          <div class="cm-main">
 
-        <button class="btn btn-primary" id="cm-generate-btn" style="width:100%;margin-top:18px" onclick="cmGenerate()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Generate Commentary
-        </button>
+            <!-- STEP 1: UPLOAD VIDEO -->
+            <div class="cm-pane" data-pane="1">
+              <div id="cm-uploader">
+                <label for="cm-file-input" class="cm-drop-zone">
+                  <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14"/></svg>
+                  <div class="cm-drop-title">Drop a video or click to upload</div>
+                  <div class="cm-drop-sub">MP4 / MOV / WebM &nbsp;·&nbsp; up to 300 MB</div>
+                </label>
+                <input type="file" id="cm-file-input" accept="video/*" style="display:none" onchange="cmHandleFile(this.files[0])"/>
 
-        <div id="cm-status" style="display:none;margin-top:14px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span id="cm-step" style="font-size:.78rem;color:var(--muted)"></span>
-            <span id="cm-pct" style="font-size:.78rem;color:var(--muted)"></span>
+                <div class="cm-or-row"><span>or paste a link</span></div>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="cm-url-input" placeholder="YouTube, TikTok, Instagram, direct .mp4 link…" class="cm-input" style="flex:1"/>
+                  <button class="btn btn-primary" onclick="cmSubmitUrl()">Load</button>
+                </div>
+
+                <label class="vr-mini-label" style="margin-top:14px">…or pick from My Files</label>
+                <select id="cm-file-picker" class="cm-input" onchange="cmPickFile(this.value)">
+                  <option value="">— select an uploaded video —</option>
+                </select>
+              </div>
+
+              <div id="cm-uploaded" style="display:none">
+                <video id="cm-source-player" controls class="cm-source-vid"></video>
+
+                <div class="cm-trim-card">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <h4 style="margin:0">Trim Video</h4>
+                    <button class="btn btn-ghost btn-sm" onclick="cmReupload()">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0114-7l4 4M3 12a9 9 0 0014 7l4-4M3 4v5h5M21 20v-5h-5"/></svg>
+                      Re-upload
+                    </button>
+                  </div>
+                  <div style="display:flex;gap:14px;margin-bottom:14px">
+                    <div class="cm-trim-tag start"><span class="dot"></span>Start at <strong id="cm-trim-start-lbl">0.0s</strong></div>
+                    <div class="cm-trim-tag end"><span class="dot"></span>End at <strong id="cm-trim-end-lbl">0.0s</strong></div>
+                  </div>
+                  <div class="cm-trim-track" id="cm-trim-track">
+                    <div class="cm-trim-rail"></div>
+                    <div class="cm-trim-fill" id="cm-trim-fill"></div>
+                    <div class="cm-trim-handle start" id="cm-trim-handle-start" onmousedown="cmTrimDrag(event,'start')" ontouchstart="cmTrimDrag(event,'start')"></div>
+                    <div class="cm-trim-handle end" id="cm-trim-handle-end" onmousedown="cmTrimDrag(event,'end')" ontouchstart="cmTrimDrag(event,'end')"></div>
+                    <div class="cm-trim-ticks" id="cm-trim-ticks"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: SCRIPT -->
+            <div class="cm-pane" data-pane="2" style="display:none">
+              <textarea id="cm-script" class="cm-script-area" placeholder="Enter your script here or use AI Script to generate…"></textarea>
+
+              <div class="cm-grid-3" style="margin-top:14px">
+                <div>
+                  <label class="vr-mini-label">Topic</label>
+                  <input type="text" id="cm-topic" class="cm-input" placeholder="Enter topic"/>
+                </div>
+                <div>
+                  <label class="vr-mini-label">Tone</label>
+                  <select id="cm-tone" class="cm-input">
+                    <option>Professional</option><option>Casual</option><option>Funny</option><option>Excited</option><option>Calm</option><option>Sarcastic</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="vr-mini-label">Length</label>
+                  <select id="cm-length" class="cm-input">
+                    <option value="10">10s</option><option value="20" selected>20s</option><option value="30">30s</option><option value="60">60s</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="cm-grid-2" style="margin-top:14px">
+                <div>
+                  <label class="vr-mini-label">Video Opening Hook</label>
+                  <input type="text" id="cm-hook" class="cm-input" placeholder="What if I told you…"/>
+                </div>
+                <div>
+                  <label class="vr-mini-label">Video Ending CTA</label>
+                  <input type="text" id="cm-cta" class="cm-input" placeholder="Follow me for amazing content"/>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;margin-top:14px">
+                <button class="btn btn-primary" id="cm-script-btn" onclick="cmGenerateScript()">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l2 4 4 2-4 2-2 4-2-4-4-2 4-2zM17 13l1.5 3 3 1.5-3 1.5L17 22l-1.5-3-3-1.5 3-1.5z"/></svg>
+                  Generate Script
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3: SUBTITLE -->
+            <div class="cm-pane" data-pane="3" style="display:none">
+              <div style="display:grid;grid-template-columns:200px 1fr;gap:18px">
+                <div id="cm-sub-presets" class="cm-sub-presets">
+                  <!-- preset cards injected by JS -->
+                </div>
+                <div>
+                  <label class="vr-mini-label">Font</label>
+                  <select id="cm-sub-font" class="cm-input" onchange="cmUpdatePreview()">
+                    <option>Bangers</option><option>Anton</option><option>Montserrat</option><option>Baloo 2 ExtraBold</option><option>Luckiest Guy</option><option>Permanent Marker</option><option>TikTok Sans 18pt</option>
+                  </select>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Font Size</label>
+                  <input type="range" id="cm-sub-size" min="20" max="120" value="60" class="cm-range" oninput="cmUpdatePreview()"/>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Stroke</label>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <input type="color" id="cm-sub-stroke-color" value="#000000" class="cm-color" oninput="cmUpdatePreview()"/>
+                    <input type="range" id="cm-sub-stroke-w" min="0" max="10" value="2" class="cm-range" style="flex:1" oninput="cmUpdatePreview()"/>
+                  </div>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Background Color</label>
+                  <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
+                    <input type="color" id="cm-sub-bg-color" value="#000000" class="cm-color" oninput="cmUpdatePreview()"/>
+                    <input type="text" id="cm-sub-bg-hex" value="#000000" class="cm-input" style="flex:1;background:none;border:none;padding:11px 0"/>
+                  </div>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Subtitle Position</label>
+                  <select id="cm-sub-position" class="cm-input" onchange="cmUpdatePreview()">
+                    <option value="top">Top</option><option value="center" selected>Center</option><option value="bottom">Bottom</option>
+                  </select>
+
+                  <label class="vr-toggle" style="margin-top:14px"><input type="checkbox" id="cm-sub-enabled" checked onchange="cmUpdatePreview()"/><span class="sw"></span>Burn captions onto video</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 4: SHAPE -->
+            <div class="cm-pane" data-pane="4" style="display:none">
+              <label class="vr-mini-label">Aspect Ratio</label>
+              <div class="cm-shape-grid">
+                <button type="button" class="cm-shape-btn active" data-aspect="9:16" onclick="cmPickAspect(this)">
+                  <div class="cm-shape-box" style="width:18px;height:32px"></div>
+                  9:16<br/><span class="muted">Vertical</span>
+                </button>
+                <button type="button" class="cm-shape-btn" data-aspect="1:1" onclick="cmPickAspect(this)">
+                  <div class="cm-shape-box" style="width:28px;height:28px"></div>
+                  1:1<br/><span class="muted">Square</span>
+                </button>
+                <button type="button" class="cm-shape-btn" data-aspect="16:9" onclick="cmPickAspect(this)">
+                  <div class="cm-shape-box" style="width:36px;height:20px"></div>
+                  16:9<br/><span class="muted">Horizontal</span>
+                </button>
+                <button type="button" class="cm-shape-btn" data-aspect="4:5" onclick="cmPickAspect(this)">
+                  <div class="cm-shape-box" style="width:24px;height:30px"></div>
+                  4:5<br/><span class="muted">Portrait</span>
+                </button>
+              </div>
+
+              <label class="vr-mini-label" style="margin-top:18px">Background Color (letterbox fill)</label>
+              <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px;max-width:300px">
+                <input type="color" id="cm-shape-bg" value="#000000" class="cm-color"/>
+                <span style="color:var(--muted);font-size:.78rem">behind the source video</span>
+              </div>
+            </div>
+
+            <!-- STEP 5: AUDIO -->
+            <div class="cm-pane" data-pane="5" style="display:none">
+              <div class="cm-audio-grid">
+
+                <div class="cm-audio-col">
+                  <div class="cm-audio-head">
+                    <label class="vr-toggle" style="margin:0"><input type="checkbox" id="cm-vo-on" checked/><span class="sw"></span>Voiceover</label>
+                  </div>
+
+                  <label class="vr-mini-label" style="margin-top:12px">Select</label>
+                  <select id="cm-voice" class="cm-input">
+                    <option value="">— pick a voice —</option>
+                  </select>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Volume</label>
+                  <input type="range" id="cm-vo-vol" min="0" max="100" value="100" class="cm-range"/>
+
+                  <div class="cm-divider"></div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <strong style="font-size:.9rem">Video</strong>
+                    <label class="vr-toggle" style="margin:0"><input type="checkbox" id="cm-mute-vid"/><span class="sw"></span>Mute Video During Voiceover</label>
+                  </div>
+                  <label class="vr-mini-label" style="margin-top:12px">Set Volume</label>
+                  <input type="range" id="cm-vid-vol" min="0" max="100" value="100" class="cm-range"/>
+                </div>
+
+                <div class="cm-audio-col">
+                  <div class="cm-audio-head">
+                    <label class="vr-toggle" style="margin:0"><input type="checkbox" id="cm-bg-on"/><span class="sw"></span>Background Music</label>
+                  </div>
+
+                  <div class="cm-audio-tabs" style="margin-top:10px">
+                    <button class="cm-audio-tab active" data-bgtab="library" onclick="cmBgTab(this,'library')">Library</button>
+                    <button class="cm-audio-tab" data-bgtab="upload" onclick="cmBgTab(this,'upload')">Upload</button>
+                  </div>
+
+                  <div id="cm-bg-library" style="margin-top:10px">
+                    <label class="vr-mini-label">Select</label>
+                    <select id="cm-bg-lib" class="cm-input">
+                      <option value="">— pick a track —</option>
+                      <option value="https://cdn.pixabay.com/audio/2024/03/12/audio_b3a7f5fdfa.mp3">Chill Lo-fi</option>
+                      <option value="https://cdn.pixabay.com/audio/2024/05/01/audio_3a4e9aa9aa.mp3">Upbeat Pop</option>
+                      <option value="https://cdn.pixabay.com/audio/2023/10/04/audio_ad6f9faf3c.mp3">Cinematic Build</option>
+                      <option value="https://cdn.pixabay.com/audio/2024/01/26/audio_3bbb6c43a0.mp3">Suspense Drone</option>
+                    </select>
+                  </div>
+                  <div id="cm-bg-upload" style="margin-top:10px;display:none">
+                    <input type="file" id="cm-bg-file" accept="audio/*" class="cm-input" style="padding:9px"/>
+                  </div>
+
+                  <label class="vr-mini-label" style="margin-top:14px">Volume</label>
+                  <input type="range" id="cm-bg-vol" min="0" max="100" value="40" class="cm-range"/>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- NAV -->
+            <div class="cm-nav">
+              <button class="btn btn-ghost" id="cm-prev-btn" onclick="cmStepPrev()" style="visibility:hidden">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                Prev
+              </button>
+              <button class="btn btn-primary" id="cm-next-btn" onclick="cmStepNext()">
+                Next
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button class="btn btn-primary" id="cm-final-btn" onclick="cmGenerate()" style="display:none">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l2 4 4 2-4 2-2 4-2-4-4-2 4-2zM17 13l1.5 3 3 1.5-3 1.5L17 22l-1.5-3-3-1.5 3-1.5z"/></svg>
+                Generate Video Commentary
+              </button>
+            </div>
+
+            <!-- STATUS + RESULT -->
+            <div id="cm-status" style="display:none;margin-top:14px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span id="cm-step-lbl" style="font-size:.78rem;color:var(--muted)"></span>
+                <span id="cm-pct" style="font-size:.78rem;color:var(--muted)"></span>
+              </div>
+              <div style="background:var(--surface);border-radius:999px;height:6px;overflow:hidden">
+                <div id="cm-progress" style="height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));width:0%;transition:width .3s;border-radius:999px"></div>
+              </div>
+            </div>
+            <div id="cm-result" style="display:none;margin-top:18px">
+              <video id="cm-player" controls style="width:100%;border-radius:10px;background:#000"></video>
+              <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="cmDownload()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download MP4
+              </button>
+            </div>
+            <div id="cm-error" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);border-radius:9px;color:#ff6677;font-size:.82rem"></div>
+
           </div>
-          <div style="background:var(--surface);border-radius:999px;height:6px;overflow:hidden">
-            <div id="cm-progress" style="height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));width:0%;transition:width .3s;border-radius:999px"></div>
-          </div>
+
+          <!-- RIGHT: preview pane -->
+          <aside class="cm-preview">
+            <div class="cm-preview-head">Preview</div>
+            <div class="cm-preview-stage" id="cm-preview-stage">
+              <video id="cm-preview-vid" muted playsinline></video>
+              <div class="cm-preview-sub" id="cm-preview-sub" style="display:none">YOUR CAPTIONS HERE</div>
+            </div>
+            <div class="cm-preview-bar">
+              <span id="cm-preview-time" style="font-size:.7rem;color:var(--muted)">00:00 / 00:00</span>
+            </div>
+          </aside>
         </div>
 
-        <div id="cm-result" style="display:none;margin-top:18px">
-          <video id="cm-player" controls style="width:100%;border-radius:10px;background:#000"></video>
-          <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="cmDownload()">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download MP4
-          </button>
-          <div id="cm-lines" style="margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px;max-height:200px;overflow:auto;font-size:.78rem;color:var(--muted)"></div>
-        </div>
-
-        <div id="cm-error" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);border-radius:9px;color:#ff6677;font-size:.82rem"></div>
       </div>
     </div>
 
@@ -4515,36 +4834,369 @@ window.cvEditClip = (start, end) => {
   document.getElementById('clip-viral-results').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-/* ============ VIDEO COMMENTARY ============ */
-let cmStyle = 'reaction'
-let cmJobId = null
-let cmPollTimer = null
-let cmDownloadUrl = null
+/* ============ VIDEO COMMENTARY WIZARD ============ */
+const CM_PRESETS = [
+  { key: 'karaoke',        label: 'Viral Green',  bg: '#000', color: '#0f0', font: 'Anton',                outline: '#000' },
+  { key: 'karaoke_yellow', label: 'Viral Yellow', bg: '#000', color: '#ff0', font: 'Anton',                outline: '#000' },
+  { key: 'clean',          label: 'Clean White',  bg: '#000', color: '#fff', font: 'Montserrat',           outline: '#000' },
+  { key: 'boxed',          label: 'Box',          bg: '#000', color: '#fff', font: 'Montserrat',           outline: '#000', boxed: true },
+  { key: 'bangers',        label: 'Comic',        bg: '#000', color: '#fff', font: 'Bangers',              outline: '#000' },
+  { key: 'random',         label: 'Random Color', bg: '#000', color: '#0f0', font: 'Anton',                outline: '#000' },
+  { key: 'rounded',        label: 'Rounded',      bg: '#000', color: '#fff', font: 'Baloo 2 ExtraBold',    outline: '#000' },
+  { key: 'meme',           label: 'Meme',         bg: '#000', color: '#f00', font: 'Luckiest Guy',         outline: '#ff0' },
+  { key: 'neon',           label: 'Neon',         bg: '#000', color: '#f3c', font: 'Baloo 2 ExtraBold',    outline: '#000' },
+  { key: 'script',         label: 'Script',       bg: '#000', color: '#f00', font: 'Permanent Marker',     outline: '#000' },
+]
 
-window.cmPickStyle = (btn) => {
-  document.querySelectorAll('.cm-style-btn').forEach(b => b.classList.remove('active'))
-  btn.classList.add('active')
-  cmStyle = btn.dataset.style
+const cmState = {
+  step: 1,
+  totalSteps: 5,
+  file: null,           // File object if uploaded
+  fileUrl: null,        // Direct URL (Supabase or platform link)
+  localPreviewUrl: null,// blob: URL for the preview pane
+  duration: 0,
+  trim: { start: 0, end: 0 },
+  script: '',
+  subtitle: {
+    enabled: true, preset: 'bangers', font: 'Bangers', size: 60,
+    strokeColor: '#000000', strokeWidth: 2, bgColor: '#000000', position: 'center',
+  },
+  shape: { aspect: '9:16', bg: '#000000' },
+  audio: {
+    voiceOn: true, voiceId: '', voiceVol: 100,
+    muteVideo: false, videoVol: 100,
+    bgOn: false, bgTab: 'library', bgUrl: '', bgFile: null, bgVol: 40,
+  },
+  jobId: null, pollTimer: null, downloadUrl: null,
 }
 
+window.cmGoStep = (n) => {
+  if (n < 1) n = 1
+  if (n > cmState.totalSteps) n = cmState.totalSteps
+  cmState.step = n
+  document.querySelectorAll('.cm-pane').forEach(p => p.style.display = 'none')
+  document.querySelector(`.cm-pane[data-pane="${n}"]`).style.display = ''
+  document.querySelectorAll('.cm-step-pill').forEach(p => {
+    const s = +p.dataset.step
+    p.classList.toggle('active', s === n)
+    p.classList.toggle('done', s < n)
+  })
+  document.getElementById('cm-prev-btn').style.visibility = n === 1 ? 'hidden' : ''
+  document.getElementById('cm-next-btn').style.display = n === cmState.totalSteps ? 'none' : ''
+  document.getElementById('cm-final-btn').style.display = n === cmState.totalSteps ? '' : 'none'
+  cmUpdatePreview()
+}
+window.cmStepNext = () => {
+  if (cmState.step === 1 && !cmState.fileUrl && !cmState.file) { cmShowError('Please upload a video first.'); return }
+  cmClearError()
+  cmGoStep(cmState.step + 1)
+}
+window.cmStepPrev = () => { cmClearError(); cmGoStep(cmState.step - 1) }
+
+function cmShowError(msg) {
+  const el = document.getElementById('cm-error')
+  if (!el) return
+  el.textContent = msg
+  el.style.display = 'block'
+}
+function cmClearError() {
+  const el = document.getElementById('cm-error')
+  if (el) el.style.display = 'none'
+}
+
+/* ---- Step 1: upload + trim ---- */
+window.cmHandleFile = async (file) => {
+  if (!file) return
+  cmClearError()
+  cmState.file = file
+  cmState.localPreviewUrl = URL.createObjectURL(file)
+
+  // Try uploading to Supabase via existing upload route. If it fails (e.g. not
+  // logged in), we still let the user preview locally and they can paste a URL
+  // instead.
+  try {
+    const fd = new FormData(); fd.append('file', file)
+    const r = await api.upload.file(fd)
+    if (r.url) cmState.fileUrl = r.url
+  } catch (e) { console.warn('upload failed', e.message) }
+  cmAttachVideo(cmState.localPreviewUrl)
+}
+window.cmSubmitUrl = () => {
+  const url = document.getElementById('cm-url-input').value.trim()
+  if (!url) return
+  cmState.fileUrl = url
+  cmState.localPreviewUrl = url
+  cmAttachVideo(url)
+}
 window.cmPickFile = (url) => {
-  if (url) document.getElementById('cm-url').value = url
+  if (!url) return
+  cmState.fileUrl = url
+  cmState.localPreviewUrl = url
+  cmAttachVideo(url)
+}
+window.cmReupload = () => {
+  cmState.file = null; cmState.fileUrl = null; cmState.localPreviewUrl = null
+  cmState.duration = 0; cmState.trim = { start: 0, end: 0 }
+  document.getElementById('cm-uploader').style.display = ''
+  document.getElementById('cm-uploaded').style.display = 'none'
+  document.getElementById('cm-url-input').value = ''
+  document.getElementById('cm-file-picker').value = ''
+  document.getElementById('cm-file-input').value = ''
+  cmUpdatePreview()
+}
+
+function cmAttachVideo(src) {
+  document.getElementById('cm-uploader').style.display = 'none'
+  document.getElementById('cm-uploaded').style.display = ''
+  const v = document.getElementById('cm-source-player')
+  v.src = src
+  v.onloadedmetadata = () => {
+    const dur = Number.isFinite(v.duration) ? v.duration : 0
+    cmState.duration = dur
+    cmState.trim = { start: 0, end: dur }
+    cmRenderTrim()
+  }
+  cmUpdatePreview()
+}
+
+function cmRenderTrim() {
+  const dur = cmState.duration || 1
+  const sPct = (cmState.trim.start / dur) * 100
+  const ePct = (cmState.trim.end / dur) * 100
+  document.getElementById('cm-trim-handle-start').style.left = sPct + '%'
+  document.getElementById('cm-trim-handle-end').style.left = ePct + '%'
+  document.getElementById('cm-trim-fill').style.left = sPct + '%'
+  document.getElementById('cm-trim-fill').style.width = (ePct - sPct) + '%'
+  document.getElementById('cm-trim-start-lbl').textContent = cmState.trim.start.toFixed(1) + 's'
+  document.getElementById('cm-trim-end-lbl').textContent = cmState.trim.end.toFixed(1) + 's'
+  const ticks = document.getElementById('cm-trim-ticks')
+  if (ticks && ticks.children.length === 0) {
+    for (let i = 0; i <= 7; i++) {
+      const span = document.createElement('span')
+      span.textContent = (dur * i / 7).toFixed(1) + 's'
+      ticks.appendChild(span)
+    }
+  }
+}
+
+window.cmTrimDrag = (e, which) => {
+  e.preventDefault()
+  const track = document.getElementById('cm-trim-track')
+  const rect = track.getBoundingClientRect()
+  const move = (ev) => {
+    const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left
+    let pct = Math.max(0, Math.min(1, x / rect.width))
+    const t = pct * (cmState.duration || 0)
+    if (which === 'start') cmState.trim.start = Math.min(t, cmState.trim.end - 0.1)
+    else cmState.trim.end = Math.max(t, cmState.trim.start + 0.1)
+    cmRenderTrim()
+  }
+  const up = () => {
+    window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up)
+    window.removeEventListener('touchmove', move); window.removeEventListener('touchend', up)
+  }
+  window.addEventListener('mousemove', move); window.addEventListener('mouseup', up)
+  window.addEventListener('touchmove', move); window.addEventListener('touchend', up)
+}
+
+/* ---- Step 2: script ---- */
+window.cmGenerateScript = async () => {
+  const btn = document.getElementById('cm-script-btn')
+  btn.disabled = true; btn.textContent = 'Generating…'
+  try {
+    const body = {
+      topic:  document.getElementById('cm-topic').value.trim() || 'this video',
+      tone:   document.getElementById('cm-tone').value,
+      length: +document.getElementById('cm-length').value || 20,
+      hook:   document.getElementById('cm-hook').value.trim(),
+      cta:    document.getElementById('cm-cta').value.trim(),
+    }
+    const r = await api.commentary.script(body)
+    document.getElementById('cm-script').value = r.script || ''
+  } catch (e) { cmShowError(e.message || 'Script generation failed') }
+  btn.disabled = false; btn.innerHTML = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l2 4 4 2-4 2-2 4-2-4-4-2 4-2zM17 13l1.5 3 3 1.5-3 1.5L17 22l-1.5-3-3-1.5 3-1.5z"/></svg> Generate Script`
+}
+
+/* ---- Step 3: subtitle preset cards ---- */
+function cmRenderPresets() {
+  const wrap = document.getElementById('cm-sub-presets')
+  if (!wrap || wrap.children.length) return
+  CM_PRESETS.forEach(p => {
+    const card = document.createElement('button')
+    card.type = 'button'
+    card.className = 'cm-sub-preset-card' + (p.key === cmState.subtitle.preset ? ' active' : '')
+    card.dataset.preset = p.key
+    card.style.fontFamily = p.font
+    card.style.color = p.color
+    card.style.background = p.bg
+    card.style.textShadow = `2px 2px 0 ${p.outline},-2px 2px 0 ${p.outline},2px -2px 0 ${p.outline},-2px -2px 0 ${p.outline}`
+    card.textContent = p.label
+    card.onclick = () => cmPickPreset(p.key)
+    wrap.appendChild(card)
+  })
+}
+window.cmPickPreset = (key) => {
+  cmState.subtitle.preset = key
+  const p = CM_PRESETS.find(x => x.key === key)
+  if (p) { cmState.subtitle.font = p.font; document.getElementById('cm-sub-font').value = p.font }
+  document.querySelectorAll('.cm-sub-preset-card').forEach(c => c.classList.toggle('active', c.dataset.preset === key))
+  cmUpdatePreview()
+}
+
+/* ---- Step 4: shape ---- */
+window.cmPickAspect = (btn) => {
+  document.querySelectorAll('.cm-shape-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  cmState.shape.aspect = btn.dataset.aspect
+  cmUpdatePreview()
+}
+
+/* ---- Step 5: audio ---- */
+window.cmBgTab = (btn, tab) => {
+  document.querySelectorAll('.cm-audio-tab').forEach(t => t.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('cm-bg-library').style.display = tab === 'library' ? '' : 'none'
+  document.getElementById('cm-bg-upload').style.display  = tab === 'upload'  ? '' : 'none'
+  cmState.audio.bgTab = tab
+}
+
+/* ---- Preview pane (right side) ---- */
+function cmUpdatePreview() {
+  const stage = document.getElementById('cm-preview-stage')
+  if (!stage) return
+  stage.dataset.aspect = cmState.shape.aspect
+  stage.style.background = cmState.shape.bg
+  const v = document.getElementById('cm-preview-vid')
+  if (cmState.localPreviewUrl && v.src !== cmState.localPreviewUrl) v.src = cmState.localPreviewUrl
+
+  const sub = document.getElementById('cm-preview-sub')
+  if (sub) {
+    if (cmState.subtitle.enabled) {
+      sub.style.display = ''
+      const preset = CM_PRESETS.find(p => p.key === cmState.subtitle.preset) || CM_PRESETS[4]
+      sub.style.fontFamily = document.getElementById('cm-sub-font')?.value || preset.font
+      sub.style.color = preset.color
+      sub.style.fontSize = ((document.getElementById('cm-sub-size')?.value || 60) / 60 * 1.2) + 'rem'
+      const sc = document.getElementById('cm-sub-stroke-color')?.value || '#000'
+      const sw = +(document.getElementById('cm-sub-stroke-w')?.value || 2)
+      sub.style.textShadow = `${sw}px ${sw}px 0 ${sc},-${sw}px ${sw}px 0 ${sc},${sw}px -${sw}px 0 ${sc},-${sw}px -${sw}px 0 ${sc}`
+      const pos = document.getElementById('cm-sub-position')?.value || 'center'
+      sub.style.top = pos === 'top' ? '8%' : pos === 'center' ? '50%' : 'auto'
+      sub.style.bottom = pos === 'bottom' ? '10%' : 'auto'
+      sub.style.transform = pos === 'center' ? 'translateY(-50%)' : 'none'
+      const text = (document.getElementById('cm-script')?.value || '').slice(0, 60)
+      sub.textContent = text || 'YOUR CAPTIONS HERE'
+    } else sub.style.display = 'none'
+  }
+}
+
+/* ---- Final submit ---- */
+window.cmGenerate = async () => {
+  cmClearError()
+  if (!cmState.fileUrl) { cmShowError('Please upload a video first.'); return }
+  cmState.script = document.getElementById('cm-script').value.trim()
+  if (!cmState.script) { cmShowError('Please write or generate a script.'); cmGoStep(2); return }
+
+  // Snapshot UI state into cmState.audio + cmState.subtitle right before submit.
+  cmState.subtitle.enabled = document.getElementById('cm-sub-enabled').checked
+  cmState.subtitle.font = document.getElementById('cm-sub-font').value
+  cmState.subtitle.size = +document.getElementById('cm-sub-size').value
+  cmState.subtitle.strokeColor = document.getElementById('cm-sub-stroke-color').value
+  cmState.subtitle.strokeWidth = +document.getElementById('cm-sub-stroke-w').value
+  cmState.subtitle.bgColor = document.getElementById('cm-sub-bg-color').value
+  cmState.subtitle.position = document.getElementById('cm-sub-position').value
+  cmState.shape.bg = document.getElementById('cm-shape-bg').value
+  cmState.audio.voiceOn = document.getElementById('cm-vo-on').checked
+  cmState.audio.voiceId = document.getElementById('cm-voice').value
+  cmState.audio.voiceVol = +document.getElementById('cm-vo-vol').value
+  cmState.audio.muteVideo = document.getElementById('cm-mute-vid').checked
+  cmState.audio.videoVol = +document.getElementById('cm-vid-vol').value
+  cmState.audio.bgOn = document.getElementById('cm-bg-on').checked
+  cmState.audio.bgUrl = document.getElementById('cm-bg-lib').value
+  cmState.audio.bgVol = +document.getElementById('cm-bg-vol').value
+
+  // If user picked an uploaded bg music file, push it through /api/upload to
+  // hand the backend a fetchable URL.
+  const bgFile = document.getElementById('cm-bg-file').files[0]
+  if (cmState.audio.bgOn && cmState.audio.bgTab === 'upload' && bgFile) {
+    try {
+      const fd = new FormData(); fd.append('file', bgFile)
+      const r = await api.upload.file(fd)
+      cmState.audio.bgUrl = r.url
+    } catch (e) { cmShowError('BG music upload failed: ' + e.message); return }
+  }
+
+  const payload = {
+    file_url: cmState.fileUrl,
+    trim: cmState.trim,
+    script: cmState.script,
+    subtitle: cmState.subtitle,
+    shape: cmState.shape,
+    audio: cmState.audio,
+  }
+
+  const btn = document.getElementById('cm-final-btn')
+  btn.disabled = true
+  document.getElementById('cm-status').style.display = 'block'
+  document.getElementById('cm-result').style.display = 'none'
+
+  try {
+    const { jobId } = await api.commentary.start(payload)
+    cmState.jobId = jobId
+    cmPoll()
+  } catch (e) {
+    cmShowError(e.message || 'Failed to start job')
+    btn.disabled = false
+  }
+}
+
+async function cmPoll() {
+  clearTimeout(cmState.pollTimer)
+  if (!cmState.jobId) return
+  try {
+    const r = await api.commentary.poll(cmState.jobId)
+    document.getElementById('cm-step-lbl').textContent = r.step || r.status
+    document.getElementById('cm-pct').textContent = (r.progress ?? 0) + '%'
+    document.getElementById('cm-progress').style.width = (r.progress ?? 0) + '%'
+
+    if (r.status === 'done') {
+      document.getElementById('cm-final-btn').disabled = false
+      const blobUrl = await api.commentary.download(cmState.jobId)
+      cmState.downloadUrl = blobUrl
+      document.getElementById('cm-player').src = blobUrl
+      document.getElementById('cm-result').style.display = 'block'
+      return
+    }
+    if (r.status === 'error') {
+      cmShowError(r.error || 'Job failed')
+      document.getElementById('cm-final-btn').disabled = false
+      return
+    }
+    cmState.pollTimer = setTimeout(cmPoll, 3000)
+  } catch (e) {
+    cmShowError(e.message || 'Polling failed')
+    document.getElementById('cm-final-btn').disabled = false
+  }
+}
+window.cmDownload = () => {
+  if (!cmState.downloadUrl) return
+  const a = document.createElement('a')
+  a.href = cmState.downloadUrl; a.download = 'commentary.mp4'
+  document.body.appendChild(a); a.click(); a.remove()
 }
 
 async function cmLoadHelpers() {
-  // Voices
   try {
     const voices = await api.tts.voices()
     const sel = document.getElementById('cm-voice')
     if (sel && sel.children.length <= 1) {
-      voices.slice(0, 40).forEach(v => {
+      voices.slice(0, 60).forEach(v => {
         const o = document.createElement('option')
         o.value = v.id; o.textContent = v.name
         sel.appendChild(o)
       })
     }
   } catch {}
-  // User files
   try {
     const files = await api.upload.list()
     const sel = document.getElementById('cm-file-picker')
@@ -4557,90 +5209,10 @@ async function cmLoadHelpers() {
         })
     }
   } catch {}
+  cmRenderPresets()
+  cmGoStep(1)
 }
 
-function cmShowError(msg) {
-  const el = document.getElementById('cm-error')
-  el.textContent = msg
-  el.style.display = 'block'
-}
-function cmClearError() { document.getElementById('cm-error').style.display = 'none' }
-
-window.cmGenerate = async () => {
-  cmClearError()
-  const url = document.getElementById('cm-url').value.trim()
-  if (!url) { cmShowError('Paste a video URL or pick one from your files.'); return }
-
-  const btn = document.getElementById('cm-generate-btn')
-  btn.disabled = true
-  document.getElementById('cm-status').style.display = 'block'
-  document.getElementById('cm-result').style.display = 'none'
-  document.getElementById('cm-step').textContent = 'Submitting…'
-  document.getElementById('cm-pct').textContent = '0%'
-  document.getElementById('cm-progress').style.width = '0%'
-
-  const voice_id = document.getElementById('cm-voice').value || undefined
-  try {
-    const { jobId } = await api.commentary.start({ file_url: url, style: cmStyle, voice_id })
-    cmJobId = jobId
-    cmPoll()
-  } catch (err) {
-    cmShowError(err.message || 'Failed to start commentary job')
-    btn.disabled = false
-    document.getElementById('cm-status').style.display = 'none'
-  }
-}
-
-async function cmPoll() {
-  clearTimeout(cmPollTimer)
-  if (!cmJobId) return
-  try {
-    const r = await api.commentary.poll(cmJobId)
-    document.getElementById('cm-step').textContent = r.step || r.status
-    document.getElementById('cm-pct').textContent = (r.progress ?? 0) + '%'
-    document.getElementById('cm-progress').style.width = (r.progress ?? 0) + '%'
-
-    if (r.status === 'done') {
-      document.getElementById('cm-generate-btn').disabled = false
-      const blobUrl = await api.commentary.download(cmJobId)
-      cmDownloadUrl = blobUrl
-      document.getElementById('cm-player').src = blobUrl
-      document.getElementById('cm-result').style.display = 'block'
-
-      // Show generated commentary lines so users can see what the AI wrote.
-      const linesEl = document.getElementById('cm-lines')
-      linesEl.innerHTML = ''
-      if (Array.isArray(r.lines)) {
-        r.lines.forEach(l => {
-          const row = document.createElement('div')
-          row.style.padding = '4px 0'
-          row.innerHTML = `<span style="color:var(--a2);font-weight:700">${l.at_sec.toFixed(1)}s</span> &nbsp; ${l.text}`
-          linesEl.appendChild(row)
-        })
-      }
-      return
-    }
-    if (r.status === 'error') {
-      cmShowError(r.error || 'Job failed')
-      document.getElementById('cm-generate-btn').disabled = false
-      return
-    }
-    cmPollTimer = setTimeout(cmPoll, 3000)
-  } catch (err) {
-    cmShowError(err.message || 'Polling failed')
-    document.getElementById('cm-generate-btn').disabled = false
-  }
-}
-
-window.cmDownload = () => {
-  if (!cmDownloadUrl) return
-  const a = document.createElement('a')
-  a.href = cmDownloadUrl
-  a.download = 'commentary.mp4'
-  document.body.appendChild(a); a.click(); a.remove()
-}
-
-// Lazy-load voices + file list the first time the user opens the panel.
 const _origSwitchPanel = window.switchPanel
 if (typeof _origSwitchPanel === 'function') {
   window.switchPanel = (id, btn) => {
