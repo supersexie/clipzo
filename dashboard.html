@@ -1508,7 +1508,7 @@ function populateUser() {
 }
 
 // ── PANELS ───────────────────────────────────────────────────────────────────
-const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', reframe:'AI Reframe', downloader:'Video Downloader', files:'My Files', ranking:'Video Ranking' }
+const titles = { home:'Overview', captions:'AI Captions', voiceover:'AI Voiceover', imagegen:'AI Image Gen', editor:'Video Editor', clipper:'Video Clipper', reframe:'AI Reframe', downloader:'Video Downloader', files:'My Files', ranking:'Video Ranking', commentary:'Video Commentary' }
 window.switchPanel = (id, btn, opts = {}) => {
   if (!titles[id]) id = 'home'
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
