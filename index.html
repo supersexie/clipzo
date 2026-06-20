@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title><span class="brand">CLIPZO</span> — Create Short Form Content Using AI in Seconds</title>
+<title>CLIPZO — Create Short Form Content Using AI in Seconds</title>
 <meta name="description" content="Auto-clip videos, generate voiceovers and captions with AI, edit on a timeline and export ready-to-post — all in your browser." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,14 +17,14 @@
     theme: {
       extend: {
         colors: {
-          base: '#07070f',
-          surface: '#0f0a1e',
-          card: '#130d24',
-          ink: '#f0eeff',
-          muted: '#8b82a8',
-          accent1: '#a855f7',
-          accent2: '#c084fc',
-          accent3: '#e879f9',
+          base: '#000000',
+          surface: '#0a0a0a',
+          card: '#111111',
+          ink: '#ffffff',
+          muted: '#888888',
+          accent1: '#ff0033',
+          accent2: '#ff2244',
+          accent3: '#ff4455',
         },
         fontFamily: {
           display: ['"Geist"', 'sans-serif'],
@@ -49,50 +49,43 @@
 <!-- ============ HEADER ============ -->
 <header id="header" class="sticky top-0 z-40 border-b border-white/5 backdrop-blur-xl bg-base/85 transition-all">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-12 sm:h-14">
-    <!-- Logo -->
     <a href="#" class="flex items-center gap-2 shrink-0">
       <svg width="32" height="32" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="34" height="34" rx="8" fill="#a855f7"/>
-        <circle cx="17" cy="17" r="10" stroke="#111111" stroke-width="2.1" fill="none"/>
-        <line x1="6" y1="13" x2="28" y2="13" stroke="#111111" stroke-width="1.9" stroke-linecap="round"/>
-        <line x1="6" y1="21" x2="28" y2="21" stroke="#111111" stroke-width="1.9" stroke-linecap="round"/>
-        <path d="M14 13 L14 21 L22 17 Z" fill="#111111"/>
+        <rect width="34" height="34" rx="8" fill="#ff0033"/>
+        <circle cx="17" cy="17" r="10" stroke="#000000" stroke-width="2.1" fill="none"/>
+        <line x1="6" y1="13" x2="28" y2="13" stroke="#000000" stroke-width="1.9" stroke-linecap="round"/>
+        <line x1="6" y1="21" x2="28" y2="21" stroke="#000000" stroke-width="1.9" stroke-linecap="round"/>
+        <path d="M14 13 L14 21 L22 17 Z" fill="#000000"/>
       </svg>
       <span style="font-family:'Press Start 2P',monospace;font-size:.7rem;color:#fff;letter-spacing:.05em">CLIPZO</span>
     </a>
 
-    <!-- Nav -->
     <nav class="hidden lg:flex items-center gap-0.5 text-sm font-medium text-muted">
       <a href="#how-it-works" class="px-3 py-1.5 rounded-md hover:bg-white/5 hover:text-white transition-colors">How It Works</a>
       <a href="#features" class="px-3 py-1.5 rounded-md hover:bg-white/5 hover:text-white transition-colors">Features</a>
-      <a href="#showcase" class="px-3 py-1.5 rounded-md hover:bg-white/5 hover:text-white transition-colors">Showcase</a>
       <a href="#testimonials" class="px-3 py-1.5 rounded-md hover:bg-white/5 hover:text-white transition-colors">Reviews</a>
       <a href="#pricing" class="px-3 py-1.5 rounded-md hover:bg-white/5 hover:text-white transition-colors">Pricing</a>
     </nav>
 
-    <!-- CTAs -->
     <div class="hidden md:flex items-center gap-2">
-      <a href="#" class="text-sm font-medium text-muted hover:text-white transition-colors px-3 py-1.5">Login</a>
-      <a href="/dashboard.html" class="btn-lime text-sm px-4 py-2 rounded-lg">Try <span class="brand">CLIPZO</span> →</a>
+      <a href="/dashboard.html" class="text-sm font-medium text-muted hover:text-white transition-colors px-3 py-1.5">Login</a>
+      <a href="/dashboard.html" class="btn-red text-sm px-4 py-2 rounded-lg">Try CLIPZO →</a>
     </div>
 
-    <!-- Mobile toggle -->
     <button id="menuBtn" class="lg:hidden p-2 -mr-2 text-muted">
       <svg id="menuIconOpen" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
       <svg id="menuIconClose" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
   </div>
 
-  <!-- Mobile menu -->
   <div id="mobileMenu" class="hidden lg:hidden border-t border-white/5 bg-base/95 backdrop-blur-xl px-4 py-3 space-y-0.5 text-sm font-medium">
     <a href="#how-it-works" class="block px-3 py-2 rounded-lg hover:bg-white/5">How It Works</a>
     <a href="#features" class="block px-3 py-2 rounded-lg hover:bg-white/5">Features</a>
-    <a href="#formats" class="block px-3 py-2 rounded-lg hover:bg-white/5">Formats</a>
     <a href="#testimonials" class="block px-3 py-2 rounded-lg hover:bg-white/5">Reviews</a>
     <a href="#pricing" class="block px-3 py-2 rounded-lg hover:bg-white/5">Pricing</a>
     <div class="pt-2 mt-1 border-t border-white/5 flex flex-col gap-2">
-      <a href="#" class="text-center px-4 py-2 rounded-full border border-white/10 font-semibold text-muted">Login</a>
-      <a href="/dashboard.html" class="btn-lime text-center py-2 rounded-lg">Try <span class="brand">CLIPZO</span> →</a>
+      <a href="/dashboard.html" class="text-center px-4 py-2 rounded-full border border-white/10 font-semibold text-muted">Login</a>
+      <a href="/dashboard.html" class="btn-red text-center py-2 rounded-lg">Try CLIPZO →</a>
     </div>
   </div>
 </header>
@@ -100,55 +93,32 @@
 <main>
 
 <!-- ============ HERO ============ -->
-<section id="hero" class="px-4 sm:px-6 lg:px-8 pt-6 pb-4 max-w-7xl mx-auto">
-  <div class="reveal hero-card">
-    <div class="hero-left">
-      <span class="hero-eyebrow">AI-POWERED SHORT-FORM VIDEO</span>
-      <h1 class="hero-headline">
-        CREATE MORE.<br/>WORK LESS.<br/>GO VIRAL.
-      </h1>
-      <p class="hero-sub">Auto-clip videos, generate voiceovers and captions with AI, edit on a timeline and export ready-to-post — all in your browser.</p>
-      <div class="hero-actions">
-        <a href="#pricing" class="btn-lime px-6 py-3 rounded-lg font-bold">★ Sign Up Free</a>
-        <a href="#how-it-works" class="hero-link">See how it works ↓</a>
-      </div>
-      <!-- Platform icons -->
-      <div class="hero-platforms">
-        <span class="text-muted text-xs uppercase tracking-widest font-semibold">Works with</span>
-        <div class="flex items-center gap-4 mt-2 text-muted">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" title="TikTok"><path d="M16.6 5.82c-.85-.74-1.36-1.81-1.36-3H12.4v12.6a2.6 2.6 0 1 1-1.83-2.48V9.84a5.78 5.78 0 0 0-1.07-.1A5.9 5.9 0 1 0 15.4 15.6V9.42a7.2 7.2 0 0 0 4.2 1.35V7.6a4.86 4.86 0 0 1-2.99-1.78z"/></svg>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" title="Instagram"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.8" r="1"/></svg>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" title="YouTube"><path d="M21.6 7.2s-.2-1.5-.8-2.1c-.8-.8-1.7-.8-2.1-.9C15.9 4 12 4 12 4s-3.9 0-6.7.2c-.4.1-1.3.1-2.1.9-.6.6-.8 2.1-.8 2.1S2.2 9 2.2 10.7v1.6c0 1.7.2 3.5.2 3.5s.2 1.5.8 2.1c.8.8 1.8.8 2.3.9 1.7.2 7.5.2 7.5.2s3.9 0 6.7-.2c.4-.1 1.3-.1 2.1-.9.6-.6.8-2.1.8-2.1s.2-1.7.2-3.5v-1.6c0-1.7-.2-3.5-.2-3.5zM9.9 14.6V8.9l5.4 2.9-5.4 2.8z"/></svg>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" title="Facebook"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06C2 17.06 5.66 21.2 10.44 22v-7.02H7.9v-2.92h2.54V9.7c0-2.5 1.49-3.89 3.78-3.89 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.92h-2.34V22C18.34 21.2 22 17.06 22 12.06z"/></svg>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" title="X"><path d="M18.9 2H22l-7 8 7.6 12h-6.1l-4.8-7-5.5 7H2l7.5-8.6L2 2h6.2l4.4 6.4L18.9 2z"/></svg>
-        </div>
-      </div>
+<section id="hero" class="px-4 sm:px-6 lg:px-8 pt-16 pb-12 max-w-5xl mx-auto text-center">
+  <div class="reveal">
+    <span class="hero-eyebrow">AI-POWERED SHORT-FORM VIDEO</span>
+    <h1 class="hero-headline-center">
+      CREATE MORE.<br/>WORK LESS.<br/><span class="hero-accent">GO VIRAL.</span>
+    </h1>
+    <p class="hero-sub-center">Auto-clip videos, generate voiceovers and captions with AI, edit on a timeline and export ready-to-post — all in your browser.</p>
+    <div class="hero-actions-center">
+      <a href="#pricing" class="btn-red px-7 py-3.5 rounded-lg font-bold">★ Sign Up Free</a>
+      <a href="#how-it-works" class="hero-link">See how it works ↓</a>
     </div>
-    <div class="hero-right">
-      <div class="hero-video-wrap">
-        <video class="hero-video" autoplay muted loop playsinline preload="auto">
-          <source src="assets/IMG_0607.MP4" type="video/mp4">
-        </video>
-        <!-- Caption overlay -->
-        <div style="position:absolute;bottom:60px;left:12px;right:12px;z-index:2;">
-          <div class="caption-bar">"AI-generated content that goes viral every time"</div>
-        </div>
-        <!-- Floating badges -->
-        <div class="hero-badge hero-badge-top">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-          AI found 8 highlights
-        </div>
-        <div class="hero-badge hero-badge-bot">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          Export ready in 9 min
-        </div>
+    <div class="hero-platforms-center">
+      <span class="text-muted text-xs uppercase tracking-widest font-semibold">Works with</span>
+      <div class="flex items-center justify-center gap-5 mt-3 text-muted">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" title="TikTok"><path d="M16.6 5.82c-.85-.74-1.36-1.81-1.36-3H12.4v12.6a2.6 2.6 0 1 1-1.83-2.48V9.84a5.78 5.78 0 0 0-1.07-.1A5.9 5.9 0 1 0 15.4 15.6V9.42a7.2 7.2 0 0 0 4.2 1.35V7.6a4.86 4.86 0 0 1-2.99-1.78z"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" title="Instagram"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.8" r="1"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" title="YouTube"><path d="M21.6 7.2s-.2-1.5-.8-2.1c-.8-.8-1.7-.8-2.1-.9C15.9 4 12 4 12 4s-3.9 0-6.7.2c-.4.1-1.3.1-2.1.9-.6.6-.8 2.1-.8 2.1S2.2 9 2.2 10.7v1.6c0 1.7.2 3.5.2 3.5s.2 1.5.8 2.1c.8.8 1.8.8 2.3.9 1.7.2 7.5.2 7.5.2s3.9 0 6.7-.2c.4-.1 1.3-.1 2.1-.9.6-.6.8-2.1.8-2.1s.2-1.7.2-3.5v-1.6c0-1.7-.2-3.5-.2-3.5zM9.9 14.6V8.9l5.4 2.9-5.4 2.8z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" title="Facebook"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06C2 17.06 5.66 21.2 10.44 22v-7.02H7.9v-2.92h2.54V9.7c0-2.5 1.49-3.89 3.78-3.89 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.92h-2.34V22C18.34 21.2 22 17.06 22 12.06z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" title="X"><path d="M18.9 2H22l-7 8 7.6 12h-6.1l-4.8-7-5.5 7H2l7.5-8.6L2 2h6.2l4.4 6.4L18.9 2z"/></svg>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ STATS STRIP ============ -->
-<section class="px-4 sm:px-6 lg:px-8 pb-4 max-w-7xl mx-auto">
+<section class="px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
   <div class="reveal stats-strip">
     <div class="stat-item">
       <div class="stat-val">100K+</div>
@@ -183,7 +153,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14"/></svg>
       </div>
       <h3 class="step-block-title">Upload Your Footage</h3>
-      <p class="step-block-desc">Drag in raw clips, long-form videos, or start from a script — <span class="brand">CLIPZO</span> handles the rest.</p>
+      <p class="step-block-desc">Drag in raw clips, long-form videos, or start from a script — CLIPZO handles the rest.</p>
     </div>
     <div class="step-block">
       <div class="step-block-num">02</div>
@@ -211,42 +181,6 @@
     <p class="text-muted text-sm mt-1">Everything you need to go viral — in one browser-based editor.</p>
   </div>
 
-  <!-- Large featured card: Project Editor -->
-  <div class="reveal feat-spotlight mb-3">
-    <div class="feat-spotlight-body">
-      <span class="tool-cat-badge">EDITOR</span>
-      <h2 class="feat-spotlight-title">PROJECT EDITOR BUILT<br/>FOR SHORT-FORM</h2>
-      <p class="feat-spotlight-desc">A full timeline editor built specifically for short-form pacing. Cut, arrange, and polish your clips with frame-level precision before exporting.</p>
-      <a href="#pricing" class="btn-lime inline-flex px-5 py-2.5 rounded-lg font-bold text-sm mt-4">Start Editing Free →</a>
-    </div>
-    <div class="feat-spotlight-visual">
-      <div class="feat-editor-chrome">
-        <span class="w-2.5 h-2.5 rounded-full bg-red-500/50"></span>
-        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></span>
-        <span class="w-2.5 h-2.5 rounded-full bg-orange-500/50"></span>
-      </div>
-      <div class="feat-editor-tracks">
-        <div class="feat-track-row">
-          <span class="feat-track-lbl">V1</span>
-          <div class="feat-track-bg"><div class="feat-track-fill" style="width:80%; background:linear-gradient(90deg,#a855f7,#c084fc)"></div></div>
-        </div>
-        <div class="feat-track-row">
-          <span class="feat-track-lbl">V2</span>
-          <div class="feat-track-bg"><div class="feat-track-fill" style="width:55%; background:rgba(255,145,172,0.4); margin-left:15%"></div></div>
-        </div>
-        <div class="feat-track-row">
-          <span class="feat-track-lbl">A1</span>
-          <div class="feat-track-bg"><div class="feat-track-fill" style="width:90%; background:rgba(255,145,172,0.25)"></div></div>
-        </div>
-        <div class="feat-track-row">
-          <span class="feat-track-lbl">CC</span>
-          <div class="feat-track-bg"><div class="feat-track-fill" style="width:75%; background:rgba(255,145,172,0.18)"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tool grid: row 1 -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
     <div class="reveal tool-card">
       <span class="tool-cat-label">AUTOMATION</span>
@@ -282,7 +216,6 @@
     </div>
   </div>
 
-  <!-- Tool grid: row 2 -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
     <div class="reveal tool-card">
       <span class="tool-cat-label">LAYOUT</span>
@@ -319,7 +252,6 @@
     </div>
   </div>
 
-  <!-- Tool grid: row 3 -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
     <div class="reveal tool-card">
       <span class="tool-cat-label">AI VOICE</span>
@@ -357,59 +289,11 @@
   </div>
 </section>
 
-<!-- ============ FORMATS CAROUSEL ============ -->
-<section id="formats" class="py-10 border-t border-white/5 overflow-hidden">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 reveal section-head mb-8">
-    <p class="section-cat-title">SUPPORTED FORMATS</p>
-    <p class="text-muted text-sm mt-1">Your video creation process — now on autopilot, for every platform.</p>
-  </div>
-
-  <div class="marquee-wrap reveal">
-    <div class="marquee-track">
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0600.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Reels</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0603.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">YouTube</span></div>
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0601.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">TikTok</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0605.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Desktop</span></div>
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0602.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Shorts</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0558.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Podcast Clip</span></div>
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0562.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Reels</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0552.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">YouTube</span></div>
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0564.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">TikTok</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0578.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Desktop</span></div>
-      <div class="format-card portrait"><img class="format-card-img" src="assets/IMG_0565.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Shorts</span></div>
-      <div class="format-card landscape"><img class="format-card-img" src="assets/IMG_0576.PNG" alt="" loading="lazy"/><div class="format-card-overlay"></div><span class="format-tag">Podcast Clip</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ CREATOR SHOWCASE ============ -->
-<section id="showcase" class="px-4 sm:px-6 lg:px-8 py-10 max-w-7xl mx-auto border-t border-white/5">
-  <div class="reveal section-head mb-8">
-    <p class="section-cat-title">CREATOR SHOWCASE</p>
-    <p class="text-muted text-sm mt-1">Real AI content made by real creators using <span class="brand">CLIPZO</span>.</p>
-  </div>
-
-  <!-- Video grid -->
-  <div class="reveal showcase-video-strip">
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0606.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0607.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0608.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0614.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0615.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0593.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0594.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0595.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0596.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0597.MP4" type="video/mp4"></video></div>
-    <div class="showcase-video-item"><video autoplay muted loop playsinline preload="none"><source src="assets/IMG_0598.MP4" type="video/mp4"></video></div>
-  </div>
-</section>
-
 <!-- ============ BEFORE / AFTER ============ -->
 <section class="px-4 sm:px-6 lg:px-8 py-10 max-w-7xl mx-auto border-t border-white/5">
   <div class="reveal section-head mb-8">
     <p class="section-cat-title">THE DIFFERENCE</p>
-    <p class="text-muted text-sm mt-1">Before and after switching to <span class="brand">CLIPZO</span>.</p>
+    <p class="text-muted text-sm mt-1">Before and after switching to CLIPZO.</p>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -424,7 +308,7 @@
       </ul>
     </div>
     <div class="reveal compare-card compare-after">
-      <h3 class="compare-title" style="color: #c084fc">With <span class="brand">CLIPZO</span></h3>
+      <h3 class="compare-title" style="color: #ff2244">With CLIPZO</h3>
       <ul class="compare-list">
         <li><span class="compare-icon icon-check">✓</span> Videos finished in minutes</li>
         <li><span class="compare-icon icon-check">✓</span> Instant AI captions & voice</li>
@@ -445,31 +329,27 @@
 
   <div class="marquee-wrap reveal mb-3">
     <div class="marquee-track">
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">T</span><div><p class="t-name">Tasha</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"<span class="brand">CLIPZO</span> cut my editing time from hours to minutes. I post daily now."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">M</span><div><p class="t-name">Mick</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The auto-captions alone are worth the price. Game changer."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">J</span><div><p class="t-name">Jen</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"My reach tripled once I started posting consistently with <span class="brand">CLIPZO</span>."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">B</span><div><p class="t-name">Brandon</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I don't even show my face — AI voiceovers carry the whole video."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">D</span><div><p class="t-name">Dave</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"From raw footage to finished clip in under 10 minutes. Insane."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">T</span><div><p class="t-name">Tasha</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"<span class="brand">CLIPZO</span> cut my editing time from hours to minutes. I post daily now."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">M</span><div><p class="t-name">Mick</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The auto-captions alone are worth the price. Game changer."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">J</span><div><p class="t-name">Jen</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"My reach tripled once I started posting consistently with <span class="brand">CLIPZO</span>."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">B</span><div><p class="t-name">Brandon</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I don't even show my face — AI voiceovers carry the whole video."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">D</span><div><p class="t-name">Dave</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"From raw footage to finished clip in under 10 minutes. Insane."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">T</span><div><p class="t-name">Tasha</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"CLIPZO cut my editing time from hours to minutes. I post daily now."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff2244">M</span><div><p class="t-name">Mick</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The auto-captions alone are worth the price. Game changer."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">J</span><div><p class="t-name">Jen</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"My reach tripled once I started posting consistently with CLIPZO."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">B</span><div><p class="t-name">Brandon</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I don't even show my face — AI voiceovers carry the whole video."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff2244">D</span><div><p class="t-name">Dave</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"From raw footage to finished clip in under 10 minutes. Insane."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">T</span><div><p class="t-name">Tasha</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"CLIPZO cut my editing time from hours to minutes. I post daily now."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff2244">M</span><div><p class="t-name">Mick</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The auto-captions alone are worth the price. Game changer."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">J</span><div><p class="t-name">Jen</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"My reach tripled once I started posting consistently with CLIPZO."</p></div>
     </div>
   </div>
 
   <div class="marquee-wrap reveal marquee-reverse">
     <div class="marquee-track">
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">L</span><div><p class="t-name">Leo</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Split screen layouts make my gaming clips look so much more pro."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">S</span><div><p class="t-name">Sahil</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The AI ranking told me exactly which clip to post first — it blew up."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">N</span><div><p class="t-name">Nia</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Brand kits keep every video on-brand without extra effort."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">M</span><div><p class="t-name">Marina</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I went from 1 video a week to 5 a day. Consistency is finally easy."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">K</span><div><p class="t-name">Kevin</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Best investment for my channel this year, hands down."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">L</span><div><p class="t-name">Leo</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Split screen layouts make my gaming clips look so much more pro."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">S</span><div><p class="t-name">Sahil</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The AI ranking told me exactly which clip to post first — it blew up."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#c084fc;color:#f0eeff">N</span><div><p class="t-name">Nia</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Brand kits keep every video on-brand without extra effort."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">M</span><div><p class="t-name">Marina</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I went from 1 video a week to 5 a day. Consistency is finally easy."</p></div>
-      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#a855f7">K</span><div><p class="t-name">Kevin</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Best investment for my channel this year, hands down."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">L</span><div><p class="t-name">Leo</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Split screen layouts make my gaming clips look so much more pro."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">S</span><div><p class="t-name">Sahil</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The AI ranking told me exactly which clip to post first — it blew up."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff2244">N</span><div><p class="t-name">Nia</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Brand kits keep every video on-brand without extra effort."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">M</span><div><p class="t-name">Marina</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"I went from 1 video a week to 5 a day. Consistency is finally easy."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">K</span><div><p class="t-name">Kevin</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Best investment for my channel this year, hands down."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">L</span><div><p class="t-name">Leo</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Split screen layouts make my gaming clips look so much more pro."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff0033">S</span><div><p class="t-name">Sahil</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"The AI ranking told me exactly which clip to post first — it blew up."</p></div>
+      <div class="testimonial-card"><div class="t-head"><span class="t-avatar" style="background:#ff2244">N</span><div><p class="t-name">Nia</p><p class="t-stars">★★★★★</p></div></div><p class="t-quote">"Brand kits keep every video on-brand without extra effort."</p></div>
     </div>
   </div>
 </section>
@@ -516,7 +396,7 @@
         <span class="price-period">/mo</span>
       </div>
       <p class="price-sub" data-sub>Billed monthly</p>
-      <a href="#" class="btn-lime w-full mt-6 text-center py-3 rounded-xl font-bold plan-cta">Get Started</a>
+      <a href="#" class="btn-red w-full mt-6 text-center py-3 rounded-xl font-bold plan-cta">Get Started</a>
       <ul class="price-features">
         <li>90 videos / month</li>
         <li>500 credits</li>
@@ -558,10 +438,10 @@
 
   <div class="max-w-3xl space-y-2">
     <div class="reveal faq-item">
-      <button class="faq-question">Do I need video editing experience to use <span class="brand">CLIPZO</span>?
+      <button class="faq-question">Do I need video editing experience to use CLIPZO?
         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
       </button>
-      <div class="faq-answer"><p>Not at all. <span class="brand">CLIPZO</span> is designed so anyone can create polished, ready-to-post videos using AI-powered automation and simple drag-and-drop tools — no prior editing skills required.</p></div>
+      <div class="faq-answer"><p>Not at all. CLIPZO is designed so anyone can create polished, ready-to-post videos using AI-powered automation and simple drag-and-drop tools — no prior editing skills required.</p></div>
     </div>
     <div class="reveal faq-item">
       <button class="faq-question">How long does it take to create a video?
@@ -573,13 +453,13 @@
       <button class="faq-question">Can I create videos without showing my face?
         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
       </button>
-      <div class="faq-answer"><p>Yes! <span class="brand">CLIPZO</span> supports fully faceless workflows — generate videos from AI voiceovers, stock or AI-generated visuals, scripts, and on-screen text alone.</p></div>
+      <div class="faq-answer"><p>Yes! CLIPZO supports fully faceless workflows — generate videos from AI voiceovers, stock or AI-generated visuals, scripts, and on-screen text alone.</p></div>
     </div>
     <div class="reveal faq-item">
-      <button class="faq-question">Which platforms is <span class="brand">CLIPZO</span> optimized for?
+      <button class="faq-question">Which platforms is CLIPZO optimized for?
         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
       </button>
-      <div class="faq-answer"><p><span class="brand">CLIPZO</span> exports are optimized for TikTok, Instagram Reels, YouTube Shorts, Facebook, and more — with the right aspect ratios, captions, and pacing for each platform.</p></div>
+      <div class="faq-answer"><p>CLIPZO exports are optimized for TikTok, Instagram Reels, YouTube Shorts, Facebook, and more — with the right aspect ratios, captions, and pacing for each platform.</p></div>
     </div>
     <div class="reveal faq-item">
       <button class="faq-question">Is there a limit to how many videos I can create?
@@ -588,16 +468,10 @@
       <div class="faq-answer"><p>Each plan includes a monthly video and credit allowance — from 30 videos on Starter up to 200 on Business — with the option to upgrade anytime as you scale.</p></div>
     </div>
     <div class="reveal faq-item">
-      <button class="faq-question">Does <span class="brand">CLIPZO</span> offer AI voiceovers?
+      <button class="faq-question">Does CLIPZO offer AI voiceovers?
         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="faq-answer"><p>Yes — every plan includes access to 35+ realistic ElevenLabs voices across multiple languages and tones, ready to narrate your videos instantly.</p></div>
-    </div>
-    <div class="reveal faq-item">
-      <button class="faq-question">Can <span class="brand">CLIPZO</span> help generate scripts and ideas?
-        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="faq-answer"><p>Absolutely. Built-in AI script and idea generation helps you go from a blank page to a ready-to-record (or fully AI-generated) video in seconds.</p></div>
     </div>
     <div class="reveal faq-item">
       <button class="faq-question">Can I cancel my subscription anytime?
@@ -606,16 +480,10 @@
       <div class="faq-answer"><p>Yes, you can cancel or change your plan at any time from your account settings — no long-term contracts or hidden fees.</p></div>
     </div>
     <div class="reveal faq-item">
-      <button class="faq-question">Who owns the content I create with <span class="brand">CLIPZO</span>?
+      <button class="faq-question">Who owns the content I create with CLIPZO?
         <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="faq-answer"><p>You retain full ownership and rights to every video you create. Business plans additionally include extended commercial usage rights for team and client work.</p></div>
-    </div>
-    <div class="reveal faq-item">
-      <button class="faq-question">What if I need help or run into an issue?
-        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="faq-answer"><p>Our support team is available via chat and email, and our Discord community is full of fellow creators and tips to help you get unstuck fast.</p></div>
     </div>
   </div>
 </section>
@@ -633,7 +501,7 @@
         <div class="cta-stat"><div class="cta-stat-num">12K+</div><div class="cta-stat-lbl">Creators</div></div>
         <div class="cta-stat"><div class="cta-stat-num">340%</div><div class="cta-stat-lbl">Faster</div></div>
       </div>
-      <a href="#pricing" class="btn-lime px-7 py-3 rounded-lg font-bold text-base mt-6 inline-flex">Sign Up Free →</a>
+      <a href="#pricing" class="btn-red px-7 py-3 rounded-lg font-bold text-base mt-6 inline-flex">Sign Up Free →</a>
     </div>
   </div>
 </section>
@@ -647,13 +515,13 @@
       <div class="lg:col-span-2">
         <a href="#" class="flex items-center gap-2 mb-4">
           <svg width="32" height="32" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="34" height="34" rx="8" fill="#a855f7"/>
-            <circle cx="17" cy="17" r="10" stroke="#111111" stroke-width="2.1" fill="none"/>
-            <line x1="6" y1="13" x2="28" y2="13" stroke="#111111" stroke-width="1.9" stroke-linecap="round"/>
-            <line x1="6" y1="21" x2="28" y2="21" stroke="#111111" stroke-width="1.9" stroke-linecap="round"/>
-            <path d="M14 13 L14 21 L22 17 Z" fill="#111111"/>
+            <rect width="34" height="34" rx="8" fill="#ff0033"/>
+            <circle cx="17" cy="17" r="10" stroke="#000000" stroke-width="2.1" fill="none"/>
+            <line x1="6" y1="13" x2="28" y2="13" stroke="#000000" stroke-width="1.9" stroke-linecap="round"/>
+            <line x1="6" y1="21" x2="28" y2="21" stroke="#000000" stroke-width="1.9" stroke-linecap="round"/>
+            <path d="M14 13 L14 21 L22 17 Z" fill="#000000"/>
           </svg>
-          <span class="text-lg font-extrabold tracking-tight text-white"><span class="brand">CLIPZO</span></span>
+          <span class="text-lg font-extrabold tracking-tight text-white">CLIPZO</span>
         </a>
         <p class="text-muted text-sm max-w-sm leading-relaxed mb-5">
           The AI-powered short-form video editor that helps creators go from idea to ready-to-post in minutes.
@@ -691,8 +559,8 @@
       </div>
     </div>
     <div class="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
-      <p><span class="brand">CLIPZO</span> AI LLC, Wyoming, USA</p>
-      <p>© 2026 <span class="brand">CLIPZO</span> AI LLC. All rights reserved.</p>
+      <p>CLIPZO AI LLC, Wyoming, USA</p>
+      <p>© 2026 CLIPZO AI LLC. All rights reserved.</p>
     </div>
   </div>
 </footer>
@@ -701,8 +569,6 @@
 <script type="module">
   import { api } from './api.js'
 
-  // Monthly/annual toggle: swap displayed prices + remember the choice so the
-  // CTA sends the buyer to the matching Whop checkout.
   let interval = 'monthly'
   const monthlyBtn = document.getElementById('toggleMonthly')
   const annualBtn = document.getElementById('toggleAnnual')
@@ -723,7 +589,6 @@
   monthlyBtn?.addEventListener('click', () => applyInterval('monthly'))
   annualBtn?.addEventListener('click', () => applyInterval('yearly'))
 
-  // Each plan CTA -> the right Whop checkout for that tier + interval.
   document.querySelectorAll('.price-card').forEach((card) => {
     const tier = card.dataset.tier
     const cta = card.querySelector('.plan-cta')
