@@ -1493,7 +1493,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
             <!-- STEP 2: SCRIPT -->
             <div class="cm-pane" data-pane="2" style="display:none">
-              <textarea id="cm-script" class="cm-script-area" placeholder="Enter your script here or use AI Script to generate…"></textarea>
+              <textarea id="cm-script" class="cm-script-area" placeholder="Enter your script here or use AI Script to generate…" oninput="cmUpdatePreview()"></textarea>
 
               <div class="cm-grid-3" style="margin-top:14px">
                 <div>
@@ -1556,9 +1556,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
                   <label class="vr-mini-label" style="margin-top:14px">Background Color</label>
                   <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
-                    <input type="color" id="cm-sub-bg-color" value="#000000" class="cm-color" oninput="cmUpdatePreview()"/>
-                    <input type="text" id="cm-sub-bg-hex" value="#000000" class="cm-input" style="flex:1;background:none;border:none;padding:11px 0"/>
+                    <input type="color" id="cm-sub-bg-color" value="#000000" class="cm-color" oninput="cmSyncBgHex(this.value)"/>
+                    <input type="text" id="cm-sub-bg-hex" value="#000000" class="cm-input" style="flex:1;background:none;border:none;padding:11px 0" oninput="cmSyncBgColor(this.value)"/>
                   </div>
+                  <label class="vr-toggle" style="margin-top:8px"><input type="checkbox" id="cm-sub-bg-on" onchange="cmUpdatePreview()"/><span class="sw"></span>Show background box behind text</label>
 
                   <label class="vr-mini-label" style="margin-top:14px">Subtitle Position</label>
                   <select id="cm-sub-position" class="cm-input" onchange="cmUpdatePreview()">
@@ -5060,34 +5061,71 @@ window.cmBgTab = (btn, tab) => {
   cmState.audio.bgTab = tab
 }
 
+window.cmSyncBgHex = (val) => {
+  const hex = document.getElementById('cm-sub-bg-hex')
+  if (hex) hex.value = val
+  cmUpdatePreview()
+}
+window.cmSyncBgColor = (val) => {
+  if (!/^#[0-9a-f]{6}$/i.test(val)) return cmUpdatePreview()
+  const c = document.getElementById('cm-sub-bg-color')
+  if (c) c.value = val
+  cmUpdatePreview()
+}
+
 /* ---- Preview pane (right side) ---- */
 function cmUpdatePreview() {
   const stage = document.getElementById('cm-preview-stage')
   if (!stage) return
-  stage.dataset.aspect = cmState.shape.aspect
-  stage.style.background = cmState.shape.bg
+  const aspect = cmState.shape?.aspect || '9:16'
+  stage.dataset.aspect = aspect
+  stage.style.background = cmState.shape?.bg || '#000'
   const v = document.getElementById('cm-preview-vid')
   if (cmState.localPreviewUrl && v.src !== cmState.localPreviewUrl) v.src = cmState.localPreviewUrl
 
   const sub = document.getElementById('cm-preview-sub')
-  if (sub) {
-    if (cmState.subtitle.enabled) {
-      sub.style.display = ''
-      const preset = CM_PRESETS.find(p => p.key === cmState.subtitle.preset) || CM_PRESETS[4]
-      sub.style.fontFamily = document.getElementById('cm-sub-font')?.value || preset.font
-      sub.style.color = preset.color
-      sub.style.fontSize = ((document.getElementById('cm-sub-size')?.value || 60) / 60 * 1.2) + 'rem'
-      const sc = document.getElementById('cm-sub-stroke-color')?.value || '#000'
-      const sw = +(document.getElementById('cm-sub-stroke-w')?.value || 2)
-      sub.style.textShadow = `${sw}px ${sw}px 0 ${sc},-${sw}px ${sw}px 0 ${sc},${sw}px -${sw}px 0 ${sc},-${sw}px -${sw}px 0 ${sc}`
-      const pos = document.getElementById('cm-sub-position')?.value || 'center'
-      sub.style.top = pos === 'top' ? '8%' : pos === 'center' ? '50%' : 'auto'
-      sub.style.bottom = pos === 'bottom' ? '10%' : 'auto'
-      sub.style.transform = pos === 'center' ? 'translateY(-50%)' : 'none'
-      const text = (document.getElementById('cm-script')?.value || '').slice(0, 60)
-      sub.textContent = text || 'YOUR CAPTIONS HERE'
-    } else sub.style.display = 'none'
-  }
+  if (!sub) return
+
+  const enabled = document.getElementById('cm-sub-enabled')?.checked ?? true
+  if (!enabled) { sub.style.display = 'none'; return }
+  sub.style.display = ''
+
+  // Pull live values from the DOM so the preview reflects every keystroke.
+  const presetKey = cmState.subtitle?.preset || 'bangers'
+  const preset = CM_PRESETS.find(p => p.key === presetKey) || CM_PRESETS[4]
+  const font   = document.getElementById('cm-sub-font')?.value     || preset.font
+  const size   = +(document.getElementById('cm-sub-size')?.value   || 60)
+  const sc     = document.getElementById('cm-sub-stroke-color')?.value || '#000'
+  const sw     = +(document.getElementById('cm-sub-stroke-w')?.value || 2)
+  const bgCol  = document.getElementById('cm-sub-bg-color')?.value || '#000'
+  const bgOn   = document.getElementById('cm-sub-bg-on')?.checked  || false
+  const pos    = document.getElementById('cm-sub-position')?.value || 'center'
+
+  sub.style.fontFamily = font
+  sub.style.color = preset.color
+  // Scale the preview font roughly proportional to the stage width so the
+  // slider visibly changes size in the small preview, not just on the final
+  // export. 60 in the slider ≈ 1.2rem here.
+  sub.style.fontSize = Math.max(0.6, (size / 60) * 1.2) + 'rem'
+  sub.style.textShadow = `${sw}px ${sw}px 0 ${sc},-${sw}px ${sw}px 0 ${sc},${sw}px -${sw}px 0 ${sc},-${sw}px -${sw}px 0 ${sc}`
+  sub.style.padding = bgOn ? '4px 10px' : '0'
+  sub.style.background = bgOn ? bgCol : 'transparent'
+  sub.style.borderRadius = bgOn ? '4px' : '0'
+  sub.style.display = ''
+
+  // Position via top/bottom + transform so it sits cleanly in the stage box.
+  sub.style.left = '6%'; sub.style.right = '6%'
+  sub.style.width = 'auto'
+  if (pos === 'top') { sub.style.top = '8%'; sub.style.bottom = 'auto'; sub.style.transform = 'none' }
+  else if (pos === 'center') { sub.style.top = '50%'; sub.style.bottom = 'auto'; sub.style.transform = 'translateY(-50%)' }
+  else { sub.style.top = 'auto'; sub.style.bottom = '10%'; sub.style.transform = 'none' }
+
+  // Use the first ~12 words of the actual script so users see their copy
+  // styled the way it'll burn into the final video.
+  const txt = (document.getElementById('cm-script')?.value || '').trim()
+  sub.textContent = txt
+    ? txt.split(/\s+/).slice(0, 12).join(' ')
+    : 'YOUR CAPTIONS HERE'
 }
 
 /* ---- Final submit ---- */
