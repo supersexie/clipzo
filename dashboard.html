@@ -267,7 +267,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .cm-or-row{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
 .cm-or-row::before,.cm-or-row::after{content:'';flex:1;height:1px;background:var(--border)}
 
-.cm-source-vid{width:100%;max-height:280px;border-radius:10px;background:#000;object-fit:contain}
+.cm-source-vid{display:block;width:auto;height:380px;max-height:60vh;aspect-ratio:9/16;border-radius:10px;background:#000;object-fit:contain;margin:0 auto}
 .cm-trim-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:14px}
 .cm-trim-tag{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:.78rem}
 .cm-trim-tag .dot{width:8px;height:8px;border-radius:50%}
@@ -1449,7 +1449,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                 <label for="cm-file-input" class="cm-drop-zone">
                   <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14"/></svg>
                   <div class="cm-drop-title">Drop a video or click to upload</div>
-                  <div class="cm-drop-sub">MP4 / MOV / WebM &nbsp;·&nbsp; up to 300 MB</div>
+                  <div class="cm-drop-sub">MP4 / MOV / WebM &nbsp;·&nbsp; up to 50 MB</div>
                 </label>
                 <input type="file" id="cm-file-input" accept="video/*" style="display:none" onchange="cmHandleFile(this.files[0])"/>
 
@@ -4906,9 +4906,17 @@ function cmClearError() {
 }
 
 /* ---- Step 1: upload + trim ---- */
+const CM_MAX_BYTES = 50 * 1024 * 1024
 window.cmHandleFile = async (file) => {
   if (!file) return
   cmClearError()
+  if (file.size > CM_MAX_BYTES) {
+    const mb = (file.size / (1024 * 1024)).toFixed(1)
+    cmShowError(`File is ${mb} MB — the limit is 50 MB. Trim or compress the video first.`)
+    const inp = document.getElementById('cm-file-input')
+    if (inp) inp.value = ''
+    return
+  }
   cmState.file = file
   cmState.localPreviewUrl = URL.createObjectURL(file)
 
