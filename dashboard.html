@@ -4922,18 +4922,54 @@ window.cmHandleFile = async (file) => {
   } catch (e) { console.warn('upload failed', e.message) }
   cmAttachVideo(cmState.localPreviewUrl)
 }
+const CM_PLATFORM_RE = /youtube\.com|youtu\.be|tiktok\.com|instagram\.com|twitter\.com|x\.com|reddit\.com|facebook\.com/i
+
 window.cmSubmitUrl = () => {
   const url = document.getElementById('cm-url-input').value.trim()
   if (!url) return
   cmState.fileUrl = url
   cmState.localPreviewUrl = url
-  cmAttachVideo(url)
+  if (CM_PLATFORM_RE.test(url)) cmAttachPlatformLink(url)
+  else cmAttachVideo(url)
 }
 window.cmPickFile = (url) => {
   if (!url) return
   cmState.fileUrl = url
   cmState.localPreviewUrl = url
-  cmAttachVideo(url)
+  if (CM_PLATFORM_RE.test(url)) cmAttachPlatformLink(url)
+  else cmAttachVideo(url)
+}
+
+// Platform URLs (YouTube/TikTok/IG/X/Reddit/FB) can't be played directly by a
+// <video> tag, but the backend will yt-dlp them at generate time. Show a card
+// so the user knows the link was accepted, and pick a sensible default trim
+// length so they can proceed through the wizard.
+function cmAttachPlatformLink(url) {
+  document.getElementById('cm-uploader').style.display = 'none'
+  document.getElementById('cm-uploaded').style.display = ''
+  const player = document.getElementById('cm-source-player')
+  player.removeAttribute('src')
+  player.load?.()
+  player.style.display = 'none'
+
+  // Render a placeholder card in the spot the video would have occupied.
+  let placeholder = document.getElementById('cm-platform-card')
+  if (!placeholder) {
+    placeholder = document.createElement('div')
+    placeholder.id = 'cm-platform-card'
+    placeholder.style.cssText = 'width:100%;padding:36px 18px;background:var(--surface);border:1px dashed var(--border);border-radius:12px;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.6'
+    player.parentNode.insertBefore(placeholder, player)
+  }
+  const host = (() => { try { return new URL(url).hostname.replace('www.', '') } catch { return 'link' } })()
+  placeholder.innerHTML = `<div style="font-size:1.1rem;color:#fff;font-weight:700;margin-bottom:6px">Link from ${host} loaded</div>
+    <div>In-browser preview isn't available for platform links — the video will be downloaded at generate time.</div>
+    <div style="margin-top:8px;font-size:.75rem;color:#666;word-break:break-all">${url}</div>`
+  placeholder.style.display = ''
+
+  cmState.duration = 60
+  cmState.trim = { start: 0, end: 60 }
+  cmRenderTrim()
+  cmUpdatePreview()
 }
 window.cmReupload = () => {
   cmState.file = null; cmState.fileUrl = null; cmState.localPreviewUrl = null
@@ -4943,13 +4979,20 @@ window.cmReupload = () => {
   document.getElementById('cm-url-input').value = ''
   document.getElementById('cm-file-picker').value = ''
   document.getElementById('cm-file-input').value = ''
+  const ph = document.getElementById('cm-platform-card')
+  if (ph) ph.style.display = 'none'
+  const player = document.getElementById('cm-source-player')
+  if (player) { player.removeAttribute('src'); player.load?.(); player.style.display = '' }
   cmUpdatePreview()
 }
 
 function cmAttachVideo(src) {
   document.getElementById('cm-uploader').style.display = 'none'
   document.getElementById('cm-uploaded').style.display = ''
+  const ph = document.getElementById('cm-platform-card')
+  if (ph) ph.style.display = 'none'
   const v = document.getElementById('cm-source-player')
+  v.style.display = ''
   v.src = src
   v.onloadedmetadata = () => {
     const dur = Number.isFinite(v.duration) ? v.duration : 0
