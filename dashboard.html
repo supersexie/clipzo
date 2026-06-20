@@ -1627,7 +1627,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
                   <div class="cm-divider"></div>
                   <div style="display:flex;justify-content:space-between;align-items:center">
                     <strong style="font-size:.9rem">Video</strong>
-                    <label class="vr-toggle" style="margin:0"><input type="checkbox" id="cm-mute-vid"/><span class="sw"></span>Mute Video During Voiceover</label>
+                    <label class="vr-toggle" style="margin:0"><input type="checkbox" id="cm-mute-vid" checked/><span class="sw"></span>Mute Video During Voiceover</label>
                   </div>
                   <label class="vr-mini-label" style="margin-top:12px">Set Volume</label>
                   <input type="range" id="cm-vid-vol" min="0" max="100" value="100" class="cm-range"/>
@@ -4882,7 +4882,7 @@ const cmState = {
   shape: { aspect: '9:16', bg: '#000000' },
   audio: {
     voiceOn: true, voiceId: '', voiceVol: 100,
-    muteVideo: false, videoVol: 100,
+    muteVideo: true, videoVol: 100,
     bgOn: false, bgTab: 'library', bgUrl: '', bgFile: null, bgVol: 40,
   },
   jobId: null, pollTimer: null, downloadUrl: null,
