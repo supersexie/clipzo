@@ -314,6 +314,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 
 .cm-nav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
 
+.cm-result-card{display:flex;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;align-items:stretch}
+.cm-result-vid{width:200px;aspect-ratio:9/16;border-radius:10px;background:#000;object-fit:contain;flex-shrink:0}
+.cm-result-actions{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.cm-result-title{font-weight:800;font-size:1rem;color:#fff}
+.cm-result-sub{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.5}
+@media (max-width:640px){.cm-result-card{flex-direction:column;align-items:center;text-align:center} .cm-result-vid{width:160px}}
+
 .cm-preview{background:linear-gradient(180deg,#1a1a1a,#0d0d0d);border:1px solid var(--border);border-radius:14px;padding:14px;position:sticky;top:14px}
 .cm-preview-head{font-size:.78rem;color:var(--muted);font-weight:700;text-align:center;margin-bottom:10px;letter-spacing:.08em;text-transform:uppercase}
 .cm-preview-stage{position:relative;aspect-ratio:9/16;background:#000;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#444;font-size:.78rem}
@@ -1684,11 +1691,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
               </div>
             </div>
             <div id="cm-result" style="display:none;margin-top:18px">
-              <video id="cm-player" controls style="width:100%;border-radius:10px;background:#000"></video>
-              <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="cmDownload()">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download MP4
-              </button>
+              <div class="cm-result-card">
+                <video id="cm-player" controls class="cm-result-vid" playsinline></video>
+                <div class="cm-result-actions">
+                  <div class="cm-result-title">Your Video Commentary</div>
+                  <div class="cm-result-sub">Ready to post. The mp4 includes your voiceover, burned captions, and any background music.</div>
+                  <button class="btn btn-primary" style="margin-top:14px" onclick="cmDownload()">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download MP4
+                  </button>
+                  <button class="btn btn-ghost" style="margin-top:8px" onclick="cmResetWizard()">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                    Create another
+                  </button>
+                </div>
+              </div>
             </div>
             <div id="cm-error" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);border-radius:9px;color:#ff6677;font-size:.82rem"></div>
 
@@ -5287,6 +5304,19 @@ window.cmDownload = () => {
   const a = document.createElement('a')
   a.href = cmState.downloadUrl; a.download = 'commentary.mp4'
   document.body.appendChild(a); a.click(); a.remove()
+}
+
+window.cmResetWizard = () => {
+  if (cmState.downloadUrl) { try { URL.revokeObjectURL(cmState.downloadUrl) } catch {} }
+  cmState.jobId = null
+  cmState.downloadUrl = null
+  const player = document.getElementById('cm-player')
+  if (player) { player.pause?.(); player.removeAttribute('src'); player.load?.() }
+  document.getElementById('cm-result').style.display = 'none'
+  document.getElementById('cm-status').style.display = 'none'
+  document.getElementById('cm-final-btn').disabled = false
+  window.cmReupload?.()
+  window.cmGoStep?.(1)
 }
 
 async function cmLoadHelpers() {
