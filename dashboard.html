@@ -233,6 +233,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .vr-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:16px}
 .vr-section h4{margin:0 0 14px;font-size:.92rem}
 .vr-mini-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;display:block}
+.cm-style-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.82rem;font-weight:600;padding:11px 12px;border-radius:9px;cursor:pointer;transition:all .15s;text-align:center}
+.cm-style-btn:hover{border-color:var(--a2);color:#fff}
+.cm-style-btn.active{background:rgba(255,0,51,0.15);border-color:var(--a1);color:#fff}
 .vr-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:14px;overflow:hidden}
 .vr-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
 .vr-card-head .title{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:8px}
@@ -426,6 +429,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="nav-item" data-panel="ranking" onclick="switchPanel('ranking',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4"/><path d="M5 8h3v9H5z"/><path d="M10.5 4h3v13h-3z"/><path d="M16 11h3v6h-3z"/></svg>
       Video Ranking
+    </button>
+    <button class="nav-item" data-panel="commentary" onclick="switchPanel('commentary',this)">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Video Commentary
     </button>
     <button class="nav-item" data-panel="files" onclick="switchPanel('files',this)">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
@@ -1326,6 +1333,61 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         </div>
       </div>
       </div><!-- /.vr-layout -->
+    </div>
+
+    <!-- COMMENTARY -->
+    <div class="panel" id="panel-commentary">
+      <div class="tool-card">
+        <h3>Video Commentary</h3>
+        <p>Add an AI commentary track to any video — reaction, sports play-by-play, roast, or explainer.</p>
+
+        <label class="vr-mini-label" style="margin-top:14px">Video URL (Supabase, S3, etc. — must be a direct .mp4 link)</label>
+        <input type="text" id="cm-url" placeholder="https://..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px"/>
+
+        <label class="vr-mini-label" style="margin-top:14px">…or pick from My Files</label>
+        <select id="cm-file-picker" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px" onchange="cmPickFile(this.value)">
+          <option value="">— select an uploaded video —</option>
+        </select>
+
+        <label class="vr-mini-label" style="margin-top:14px">Commentary style</label>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px">
+          <button type="button" class="cm-style-btn active" data-style="reaction" onclick="cmPickStyle(this)">🎬 Reaction</button>
+          <button type="button" class="cm-style-btn" data-style="sports" onclick="cmPickStyle(this)">🏀 Sports</button>
+          <button type="button" class="cm-style-btn" data-style="roast" onclick="cmPickStyle(this)">🔥 Roast</button>
+          <button type="button" class="cm-style-btn" data-style="explainer" onclick="cmPickStyle(this)">🎓 Explainer</button>
+        </div>
+
+        <label class="vr-mini-label" style="margin-top:14px">Voice (optional — default matches the style)</label>
+        <select id="cm-voice" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.85rem;padding:11px 14px;margin-top:4px">
+          <option value="">— style default —</option>
+        </select>
+
+        <button class="btn btn-primary" id="cm-generate-btn" style="width:100%;margin-top:18px" onclick="cmGenerate()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Generate Commentary
+        </button>
+
+        <div id="cm-status" style="display:none;margin-top:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span id="cm-step" style="font-size:.78rem;color:var(--muted)"></span>
+            <span id="cm-pct" style="font-size:.78rem;color:var(--muted)"></span>
+          </div>
+          <div style="background:var(--surface);border-radius:999px;height:6px;overflow:hidden">
+            <div id="cm-progress" style="height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));width:0%;transition:width .3s;border-radius:999px"></div>
+          </div>
+        </div>
+
+        <div id="cm-result" style="display:none;margin-top:18px">
+          <video id="cm-player" controls style="width:100%;border-radius:10px;background:#000"></video>
+          <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="cmDownload()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download MP4
+          </button>
+          <div id="cm-lines" style="margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px;max-height:200px;overflow:auto;font-size:.78rem;color:var(--muted)"></div>
+        </div>
+
+        <div id="cm-error" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,0,51,0.1);border:1px solid rgba(255,0,51,0.3);border-radius:9px;color:#ff6677;font-size:.82rem"></div>
+      </div>
     </div>
 
     <!-- FILES -->
@@ -4451,6 +4513,140 @@ window.cvEditClip = (start, end) => {
   updateHandles()
   updateInputs()
   document.getElementById('clip-viral-results').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+/* ============ VIDEO COMMENTARY ============ */
+let cmStyle = 'reaction'
+let cmJobId = null
+let cmPollTimer = null
+let cmDownloadUrl = null
+
+window.cmPickStyle = (btn) => {
+  document.querySelectorAll('.cm-style-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  cmStyle = btn.dataset.style
+}
+
+window.cmPickFile = (url) => {
+  if (url) document.getElementById('cm-url').value = url
+}
+
+async function cmLoadHelpers() {
+  // Voices
+  try {
+    const voices = await api.tts.voices()
+    const sel = document.getElementById('cm-voice')
+    if (sel && sel.children.length <= 1) {
+      voices.slice(0, 40).forEach(v => {
+        const o = document.createElement('option')
+        o.value = v.id; o.textContent = v.name
+        sel.appendChild(o)
+      })
+    }
+  } catch {}
+  // User files
+  try {
+    const files = await api.upload.list()
+    const sel = document.getElementById('cm-file-picker')
+    if (sel && sel.children.length <= 1) {
+      files.filter(f => /video|mp4|mov|webm/i.test(f.type || '') || /\.mp4|\.mov|\.webm/i.test(f.url || ''))
+        .forEach(f => {
+          const o = document.createElement('option')
+          o.value = f.url; o.textContent = f.name || 'video'
+          sel.appendChild(o)
+        })
+    }
+  } catch {}
+}
+
+function cmShowError(msg) {
+  const el = document.getElementById('cm-error')
+  el.textContent = msg
+  el.style.display = 'block'
+}
+function cmClearError() { document.getElementById('cm-error').style.display = 'none' }
+
+window.cmGenerate = async () => {
+  cmClearError()
+  const url = document.getElementById('cm-url').value.trim()
+  if (!url) { cmShowError('Paste a video URL or pick one from your files.'); return }
+
+  const btn = document.getElementById('cm-generate-btn')
+  btn.disabled = true
+  document.getElementById('cm-status').style.display = 'block'
+  document.getElementById('cm-result').style.display = 'none'
+  document.getElementById('cm-step').textContent = 'Submitting…'
+  document.getElementById('cm-pct').textContent = '0%'
+  document.getElementById('cm-progress').style.width = '0%'
+
+  const voice_id = document.getElementById('cm-voice').value || undefined
+  try {
+    const { jobId } = await api.commentary.start({ file_url: url, style: cmStyle, voice_id })
+    cmJobId = jobId
+    cmPoll()
+  } catch (err) {
+    cmShowError(err.message || 'Failed to start commentary job')
+    btn.disabled = false
+    document.getElementById('cm-status').style.display = 'none'
+  }
+}
+
+async function cmPoll() {
+  clearTimeout(cmPollTimer)
+  if (!cmJobId) return
+  try {
+    const r = await api.commentary.poll(cmJobId)
+    document.getElementById('cm-step').textContent = r.step || r.status
+    document.getElementById('cm-pct').textContent = (r.progress ?? 0) + '%'
+    document.getElementById('cm-progress').style.width = (r.progress ?? 0) + '%'
+
+    if (r.status === 'done') {
+      document.getElementById('cm-generate-btn').disabled = false
+      const blobUrl = await api.commentary.download(cmJobId)
+      cmDownloadUrl = blobUrl
+      document.getElementById('cm-player').src = blobUrl
+      document.getElementById('cm-result').style.display = 'block'
+
+      // Show generated commentary lines so users can see what the AI wrote.
+      const linesEl = document.getElementById('cm-lines')
+      linesEl.innerHTML = ''
+      if (Array.isArray(r.lines)) {
+        r.lines.forEach(l => {
+          const row = document.createElement('div')
+          row.style.padding = '4px 0'
+          row.innerHTML = `<span style="color:var(--a2);font-weight:700">${l.at_sec.toFixed(1)}s</span> &nbsp; ${l.text}`
+          linesEl.appendChild(row)
+        })
+      }
+      return
+    }
+    if (r.status === 'error') {
+      cmShowError(r.error || 'Job failed')
+      document.getElementById('cm-generate-btn').disabled = false
+      return
+    }
+    cmPollTimer = setTimeout(cmPoll, 3000)
+  } catch (err) {
+    cmShowError(err.message || 'Polling failed')
+    document.getElementById('cm-generate-btn').disabled = false
+  }
+}
+
+window.cmDownload = () => {
+  if (!cmDownloadUrl) return
+  const a = document.createElement('a')
+  a.href = cmDownloadUrl
+  a.download = 'commentary.mp4'
+  document.body.appendChild(a); a.click(); a.remove()
+}
+
+// Lazy-load voices + file list the first time the user opens the panel.
+const _origSwitchPanel = window.switchPanel
+if (typeof _origSwitchPanel === 'function') {
+  window.switchPanel = (id, btn) => {
+    _origSwitchPanel(id, btn)
+    if (id === 'commentary') cmLoadHelpers()
+  }
 }
 </script>
 </body>
