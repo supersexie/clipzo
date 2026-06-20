@@ -5140,7 +5140,7 @@ window.cmSyncBgColor = (val) => {
 }
 
 /* ---- Preview pane (right side) ---- */
-function cmUpdatePreview() {
+window.cmUpdatePreview = function cmUpdatePreview() {
   const stage = document.getElementById('cm-preview-stage')
   if (!stage) return
   const aspect = cmState.shape?.aspect || '9:16'
